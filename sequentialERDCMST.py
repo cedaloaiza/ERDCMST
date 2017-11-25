@@ -60,20 +60,20 @@ def feaasibleInsert(vertexTree):
 	return true
 
 def fakeDelete(tree, vertex):
-	print "nodo: "+str(tree.id)
+	print( "nodo: "+str(tree.id) )
 	if tree.ancestor is not None:
-		print "antecesor: "+str(tree.ancestor.id)
+		print( "antecesor: "+str(tree.ancestor.id) )
 	else:
-		print "antecesor: "+str(tree.ancestor)
+		print( "antecesor: "+str(tree.ancestor) )
 	if tree.descendants is not None: 
 		newDescendants = list(tree.descendants)
 		for node in tree.descendants:
 			if vertex == node.id:
-				print "encontrado despues de " + str(tree.id)
+				print( "encontrado despues de " + str(tree.id) )
 			else:
 				fakeDelete(node, vertex)
 
-def delete(tree, vertex):
+def delete( tree, vertex ):
 	if tree.descendants is not None: 
 		newDescendants = list(tree.descendants)
 		deletedNode = None
@@ -82,10 +82,10 @@ def delete(tree, vertex):
 				deletedNode = node
 				#Descendants of deleted node are now descendants of deleted node's ancestor 
 				tree.setDescendands(node.descendants)
-				print "encontrado despues de " + str(tree.id)
+				print( "encontrado despues de " + str(tree.id) )
 			else:
 				delete(node, vertex)
-		print "descendents of " + str(tree.id) +": " + str( len(tree.descendants) )
+		print( "descendents of " + str(tree.id) +": " + str( len(tree.descendants) ) )
 		tree.descendants.remove(deletedNode) 
 
 
@@ -107,10 +107,10 @@ def main():
 			("f3","c3"),("f3","c7"),("f3","c8"),("f3","c9"),("f3","c10")]
 	'''
 
-	associationFacilitiesClients = {0 : [1,,2,3 ]}
+	associationFacilitiesClients = {0 : [1,2,3 ]}
 	list = [(0,1),(0,2),(0,3)]
 
-	print len(list)
+	print( len(list) )
 
 	while list:
 		vertexTree = selectRandomlyFromList(list)
@@ -142,5 +142,3 @@ node1 = Node( None, 1 )
 treesito = 	Node( [ node1 , node2], 0)
 delete(treesito, 2)
 fakeDelete(treesito, 3)
-
-
