@@ -1,4 +1,5 @@
 import random
+import copy
 
 #This are the two ways of insert a node or a subtree
 BREAKING_EDGE = 0
@@ -16,6 +17,8 @@ C[2][1] = 4
 C[2][3] = 5
 C[3][1] = 2
 C[3][2] = 6
+
+obj = 19
 
 class Node:
 	'''A tree'''
@@ -45,6 +48,18 @@ class Node:
 				self.descendants = descendants
 			else:
 				self.descendants = self.descendants + descendants
+
+	def isLeaf(self):
+		return descendants == None
+
+	def printTree(self, level=0):
+		ancestorString = ''
+		if self.ancestor is not None:
+			ancestorString = str( self.ancestor.id )
+		print( '\t' * level + ancestorString + "->" + str(self.id) )
+		if self.descendants is not None:
+		    for child in self.descendants:
+		        child.printTree(level+1)
 		
 
 
@@ -53,14 +68,14 @@ def selectRandomlyFromList( list ):
 	i = random.randint(0, n-1)
 	return list[i]
 
-def feaasibleDelete(vertexTree):
-	return true
+def feasibleDelete(vertexTree):
+	return True
 
-def feaasibleInsert(vertexTree):
-	return true
+def feasibleInsert(vertexTree):
+	return True
 
-def fakeDelete(tree, vertex):
-	print( "nodo: "+str(tree.id) )
+def searchNode(tree, vertex):
+	print( "Searching... " )
 	if tree.ancestor is not None:
 		print( "antecesor: "+str(tree.ancestor.id) )
 	else:
@@ -71,7 +86,7 @@ def fakeDelete(tree, vertex):
 			if vertex == node.id:
 				print( "encontrado despues de " + str(tree.id) )
 			else:
-				fakeDelete(node, vertex)
+				searchNode(node, vertex)
 
 def delete( tree, vertex ):
 	if tree.descendants is not None: 
@@ -82,15 +97,53 @@ def delete( tree, vertex ):
 				deletedNode = node
 				#Descendants of deleted node are now descendants of deleted node's ancestor 
 				tree.setDescendands(node.descendants)
-				print( "encontrado despues de " + str(tree.id) )
+				#print( "encontrado despues de " + str(tree.id) )
 			else:
 				delete(node, vertex)
-		print( "descendents of " + str(tree.id) +": " + str( len(tree.descendants) ) )
-		tree.descendants.remove(deletedNode) 
+		#print( "descendents of " + str(tree.id) +": " + str( len(tree.descendants) ) )
+		if deletedNode is not None:
+			tree.descendants.remove(deletedNode) 
+
+def insert( tree, location, way, vertex ):
+	inserted = False
+	if tree.id == location:
+		if way == FROM_NODE:
+			newNode =  Node( None, vertex )
+			tree.setDescendands( [newNode] )
+		elif way == BREAKING_EDGE:
+			newNode =  Node( [tree], vertex )
+			tree.ancestor.setDescendands( [newNode] )
+			tree.ancestor.descendants.remove( tree )
+		return True
+	elif tree.descendants is None:
+		return False
+	else:
+		for descendant in tree.descendants:
+			inserted = inserted or insert( descendant, location, way, vertex )
+	return inserted
 
 
+def computeCost( location, way, vertex ):
+	global obj
+	cost = 0
+	if way == FROM_NODE:
+		cost = obj + C[location.id][vertex]
+	elif way == BREAKING_EDGE:
+		cost = obj + C[location.ancestor.id][vertex] +  C[vertex][location.id] - C[location.ancestor.id][location.id]
+	return cost  
+
+def treeToList( tree ):
+	treeList = []
+	if tree.descendants is None:
+		treeList.append(tree)
+	else:
+		for descendant in tree.descendants:
+			treeList = treeList + treeToList(descendant)
+	return treeList
 
 def main():
+
+	global obj
 
 	node3 = Node( None, 3)
 	node2 = Node( [ node3 ], 2 )
@@ -108,37 +161,60 @@ def main():
 	'''
 
 	associationFacilitiesClients = {0 : [1,2,3 ]}
-	list = [(0,1),(0,2),(0,3)]
+	list = [ (0,1), (0,2), (0,3) ]
 
 	print( len(list) )
 
+	node3 = Node( None, 3)
+	node2 = Node( [ node3 ], 2 )
+	node1 = Node( None, 1 )
+	tree = 	Node( [ node1 , node2], 0)
+
 	while list:
 		vertexTree = selectRandomlyFromList(list)
+		vertex = vertexTree[1]
 		if feasibleDelete(vertexTree): # Why Feasible delete? Delete could be unfeasible but becomes feasible with insert
-			oldLoc = getLocation( vertexTree )
-			cost = computeCost() # This is the cost of the current solution
-			delete(vertexTree)  #It is necesary to delete and later insert again?
-			bestLoc =  oldLoc
-			locations = getLocations(vertexTree)
+			#oldLoc = getLocation( vertexTree ) For now, if none best location is found, algorithm will re insert the deleted node in the same position 
+			#cost = 19#computeCost() # This is the cost of the current solution
+			#Maintain the tree state before the delete
+			oldTree =  copy.deepcopy( tree )
+			delete(tree, vertex)  #It is necesary to delete and later insert again?
+			#locations = getLocations(vertexTree)
+			locations = treeToList(tree)
 			bestWay =  None
 			for location in locations:
 				for way in insertWaysByLocation:
-					if( feasibleInsert(location, way) ):
-						newCost = computeCost(location, way)
-						if( newCost < cost ):
-							cost = newCost
+					if( feasibleInsert(location) ):
+						newCost = computeCost(location, way, vertex)
+						if( newCost < obj ):
+							obj = newCost
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
-				insert(bestloc, bestWay, vertexTree)
+				insert(tree, bestloc.id, bestWay, vertexTree)
+			else:
+				tree = oldTree
 		list.remove(vertexTree)
+		tree.printTree()
 
 
-#main()
+main()
+'''
 node3 = Node( None, 3)
 node2 = Node( [ node3 ], 2 )
 node1 = Node( None, 1 )
-
 treesito = 	Node( [ node1 , node2], 0)
+
+treesito.printTree()
+
 delete(treesito, 2)
-fakeDelete(treesito, 3)
+
+treesito.printTree()
+searchNode(treesito, 3)
+
+print( treeToList(treesito) )
+
+insert(treesito,node1.id,FROM_NODE,2)
+searchNode(treesito, 2)
+treesito.printTree()
+'''
