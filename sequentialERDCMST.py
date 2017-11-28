@@ -6,8 +6,8 @@ BREAKING_EDGE = 0
 FROM_NODE = 1
 insertWaysByLocation = [BREAKING_EDGE, FROM_NODE]
 
-global C 
-C = 4*[4*[0]]
+ 
+C = [ [ 0 for i in range(4) ] for j in range(4) ]
 C[0][1] = 5
 C[0][2] = 5
 C[0][3] = 3
@@ -17,8 +17,9 @@ C[2][1] = 4
 C[2][3] = 5
 C[3][1] = 2
 C[3][2] = 6
+print("01" + str(C[0][1]))
 
-obj = 19
+obj = 15
 
 class Node:
 	'''A tree'''
@@ -125,18 +126,20 @@ def insert( tree, location, way, vertex ):
 
 def computeCost( location, way, vertex ):
 	global obj
-	cost = 0
+
+	cost = 100
 	if way == FROM_NODE:
+		print( str(location.id)+ "," + str(vertex) + ": " + str(C[location.id][vertex]) )
 		cost = obj + C[location.id][vertex]
-	elif way == BREAKING_EDGE:
-		cost = obj + C[location.ancestor.id][vertex] +  C[vertex][location.id] - C[location.ancestor.id][location.id]
+	if location.ancestor is not None:
+		if way == BREAKING_EDGE:
+			cost = obj + C[location.ancestor.id][vertex] +  C[vertex][location.id] - C[location.ancestor.id][location.id]
 	return cost  
 
 def treeToList( tree ):
 	treeList = []
-	if tree.descendants is None:
-		treeList.append(tree)
-	else:
+	treeList.append(tree)
+	if tree.descendants is not None:
 		for descendant in tree.descendants:
 			treeList = treeList + treeToList(descendant)
 	return treeList
@@ -179,6 +182,8 @@ def main():
 			#Maintain the tree state before the delete
 			oldTree =  copy.deepcopy( tree )
 			delete(tree, vertex)  #It is necesary to delete and later insert again?
+			print( "After Delete: ")
+			tree.printTree()
 			#locations = getLocations(vertexTree)
 			locations = treeToList(tree)
 			bestWay =  None
@@ -186,15 +191,18 @@ def main():
 				for way in insertWaysByLocation:
 					if( feasibleInsert(location) ):
 						newCost = computeCost(location, way, vertex)
+						print( "obj " + str(obj) )
+						print( "newCost " + str(newCost) )
 						if( newCost < obj ):
 							obj = newCost
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
-				insert(tree, bestloc.id, bestWay, vertexTree)
+				insert(tree, bestLoc.id, bestWay, vertexTree)
 			else:
 				tree = oldTree
 		list.remove(vertexTree)
+		print( "After Iteration: ")
 		tree.printTree()
 
 
@@ -204,6 +212,11 @@ node3 = Node( None, 3)
 node2 = Node( [ node3 ], 2 )
 node1 = Node( None, 1 )
 treesito = 	Node( [ node1 , node2], 0)
+#print( str(treeToList(treesito)) )
+for e in treeToList(treesito):
+	print( e.id )
+
+
 
 treesito.printTree()
 
