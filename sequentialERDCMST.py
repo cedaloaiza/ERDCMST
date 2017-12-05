@@ -119,9 +119,11 @@ def insert( tree, location, way, vertex ):
 			newNode =  Node( None, vertex )
 			tree.setDescendands( [newNode] )
 		elif way == BREAKING_EDGE:
-			newNode =  Node( [tree], vertex )
-			tree.ancestor.setDescendands( [newNode] )
 			tree.ancestor.descendants.remove( tree )
+			newNode =  Node( None, vertex )
+			tree.ancestor.setDescendands( [newNode] )
+			#This is because Node constructor change the ancestor reference, so the descendants have to be set later
+			newNode.setDescendands( [tree] )
 		return True
 	elif tree.descendants is None:
 		return False
@@ -206,7 +208,7 @@ def main():
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
-				insert(tree, bestLoc.id, bestWay, vertexTree)
+				insert(tree, bestLoc.id, bestWay, vertex)
 			else:
 				tree = oldTree
 			obj =  cost
@@ -236,7 +238,8 @@ searchNode(treesito, 3)
 
 print( treeToList(treesito) )
 
-insert(treesito,node1.id,FROM_NODE,2)
+#insert(treesito,node1.id,FROM_NODE,2)
+insert(treesito,node1.id,BREAKING_EDGE,2)
 searchNode(treesito, 2)
 treesito.printTree()
 '''
