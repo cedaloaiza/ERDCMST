@@ -90,6 +90,7 @@ def searchNode(tree, vertex):
 				searchNode(node, vertex)
 
 def delete( tree, vertex ):
+	global obj
 	if tree.descendants is not None: 
 		newDescendants = list(tree.descendants)
 		deletedNode = None
@@ -98,6 +99,12 @@ def delete( tree, vertex ):
 				deletedNode = node
 				#Descendants of deleted node are now descendants of deleted node's ancestor 
 				tree.setDescendands(node.descendants)
+				obj = obj - C[tree.id][node.id]
+				if node.descendants is not None:
+					reconnectingCost = 0
+					for descendant in node.descendants:
+						reconnectingCost = reconnectingCost + C[tree.id][descendant.id] - C[node.id][descendant.id]
+					obj = obj + reconnectingCost	
 				#print( "encontrado despues de " + str(tree.id) )
 			else:
 				delete(node, vertex)
@@ -178,7 +185,7 @@ def main():
 		vertex = vertexTree[1]
 		if feasibleDelete(vertexTree): # Why Feasible delete? Delete could be unfeasible but becomes feasible with insert
 			#oldLoc = getLocation( vertexTree ) For now, if none best location is found, algorithm will re insert the deleted node in the same position 
-			#cost = 19#computeCost() # This is the cost of the current solution
+			cost = obj#computeCost() # This is the cost of the current solution
 			#Maintain the tree state before the delete
 			oldTree =  copy.deepcopy( tree )
 			delete(tree, vertex)  #It is necesary to delete and later insert again?
@@ -192,15 +199,17 @@ def main():
 					if( feasibleInsert(location) ):
 						newCost = computeCost(location, way, vertex)
 						print( "obj " + str(obj) )
+						print( "cost " + str(cost) )
 						print( "newCost " + str(newCost) )
-						if( newCost < obj ):
-							obj = newCost
+						if( newCost < cost ):
+							cost = newCost
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
 				insert(tree, bestLoc.id, bestWay, vertexTree)
 			else:
 				tree = oldTree
+			obj =  cost
 		list.remove(vertexTree)
 		print( "After Iteration: ")
 		tree.printTree()
