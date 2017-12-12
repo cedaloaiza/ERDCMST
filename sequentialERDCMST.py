@@ -17,7 +17,8 @@ C[2][1] = 4
 C[2][3] = 5
 C[3][1] = 2
 C[3][2] = 6
-print("01" + str(C[0][1]))
+
+
 
 obj = 15
 
@@ -25,6 +26,8 @@ class Node:
 	'''A tree'''
 	def __init__(self, descendants, id):
 		self.id = id
+		self.f = 0
+		self.b = 0
 		self.ancestor = None
 		self.descendants = None
 		self.setDescendands(descendants)
@@ -41,7 +44,7 @@ class Node:
 
 	def setDescendands(self, descendants):
 		if descendants is None:
-			pass
+			pass#self.descendants = None
 		else:
 			for descendant in descendants:
 				descendant.setAncestor( self )
@@ -61,6 +64,13 @@ class Node:
 		if self.descendants is not None:
 		    for child in self.descendants:
 		        child.printTree(level+1)
+
+    
+	def setF(self, f):
+		self.f = f
+
+	def setB(self, b):
+		self.b = b
 		
 
 
@@ -72,8 +82,15 @@ def selectRandomlyFromList( list ):
 def feasibleDelete(vertexTree):
 	return True
 
-def feasibleInsert(vertexTree):
-	return True
+#We need the deleted vertex info like b and f
+def feasibleInsert(location, way, vertex):
+	feasible = True
+	'''
+	if way == FROM_NODE:
+			feasible = (location.f + C[location.id][vertex] + )
+		elif way == BREAKING_EDGE:
+	'''
+	return feasible
 
 def searchNode(tree, vertex):
 	print( "Searching... " )
@@ -105,12 +122,17 @@ def delete( tree, vertex ):
 					for descendant in node.descendants:
 						reconnectingCost = reconnectingCost + C[tree.id][descendant.id] - C[node.id][descendant.id]
 					obj = obj + reconnectingCost	
+				deletedNode.setDescendands(None)
+				deletedNode.setAncestor(None)
 				#print( "encontrado despues de " + str(tree.id) )
 			else:
-				delete(node, vertex)
+				deleted = delete(node, vertex)
+				if deleted is not None:
+					return deleted
 		#print( "descendents of " + str(tree.id) +": " + str( len(tree.descendants) ) )
 		if deletedNode is not None:
 			tree.descendants.remove(deletedNode) 
+			return deletedNode
 
 def insert( tree, location, way, vertex ):
 	inserted = False
@@ -157,11 +179,20 @@ def main():
 
 	global obj
 
+
 	node3 = Node( None, 3)
+	node3.setF(10)
+	node3.setB(0)
 	node2 = Node( [ node3 ], 2 )
+	node2.setF(5)
+	node2.setB(5)
 	node1 = Node( None, 1 )
+	node1.setF(5)
+	node1.setB(0)
 
 	treesito = 	Node( [ node1 , node2], 0)
+	treesito.setF(0)
+	treesito.setB(10)
 
 	#Dictionary containing all vertices on the graph classified by their facilities
 	'''
@@ -198,7 +229,7 @@ def main():
 			bestWay =  None
 			for location in locations:
 				for way in insertWaysByLocation:
-					if( feasibleInsert(location) ):
+					if( feasibleInsert(location, way, vertex) ):
 						newCost = computeCost(location, way, vertex)
 						print( "obj " + str(obj) )
 						print( "cost " + str(cost) )
