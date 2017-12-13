@@ -70,12 +70,48 @@ class Node:
 		    for child in self.descendants:
 		        child.printTree(level+1)
 
+	def printTreeVerbose(self, level=0):
+		ancestorString = ''
+		distance = str(0)
+		if self.ancestor is not None:
+			ancestorString = str( self.ancestor.id )
+			distance = str( C[self.ancestor.id ][self.id] )
+		print( '\t' * level + ancestorString + "--"+distance+"->" + str(self.id) )
+		print( '\t' * level + "---f=" + str(self.f) )
+		print( '\t' * level + "---b=" + str(self.b) )
+		if self.descendants is not None:
+		    for child in self.descendants:
+		        child.printTreeVerbose(level+1)
+
     
 	def setF(self, f):
 		self.f = f
 
 	def setB(self, b):
 		self.b = b
+
+	def updateFs(self, val):
+		self.f = self.f + val
+		if self.descendants is not None:
+			for child in self.descendants:
+				child.updateFs(val)
+
+	def updateBs(self, val):
+		#Debugging
+		print( "updating Bs: id:"+str(self.id)+" "+"b="+str(self.b)+" "+"val="+str(val) )
+		if val >= self.b:
+			self.b = val
+		else:
+			if self.descendants is None:
+				self.b = val
+			else:
+				maxB = val
+				for child in self.descendants:
+					maxB = max( maxB, child.b + C[self.id][child.id] )
+				self.b = maxB
+		if self.ancestor is not None:
+			self.ancestor.updateBs( self.b + C[self.ancestor.id][self.id] )
+
 		
 
 
@@ -117,6 +153,7 @@ def delete( tree, vertex ):
 	if tree.descendants is not None: 
 		newDescendants = list(tree.descendants)
 		deletedNode = None
+		maxB = 0
 		for node in tree.descendants:
 			if vertex == node.id:
 				deletedNode = node
@@ -126,7 +163,10 @@ def delete( tree, vertex ):
 				if node.descendants is not None:
 					reconnectingCost = 0
 					for descendant in node.descendants:
+						descendant.updateFs( C[tree.id][descendant.id] - C[node.id][descendant.id] - C[tree.id][node.id] )
 						reconnectingCost = reconnectingCost + C[tree.id][descendant.id] - C[node.id][descendant.id]
+						#b for tree has to be related with the new farthest leaf
+						maxB = max(maxB,   C[tree.id][descendant.id] + descendant.b )
 					obj = obj + reconnectingCost	
 				deletedNode.removeDescendants()
 				deletedNode.setAncestor(None)
@@ -138,6 +178,7 @@ def delete( tree, vertex ):
 		#print( "descendents of " + str(tree.id) +": " + str( len(tree.descendants) ) )
 		if deletedNode is not None:
 			tree.descendants.remove(deletedNode) 
+			tree.updateBs( maxB )
 			return deletedNode
 
 def insert( tree, location, way, vertex ):
@@ -196,9 +237,13 @@ def main():
 	node1.setF(5)
 	node1.setB(0)
 
-	treesito = 	Node( [ node1 , node2], 0)
-	treesito.setF(0)
-	treesito.setB(10)
+	tree = 	Node( [ node1 , node2], 0)
+	tree.setF(0)
+	tree.setB(10)
+
+	print( "initial Solution: ")
+	tree.printTreeVerbose()
+
 
 	#Dictionary containing all vertices on the graph classified by their facilities
 	'''
@@ -212,12 +257,13 @@ def main():
 	associationFacilitiesClients = {0 : [1,2,3 ]}
 	list = [ (0,1), (0,2), (0,3) ]
 
-	print( len(list) )
 
+	'''
 	node3 = Node( None, 3)
 	node2 = Node( [ node3 ], 2 )
 	node1 = Node( None, 1 )
 	tree = 	Node( [ node1 , node2], 0)
+	'''
 
 	while list:
 		vertexTree = selectRandomlyFromList(list)
@@ -229,8 +275,7 @@ def main():
 			oldTree =  copy.deepcopy( tree )
 			deletedNode = delete(tree, vertex)  #It is necesary to delete and later insert again?
 			print( "After Delete: ")
-			tree.printTree()
-			deletedNode.printTree()
+			tree.printTreeVerbose()
 			#locations = getLocations(vertexTree)
 			locations = treeToList(tree)
 			bestWay =  None
