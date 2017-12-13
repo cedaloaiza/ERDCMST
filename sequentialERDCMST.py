@@ -88,11 +88,10 @@ def feasibleDelete(vertexTree):
 #We need the deleted vertex info like b and f
 def feasibleInsert(location, way, vertex):
 	feasible = True
-	'''
 	if way == FROM_NODE:
-			feasible = (location.f + C[location.id][vertex] + )
+			feasible = (location.f + C[location.id][vertex.id] + vertex.b)
 		elif way == BREAKING_EDGE:
-	'''
+			feasible = (location.ancestor.f + C[location.ancestor.id][vertex.id]  + C[vertex.id][location.id] + location.b)
 	return feasible
 
 def searchNode(tree, vertex):
@@ -233,7 +232,7 @@ def main():
 			bestWay =  None
 			for location in locations:
 				for way in insertWaysByLocation:
-					if( feasibleInsert(location, way, vertex) ):
+					if( feasibleInsert(location, way, deletedNode) ):
 						newCost = computeCost(location, way, vertex)
 						print( "obj " + str(obj) )
 						print( "cost " + str(cost) )
