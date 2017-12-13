@@ -90,6 +90,9 @@ class Node:
 	def setB(self, b):
 		self.b = b
 
+	'''
+	Add val to f value of all self descendants, including f value of self
+	'''
 	def updateFs(self, val):
 		self.f = self.f + val
 		if self.descendants is not None:
@@ -98,7 +101,7 @@ class Node:
 
 	def updateBs(self, val):
 		#Debugging
-		print( "updating Bs: id:"+str(self.id)+" "+"b="+str(self.b)+" "+"val="+str(val) )
+		#print( "updating Bs: id:"+str(self.id)+" "+"b="+str(self.b)+" "+"val="+str(val) )
 		if val >= self.b:
 			self.b = val
 		else:
@@ -163,6 +166,7 @@ def delete( tree, vertex ):
 				if node.descendants is not None:
 					reconnectingCost = 0
 					for descendant in node.descendants:
+						#f value of descendants has to be updated with reconnection cost
 						descendant.updateFs( C[tree.id][descendant.id] - C[node.id][descendant.id] - C[tree.id][node.id] )
 						reconnectingCost = reconnectingCost + C[tree.id][descendant.id] - C[node.id][descendant.id]
 						#b for tree has to be related with the new farthest leaf
@@ -187,12 +191,16 @@ def insert( tree, location, way, vertex ):
 		if way == FROM_NODE:
 			#newNode =  Node( None, vertex )
 			tree.setDescendands( [vertex] )
+			vertex.setF( tree.f + C[tree.id][vertex.id] )
 		elif way == BREAKING_EDGE:
 			tree.ancestor.descendants.remove( tree )
 			#newNode =  Node( None, vertex )
 			tree.ancestor.setDescendands( [vertex] )
 			#This is because Node constructor change the ancestor reference, so the descendants have to be set later
 			vertex.setDescendands( [tree] )
+			vertex.setF( vertex.ancestor.f + C[vertex.ancestor.id][vertex.id]  )
+			#f value of descendant has to be updated with reconnection cost
+			tree.updateFs( C[vertex.ancestor.id][vertex.id] + C[vertex.id][tree.id] - C[vertex.ancestor.id][tree.id] )
 		return True
 	elif tree.descendants is None:
 		return False
@@ -297,7 +305,7 @@ def main():
 			obj =  cost
 		list.remove(vertexTree)
 		print( "After Iteration: ")
-		tree.printTree()
+		tree.printTreeVerbose()
 
 
 main()
