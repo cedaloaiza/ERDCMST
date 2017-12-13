@@ -192,6 +192,7 @@ def insert( tree, location, way, vertex ):
 			#newNode =  Node( None, vertex )
 			tree.setDescendands( [vertex] )
 			vertex.setF( tree.f + C[tree.id][vertex.id] )
+			vertex.setB( 0 )
 		elif way == BREAKING_EDGE:
 			tree.ancestor.descendants.remove( tree )
 			#newNode =  Node( None, vertex )
@@ -201,6 +202,8 @@ def insert( tree, location, way, vertex ):
 			vertex.setF( vertex.ancestor.f + C[vertex.ancestor.id][vertex.id]  )
 			#f value of descendant has to be updated with reconnection cost
 			tree.updateFs( C[vertex.ancestor.id][vertex.id] + C[vertex.id][tree.id] - C[vertex.ancestor.id][tree.id] )
+			vertex.setB( tree.id.b +  C[vertex.id][tree.id] )
+		vertex.ancestor.updateBs( vertex.b + C[vertex.ancestor.id][vertex.id]  )
 		return True
 	elif tree.descendants is None:
 		return False
