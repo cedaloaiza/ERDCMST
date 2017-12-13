@@ -22,6 +22,8 @@ C[3][2] = 6
 
 obj = 15
 
+lamb = 10
+
 class Node:
 	'''A tree'''
 	def __init__(self, descendants, id):
@@ -87,11 +89,13 @@ def feasibleDelete(vertexTree):
 
 #We need the deleted vertex info like b and f
 def feasibleInsert(location, way, vertex):
-	feasible = True
+	global lamb
+	feasible = False
 	if way == FROM_NODE:
-			feasible = (location.f + C[location.id][vertex.id] + vertex.b)
-		elif way == BREAKING_EDGE:
-			feasible = (location.ancestor.f + C[location.ancestor.id][vertex.id]  + C[vertex.id][location.id] + location.b)
+		feasible = (location.f + C[location.id][vertex.id] + vertex.b) <= lamb
+	elif way == BREAKING_EDGE:
+		if location.ancestor is not None:
+			feasible = (location.ancestor.f + C[location.ancestor.id][vertex.id]  + C[vertex.id][location.id] + location.b) <= lamb
 	return feasible
 
 def searchNode(tree, vertex):
