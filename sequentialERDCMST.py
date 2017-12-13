@@ -44,7 +44,7 @@ class Node:
 
 	def setDescendands(self, descendants):
 		if descendants is None:
-			pass#self.descendants = None
+			pass
 		else:
 			for descendant in descendants:
 				descendant.setAncestor( self )
@@ -52,6 +52,9 @@ class Node:
 				self.descendants = descendants
 			else:
 				self.descendants = self.descendants + descendants
+
+	def removeDescendants(self):
+		self.descendants = None
 
 	def isLeaf(self):
 		return descendants == None
@@ -122,7 +125,7 @@ def delete( tree, vertex ):
 					for descendant in node.descendants:
 						reconnectingCost = reconnectingCost + C[tree.id][descendant.id] - C[node.id][descendant.id]
 					obj = obj + reconnectingCost	
-				deletedNode.setDescendands(None)
+				deletedNode.removeDescendants()
 				deletedNode.setAncestor(None)
 				#print( "encontrado despues de " + str(tree.id) )
 			else:
@@ -138,14 +141,14 @@ def insert( tree, location, way, vertex ):
 	inserted = False
 	if tree.id == location:
 		if way == FROM_NODE:
-			newNode =  Node( None, vertex )
-			tree.setDescendands( [newNode] )
+			#newNode =  Node( None, vertex )
+			tree.setDescendands( [vertex] )
 		elif way == BREAKING_EDGE:
 			tree.ancestor.descendants.remove( tree )
-			newNode =  Node( None, vertex )
-			tree.ancestor.setDescendands( [newNode] )
+			#newNode =  Node( None, vertex )
+			tree.ancestor.setDescendands( [vertex] )
 			#This is because Node constructor change the ancestor reference, so the descendants have to be set later
-			newNode.setDescendands( [tree] )
+			vertex.setDescendands( [tree] )
 		return True
 	elif tree.descendants is None:
 		return False
@@ -221,9 +224,10 @@ def main():
 			cost = obj#computeCost() # This is the cost of the current solution
 			#Maintain the tree state before the delete
 			oldTree =  copy.deepcopy( tree )
-			delete(tree, vertex)  #It is necesary to delete and later insert again?
+			deletedNode = delete(tree, vertex)  #It is necesary to delete and later insert again?
 			print( "After Delete: ")
 			tree.printTree()
+			deletedNode.printTree()
 			#locations = getLocations(vertexTree)
 			locations = treeToList(tree)
 			bestWay =  None
@@ -239,7 +243,7 @@ def main():
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
-				insert(tree, bestLoc.id, bestWay, vertex)
+				insert(tree, bestLoc.id, bestWay, deletedNode)
 			else:
 				tree = oldTree
 			obj =  cost
