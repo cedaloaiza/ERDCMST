@@ -131,7 +131,8 @@ def feasibleInsert(location, way, vertex):
 	global lamb
 	feasible = False
 	if way == FROM_NODE:
-		feasible = (location.f + C[location.id][vertex.id] + vertex.b) <= lamb
+		#0 has to change to verex.b in treeOperator
+		feasible = (location.f + C[location.id][vertex.id] + 0) <= lamb
 	elif way == BREAKING_EDGE:
 		if location.ancestor is not None:
 			feasible = (location.ancestor.f + C[location.ancestor.id][vertex.id]  + C[vertex.id][location.id] + location.b) <= lamb
@@ -202,7 +203,7 @@ def insert( tree, location, way, vertex ):
 			vertex.setF( vertex.ancestor.f + C[vertex.ancestor.id][vertex.id]  )
 			#f value of descendant has to be updated with reconnection cost
 			tree.updateFs( C[vertex.ancestor.id][vertex.id] + C[vertex.id][tree.id] - C[vertex.ancestor.id][tree.id] )
-			vertex.setB( tree.id.b +  C[vertex.id][tree.id] )
+			vertex.setB( tree.b +  C[vertex.id][tree.id] )
 		vertex.ancestor.updateBs( vertex.b + C[vertex.ancestor.id][vertex.id]  )
 		return True
 	elif tree.descendants is None:
