@@ -123,8 +123,15 @@ def selectRandomlyFromList( list ):
 	i = random.randint(0, n-1)
 	return list[i]
 
-def feasibleDelete(vertexTree):
-	return True
+def feasibleDelete( vertex ):
+	global lamb
+	feasible = True
+	if vertex.descendants is not None:
+		for descendant in vertex.descendants:
+			feasible = feasible and (vertex.ancestor.f + descendant.b + C[vertex.ancestor.id][descendant.id] <= lamb)
+	else:
+		feasible = True
+	return feasible
 
 #We need the deleted vertex info like b and f
 def feasibleInsert(location, way, vertex):
@@ -267,7 +274,7 @@ def main():
 	'''
 
 	associationFacilitiesClients = {0 : [1,2,3 ]}
-	list = [ (0,1), (0,2), (0,3) ]
+	list = [ (0,node1), (0,node2), (0,node3) ]
 
 
 	'''
@@ -280,12 +287,12 @@ def main():
 	while list:
 		vertexTree = selectRandomlyFromList(list)
 		vertex = vertexTree[1]
-		if feasibleDelete(vertexTree): # Why Feasible delete? Delete could be unfeasible but becomes feasible with insert
+		if feasibleDelete(vertex): # Why Feasible delete? Delete could be unfeasible but becomes feasible with insert
 			#oldLoc = getLocation( vertexTree ) For now, if none best location is found, algorithm will re insert the deleted node in the same position 
 			cost = obj#computeCost() # This is the cost of the current solution
 			#Maintain the tree state before the delete
 			oldTree =  copy.deepcopy( tree )
-			deletedNode = delete(tree, vertex)  #It is necesary to delete and later insert again?
+			deletedNode = delete(tree, vertex.id)  #It is necesary to delete and later insert again?
 			print( "After Delete: ")
 			tree.printTreeVerbose()
 			#locations = getLocations(vertexTree)
@@ -294,7 +301,7 @@ def main():
 			for location in locations:
 				for way in insertWaysByLocation:
 					if( feasibleInsert(location, way, deletedNode) ):
-						newCost = computeCost(location, way, vertex)
+						newCost = computeCost(location, way, vertex.id)
 						print( "obj " + str(obj) )
 						print( "cost " + str(cost) )
 						print( "newCost " + str(newCost) )
