@@ -292,6 +292,7 @@ def main():
 			cost = obj#computeCost() # This is the cost of the current solution
 			#Maintain the tree state before the delete
 			oldTree =  copy.deepcopy( tree )
+			#Vertex and deletedNode are the same
 			deletedNode = delete(tree, vertex.id)  #It is necesary to delete and later insert again?
 			print( "After Delete: ")
 			tree.printTreeVerbose()
@@ -300,7 +301,7 @@ def main():
 			bestWay =  None
 			for location in locations:
 				for way in insertWaysByLocation:
-					if( feasibleInsert(location, way, deletedNode) ):
+					if( feasibleInsert(location, way, vertex) ):
 						newCost = computeCost(location, way, vertex.id)
 						print( "obj " + str(obj) )
 						print( "cost " + str(cost) )
@@ -310,7 +311,7 @@ def main():
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
-				insert(tree, bestLoc.id, bestWay, deletedNode)
+				insert(tree, bestLoc.id, bestWay, vertex)
 			else:
 				tree = oldTree
 			obj =  cost
