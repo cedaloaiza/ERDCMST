@@ -7,7 +7,7 @@ FROM_NODE = 1
 insertWaysByLocation = [BREAKING_EDGE, FROM_NODE]
 
  
-C = [ [ 0 for i in range(4) ] for j in range(4) ]
+C = [ [ 0 for i in range(6) ] for j in range(6) ]
 C[0][1] = 5
 C[0][2] = 5
 C[0][3] = 3
@@ -18,9 +18,18 @@ C[2][3] = 5
 C[3][1] = 2
 C[3][2] = 6
 
+C[4][2] = 3
+C[4][5] = 5
+C[4][3] = 6
+C[5][2] = 7
+C[5][3] = 6
+C[3][5] = 8
+C[2][5] = 2
 
 
-obj = 15
+
+
+obj = 29
 
 lamb = 10
 
@@ -182,7 +191,7 @@ def delete( tree, vertex ):
 					obj = obj + reconnectingCost	
 				deletedNode.removeDescendants()
 				deletedNode.setAncestor(None)
-				#print( "encontrado despues de " + str(tree.id) )
+				print( "{} encontrado despues de {} ".format( deletedNode.id, tree.id) )
 			else:
 				deleted = delete(node, vertex)
 				if deleted is not None:
@@ -256,12 +265,32 @@ def main():
 	node1.setF(5)
 	node1.setB(0)
 
-	tree = 	Node( [ node1 , node2], 0)
-	tree.setF(0)
-	tree.setB(10)
+	facilitie0 = 	Node( [ node1 , node2], 0)
+	facilitie0.setF(0)
+	facilitie0.setB(10)
+
+	node22 = Node( None, 2 )
+	node22.setF(3)
+	node22.setB(0)
+	node33 = Node( None, 3 )
+	node33.setF(11)
+	node33.setB(0)
+	node5 = Node( [ node33 ], 5 )
+	node5.setF( 5 )
+	node5.setB( 6 )
+
+	facilitie4 = Node( [ node22, node5 ], 4 )
+	facilitie4.setF(0)
+	facilitie4.setB(11)
+
+
+	forest = { 0 : facilitie0, 4 : facilitie4 }
 
 	print( "initial Solution: ")
-	tree.printTreeVerbose()
+	print( "Tree 1")
+	facilitie0.printTreeVerbose()
+	print( "Tree 2")
+	facilitie4.printTreeVerbose()
 
 
 	#Dictionary containing all vertices on the graph classified by their facilities
@@ -273,8 +302,8 @@ def main():
 			("f3","c3"),("f3","c7"),("f3","c8"),("f3","c9"),("f3","c10")]
 	'''
 
-	associationFacilitiesClients = {0 : [1,2,3 ]}
-	list = [ (0,node1), (0,node2), (0,node3) ]
+	associationFacilitiesClients = {0 : [1,2,3], 4 : [2,3,5]}
+	list = [ (0,node1), (0,node2), (0,node3), (4,node22), (4,node33), (4,node5)  ]
 
 
 	'''
@@ -287,6 +316,11 @@ def main():
 	while list:
 		vertexTree = selectRandomlyFromList(list)
 		vertex = vertexTree[1]
+		selectedFacilitie = vertexTree[0]
+		tree = forest[ selectedFacilitie ]
+		print( "facilitie {} and vertex {} were selected".format( selectedFacilitie, vertex.id ) )
+		print( "Previous Delete: ")
+		tree.printTreeVerbose()
 		if feasibleDelete(vertex): # Why Feasible delete? Delete could be unfeasible but becomes feasible with insert
 			#oldLoc = getLocation( vertexTree ) For now, if none best location is found, algorithm will re insert the deleted node in the same position 
 			cost = obj#computeCost() # This is the cost of the current solution
@@ -296,6 +330,8 @@ def main():
 			deletedNode = delete(tree, vertex.id)  #It is necesary to delete and later insert again?
 			print( "After Delete: ")
 			tree.printTreeVerbose()
+			print( "Deleted Node:" )
+			vertex.printTreeVerbose()
 			#locations = getLocations(vertexTree)
 			locations = treeToList(tree)
 			bestWay =  None
@@ -316,7 +352,8 @@ def main():
 				tree = oldTree
 			obj =  cost
 		list.remove(vertexTree)
-		print( "After Iteration: ")
+		forest[ selectedFacilitie ] = tree
+		print( "After Insert: ")
 		tree.printTreeVerbose()
 
 
