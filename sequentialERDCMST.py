@@ -232,7 +232,7 @@ def insert( tree, location, way, vertex ):
 def insertByLocation( tree, vertex ):
 	inserted = False
 	if( vertex.ancestor is None ):
-		raise ValueError( 'The vertex do not have an ancestor' )
+		raise ValueError( 'The vertex does not have an ancestor' )
 	if tree.id == vertex.ancestor.id:
 		if vertex.descendants is not None:
 			if tree.descendants is None:
@@ -249,6 +249,7 @@ def insertByLocation( tree, vertex ):
 						newTreeDescendants.append( treeChild  )
 					else:
 						newVertexDescendants.append( treeChild )
+						treeChild.updateFs( C[vertex.ancestor.id][vertex.id] + C[vertex.id][treeChild.id] - C[vertex.ancestor.id][treeChild.id] )
 				tree.descendants = newTreeDescendants
 				vertex.removeDescendants()
 				vertex.setDescendands( newVertexDescendants )
