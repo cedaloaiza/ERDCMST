@@ -189,8 +189,8 @@ def delete( tree, vertex ):
 						#b for tree has to be related with the new farthest leaf
 						maxB = max(maxB,   C[tree.id][descendant.id] + descendant.b )
 					obj = obj + reconnectingCost	
-				deletedNode.removeDescendants()
-				deletedNode.setAncestor(None)
+				#deletedNode.removeDescendants()
+				#deletedNode.setAncestor(None)
 				print( "{} encontrado despues de {} ".format( deletedNode.id, tree.id) )
 			else:
 				deleted = delete(node, vertex)
@@ -229,6 +229,37 @@ def insert( tree, location, way, vertex ):
 			inserted = inserted or insert( descendant, location, way, vertex )
 	return inserted
 
+def insertByLocation( tree, vertex ):
+	inserted = False
+	if( vertex.ancestor is None ):
+		raise ValueError( 'The vertex do not have an ancestor' )
+	if tree.id == vertex.ancestor.id:
+		if vertex.descendants is not None:
+			if tree.descendants is None:
+				raise ValueError( 'Descendants of the vertex are not in the tree' ) 
+			else:
+				newTreeDescendants = []
+				newVertexDescendants = []
+				for treeChild in tree.descendants:
+					shouldBeTreeDescendant = True
+					for vertexChild in vertex.descendants:
+						if vertexChild.id == treeChild.id:
+							shouldBeTreeDescendant = False
+					if shouldBeTreeDescendant:
+						newTreeDescendants.append( treeChild  )
+					else:
+						newVertexDescendants.append( treeChild )
+				tree.descendants = newTreeDescendants
+				vertex.removeDescendants()
+				vertex.setDescendands( newVertexDescendants )
+		tree.setDescendands( [vertex] )
+		inserted = True
+	elif tree.descendants is None:
+		inserted = False
+	else:
+		for descendant in tree.descendants:
+			inserted = inserted or insertByLocation( descendant, vertex )
+	return inserted
 
 def computeCost( location, way, vertex ):
 	global obj
@@ -357,29 +388,35 @@ def main():
 		tree.printTreeVerbose()
 
 
-main()
-'''
+#main()
+
+
+
 node3 = Node( None, 3)
 node2 = Node( [ node3 ], 2 )
 node1 = Node( None, 1 )
 treesito = 	Node( [ node1 , node2], 0)
 #print( str(treeToList(treesito)) )
-for e in treeToList(treesito):
-	print( e.id )
+#for e in treeToList(treesito):
+#	print( e.id )
 
 
 
-treesito.printTree()
+treesito.printTreeVerbose()
 
 delete(treesito, 2)
 
-treesito.printTree()
-searchNode(treesito, 3)
+print('Tree after delete:')
+treesito.printTreeVerbose()
+print( 'Deleted Node:' )
+node2.printTreeVerbose()
+#searchNode(treesito, 3)
 
-print( treeToList(treesito) )
+#print( treeToList(treesito) )
 
 #insert(treesito,node1.id,FROM_NODE,2)
-insert(treesito,node1.id,BREAKING_EDGE,2)
-searchNode(treesito, 2)
-treesito.printTree()
-'''
+#insert(treesito,node1.id,BREAKING_EDGE,2)
+insertByLocation( treesito, node2 )
+#searchNode(treesito, 2)
+print('Tree after insert:')
+treesito.printTreeVerbose()
