@@ -229,6 +229,9 @@ def insert( tree, location, way, vertex ):
 			inserted = inserted or insert( descendant, location, way, vertex )
 	return inserted
 
+'''
+Insert a vertex in a tree according to the location that is stored in the vertex itself
+'''
 def insertByLocation( tree, vertex ):
 	inserted = False
 	if( vertex.ancestor is None ):
@@ -356,8 +359,8 @@ def main():
 		if feasibleDelete(vertex): # Why Feasible delete? Delete could be unfeasible but becomes feasible with insert
 			#oldLoc = getLocation( vertexTree ) For now, if none best location is found, algorithm will re insert the deleted node in the same position 
 			cost = obj#computeCost() # This is the cost of the current solution
-			#Maintain the tree state before the delete
-			oldTree =  copy.deepcopy( tree )
+			#(This was replaced by insertByLocation)Maintain the tree state before the delete
+			#oldTree =  copy.deepcopy( tree )
 			#Vertex and deletedNode are the same
 			deletedNode = delete(tree, vertex.id)  #It is necesary to delete and later insert again?
 			print( "After Delete: ")
@@ -379,9 +382,11 @@ def main():
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
+				vertex.removeDescendants()
+				vertex.setAncestor(None)
 				insert(tree, bestLoc.id, bestWay, vertex)
 			else:
-				tree = oldTree
+				insertByLocation(tree, vertex)
 			obj =  cost
 		list.remove(vertexTree)
 		forest[ selectedFacilitie ] = tree
@@ -389,9 +394,9 @@ def main():
 		tree.printTreeVerbose()
 
 
-#main()
+main()
 
-
+'''
 
 node3 = Node( None, 3)
 node2 = Node( [ node3 ], 2 )
@@ -421,3 +426,5 @@ insertByLocation( treesito, node2 )
 #searchNode(treesito, 2)
 print('Tree after insert:')
 treesito.printTreeVerbose()
+
+'''
