@@ -161,28 +161,46 @@ def feasibleDelete( vertex ):
 	return feasible
 
 #We need the deleted vertex info like b and f
+
 def feasibleInsert(location, way, vertex, facilitie):
+	'''Check if disjointness and distance constraint will be satisfied after the insert
+
+	args:
+	location -- Node that determines where <<vertex>> will be inserted. 
+	way -- This boolean determines if vertex will be inserted from <<location>> or to <<location>>
+	vertex -- Node that will be inserted
+	facilitie -- facilitie that determines the tree where vertes will be inserted
+	'''
 	global lamb
 	global D
 	disjointessFeasibility = True
 	feasible = False
 	if way == FROM_NODE:
-		#Disjointness constraint
+
+		#Disjointness constraint. location would be the vertex ancestor
 		for facilitieId in D[vertex.id]:
 			if facilitieId != facilitie:
 				disjointessFeasibility = D[vertex.id][facilitieId] != location.id
+
 		#0 has to change to verex.b in treeOperator
 		feasible = (location.f + C[location.id][vertex.id] + 0) <= lamb and disjointessFeasibility
+		
 	elif way == BREAKING_EDGE:
 		if location.ancestor is not None:
-			#Disjointness constraint
+
+			#Disjointness constraint. vertex would be the location ancestor
 			for facilitieId in D[location.id]:
 				if facilitieId != facilitie:
 					disjointessFeasibility = D[location.id][facilitieId] != vertex.id
+
+			#Disjointness constraint. location.ancestor would be the vertex ancestor
 			for facilitieId in D[vertex.id]:
 				if facilitieId != facilitie:
 					disjointessFeasibility = D[vertex.id][facilitieId] != location.ancestor.id and disjointessFeasibility
-			feasible = (location.ancestor.f + C[location.ancestor.id][vertex.id]  + C[vertex.id][location.id] + location.b) <= lamb and disjointessFeasibility
+
+			feasible = (location.ancestor.f + C[location.ancestor.id][vertex.id]  + C[vertex.id][location.id] + location.b) <= lamb 
+				and disjointessFeasibility
+
 	return feasible
 
 def searchNode(tree, vertex):
