@@ -60,6 +60,7 @@ class Node:
 		self.ancestor = None
 		self.descendants = None
 		self.setDescendands(descendants)
+		self.mirrorNode = None
 		'''
 		self.descendants = descendants
 		if(descendants is not None):
@@ -81,6 +82,9 @@ class Node:
 				self.descendants = descendants
 			else:
 				self.descendants = self.descendants + descendants
+
+	def setMirrorNode(self, mirror):
+		self.mirrorNode = mirror
 
 	def removeDescendants(self):
 		self.descendants = None
