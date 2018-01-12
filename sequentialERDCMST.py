@@ -53,7 +53,7 @@ lamb = 10
 
 class Node:
 	'''A tree'''
-	def __init__(self, descendants, id):
+	def __init__(self, descendants, id, facilitie):
 		self.id = id
 		self.f = 0
 		self.b = 0
@@ -61,6 +61,7 @@ class Node:
 		self.descendants = None
 		self.setDescendands(descendants)
 		self.mirrorNode = None
+		self.facilitie =  facilitie
 		'''
 		self.descendants = descendants
 		if(descendants is not None):
@@ -85,6 +86,8 @@ class Node:
 
 	def setMirrorNode(self, mirror):
 		self.mirrorNode = mirror
+		if mirror.mirrorNode is None:
+			mirror.setMirrorNode( self )
 
 	def removeDescendants(self):
 		self.descendants = None
@@ -202,7 +205,7 @@ def feasibleInsert(location, way, vertex, facilitie):
 				if facilitieId != facilitie:
 					disjointessFeasibility = D[vertex.id][facilitieId] != location.ancestor.id and disjointessFeasibility
 
-			feasible = (location.ancestor.f + C[location.ancestor.id][vertex.id]  + C[vertex.id][location.id] + location.b) <= lamb 
+			feasible = (location.ancestor.f + C[location.ancestor.id][vertex.id]  + C[vertex.id][location.id] + location.b) <= lamb \
 				and disjointessFeasibility
 
 	return feasible
@@ -338,38 +341,47 @@ def treeToList( tree ):
 			treeList = treeList + treeToList(descendant)
 	return treeList
 
+def insertNodesToList( clientsList, descendants ):
+	if descendants is not None:
+		for descendant in descendants:
+			clientsList.append( (descendant.facilitie ,descendant ) )
+
+
 def main():
 
 	global obj
 
 
-	node3 = Node( None, 3)
+	node3 = Node( None, 3, 0)
 	node3.setF(10)
 	node3.setB(0)
-	node2 = Node( [ node3 ], 2 )
+	node2 = Node( [ node3 ], 2, 0 )
 	node2.setF(5)
 	node2.setB(5)
-	node1 = Node( None, 1 )
+	node1 = Node( None, 1, 0 )
 	node1.setF(5)
 	node1.setB(0)
 
-	facilitie0 = 	Node( [ node1 , node2], 0)
+	facilitie0 = 	Node( [ node1 , node2], 0, 0)
 	facilitie0.setF(0)
 	facilitie0.setB(10)
 
-	node22 = Node( None, 2 )
+	node22 = Node( None, 2, 4 )
 	node22.setF(3)
 	node22.setB(0)
-	node33 = Node( None, 3 )
+	node33 = Node( None, 3, 4 )
 	node33.setF(11)
 	node33.setB(0)
-	node5 = Node( [ node33 ], 5 )
+	node5 = Node( [ node33 ], 5, 4 )
 	node5.setF( 5 )
 	node5.setB( 6 )
 
-	facilitie4 = Node( [ node22, node5 ], 4 )
+	facilitie4 = Node( [ node22, node5 ], 4, 4 )
 	facilitie4.setF(0)
 	facilitie4.setB(11)
+
+	node3.setMirrorNode( node33 )
+	node2.setMirrorNode( node22 )
 
 
 	forest = { 0 : facilitie0, 4 : facilitie4 }
@@ -435,9 +447,16 @@ def main():
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
+				#Re inserting affected nodes due to delete to the list  
+				if vertex.mirrorNode is not None:
+					list.append( ( vertex.mirrorNode.facilitie,vertex.mirrorNode ) )
+					insertNodesToList(list, vertex.mirrorNode.descendants) 
 				vertex.removeDescendants()
 				vertex.setAncestor(None)
 				insert(tree, bestLoc.id, bestWay, vertex)
+				#Re inserting affected nodes due to delete to the list  
+				if vertex.mirrorNode is not None:
+					insertNodesToList(list, vertex.mirrorNode.descendants) 
 			else:
 				insertByLocation(tree, vertex)
 			obj =  cost
