@@ -462,8 +462,10 @@ def main():
 			obj =  cost
 		list.remove(vertexTree)
 		forest[ selectedFacilitie ] = tree
-		print( "After Insert: ")
+		print( "After Insert: " )
 		tree.printTreeVerbose()
+		print( "List:{}".format( [ (x[0],x[1].id) for x in list] ) )
+		print( " " )
 
 
 main()
