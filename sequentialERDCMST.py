@@ -344,7 +344,7 @@ def treeToList( tree ):
 def insertNodesToList( clientsList, descendants ):
 	if descendants is not None:
 		for descendant in descendants:
-			clientsList.append( (descendant.facilitie ,descendant ) )
+			clientsList.add( (descendant.facilitie ,descendant ) )
 
 
 def main():
@@ -403,7 +403,7 @@ def main():
 	'''
 
 	associationFacilitiesClients = {0 : [1,2,3], 4 : [2,3,5]}
-	list = [ (0,node1), (0,node2), (0,node3), (4,node22), (4,node33), (4,node5)  ]
+	aliveNodes = { (0,node1), (0,node2), (0,node3), (4,node22), (4,node33), (4,node5)  }
 
 
 	'''
@@ -413,8 +413,8 @@ def main():
 	tree = 	Node( [ node1 , node2], 0)
 	'''
 
-	while list:
-		vertexTree = selectRandomlyFromList(list)
+	while aliveNodes:
+		vertexTree = aliveNodes.pop()
 		vertex = vertexTree[1]
 		selectedFacilitie = vertexTree[0]
 		tree = forest[ selectedFacilitie ]
@@ -447,24 +447,24 @@ def main():
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
-				#Re inserting affected nodes due to delete to the list  
+				#Re inserting affected nodes due to delete to the list of aliveNodes 
 				if vertex.mirrorNode is not None:
-					list.append( ( vertex.mirrorNode.facilitie,vertex.mirrorNode ) )
-					insertNodesToList(list, vertex.mirrorNode.descendants) 
+					aliveNodes.add( ( vertex.mirrorNode.facilitie, vertex.mirrorNode ) )
+					insertNodesToList(aliveNodes, vertex.mirrorNode.descendants) 
 				vertex.removeDescendants()
 				vertex.setAncestor(None)
 				insert(tree, bestLoc.id, bestWay, vertex)
-				#Re inserting affected nodes due to delete to the list  
+				#Re inserting affected nodes due to delete to the list  of aliveNodes 
 				if vertex.mirrorNode is not None:
-					insertNodesToList(list, vertex.mirrorNode.descendants) 
+					insertNodesToList(aliveNodes, vertex.mirrorNode.descendants) 
 			else:
 				insertByLocation(tree, vertex)
 			obj =  cost
-		list.remove(vertexTree)
+		aliveNodes.discard( vertexTree )
 		forest[ selectedFacilitie ] = tree
 		print( "After Insert: " )
 		tree.printTreeVerbose()
-		print( "List:{}".format( [ (x[0],x[1].id) for x in list] ) )
+		print( "List:{}".format( [ (x[0],x[1].id) for x in aliveNodes] ) )
 		print( " " )
 
 
