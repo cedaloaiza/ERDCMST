@@ -49,7 +49,7 @@ D = { 1:{
 
 obj = 29
 
-lamb = 10
+lamb = 11
 
 class Node:
 	'''A tree'''
@@ -346,6 +346,14 @@ def insertNodesToList( clientsList, descendants ):
 		for descendant in descendants:
 			clientsList.add( (descendant.facilitie ,descendant ) )
 
+def printLocation( location, way ):
+	msg = ""
+	if way == BREAKING_EDGE:
+		msg = "as ancestor "
+	elif way == FROM_NODE:
+		msg = "as descendant "
+	msg = msg + "of {}".format(location.id)
+	return msg 
 
 def main():
 
@@ -404,6 +412,7 @@ def main():
 
 	associationFacilitiesClients = {0 : [1,2,3], 4 : [2,3,5]}
 	aliveNodes = { (0,node1), (0,node2), (0,node3), (4,node22), (4,node33), (4,node5)  }
+	deadNodes = {}
 
 
 	'''
@@ -439,32 +448,45 @@ def main():
 				for way in insertWaysByLocation:
 					if( feasibleInsert(location, way, vertex, selectedFacilitie) ):
 						newCost = computeCost(location, way, vertex.id)
-						print( "obj " + str(obj) )
-						print( "cost " + str(cost) )
-						print( "newCost " + str(newCost) )
+						print( "obj after delete: {}".format( obj ) )
+						print( "cost before delete: {}".format( cost ) )
+						print( "newCost {}: {}".format( newCost, printLocation( location, way ) ) )
 						if( newCost < cost ):
 							cost = newCost
 							bestLoc = location
 							bestWay = way
 			if bestWay is not None:
-				#Re inserting affected nodes due to delete to the list of aliveNodes 
+				#Re inserting affected nodes of the "other" tree due to delete to the list of aliveNodes 
 				if vertex.mirrorNode is not None:
 					aliveNodes.add( ( vertex.mirrorNode.facilitie, vertex.mirrorNode ) )
 					insertNodesToList(aliveNodes, vertex.mirrorNode.descendants) 
 				vertex.removeDescendants()
 				vertex.setAncestor(None)
 				insert(tree, bestLoc.id, bestWay, vertex)
-				#Re inserting affected nodes due to delete to the list  of aliveNodes 
+				#Re inserting affected nodes of the "other" tree  due to delete to the list  of aliveNodes 
 				if vertex.mirrorNode is not None:
 					insertNodesToList(aliveNodes, vertex.mirrorNode.descendants) 
+				#Re inserting affected nodes of the "current" tree  due to delete to the list  of aliveNodes 
+				print( "dead nodes:{} ".format( deadNodes ) )
+				if selectedFacilitie in deadNodes:
+					print( "adding to aliveNodes:{}".format( [ ( x[0], x[1].id ) for x in deadNodes[selectedFacilitie] ] ) )
+					aliveNodes = aliveNodes.union( deadNodes[selectedFacilitie] )
 			else:
 				insertByLocation(tree, vertex)
 			obj =  cost
+		
 		aliveNodes.discard( vertexTree )
+		#Adds deleted nodes in a dictionary which classify them by facility
+		if selectedFacilitie in deadNodes:
+			deadNodes[selectedFacilitie].add( vertexTree )
+		else:
+			deadNodes[selectedFacilitie] = { vertexTree }
+
 		forest[ selectedFacilitie ] = tree
 		print( "After Insert: " )
 		tree.printTreeVerbose()
-		print( "List:{}".format( [ (x[0],x[1].id) for x in aliveNodes] ) )
+		print( "List of Alive Nodes:{}".format( [ ( x[0], x[1].id ) for x in aliveNodes] ) )
+		print( "List of Dead Nodes:{}".format( [ ( key, len( deadNodes[key] ) ) for key in deadNodes ] ) )
 		print( " " )
 
 
