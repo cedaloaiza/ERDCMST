@@ -73,7 +73,7 @@ public class RDCMSTVertexInputFormat extends
       Position[] positions = new Position[jsonDistances.length()];
       distances[0] = jsonDistances.getDouble(0);
       positions[0] = Position.SUCCESSOR;
-      for(int i = 1; i <= jsonDistances.length(); i++){
+      for(int i = 1; i < jsonDistances.length(); i++){
     	  distances[i] = jsonDistances.getDouble(i);
     	  positions[i] = pos;
       }

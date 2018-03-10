@@ -33,6 +33,10 @@ public class RDCMSTValue implements Writable{
 		this.predecessorId = predecessorId;
 		this.inList = inList;
 	}
+	
+	public RDCMSTValue() {
+
+	}
 
 
 	public void readFields(DataInput arg0) throws IOException {
