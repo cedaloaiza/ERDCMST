@@ -1,5 +1,6 @@
 package com.mycompany.app;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.google.common.collect.Iterables;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
@@ -17,6 +18,9 @@ public class ComputeDegree extends
     public void compute(Vertex<LongWritable, RDCMSTValue,
     		FloatWritable> vertex, Iterable<Text> iterable) throws IOException {
         if (getSuperstep() == 0){
+        	if( getBroadcast("selectedNodeId") == vertex.getId() ) {
+        		aggregate("selectedNode", vertex.getValue());
+        	}
             sendMessageToAllEdges(vertex, new Text());
         } else if (getSuperstep() == 1){
             Integer degree = Iterables.size(vertex.getEdges());
