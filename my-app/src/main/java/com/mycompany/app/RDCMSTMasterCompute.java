@@ -52,8 +52,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	public void initialize() throws InstantiationException, IllegalAccessException {
 
 		Random rand = new Random();
-		//DANGEROUS CAST!!!!
-		int  selectedNodeId = rand.nextInt((int) getTotalNumVertices()) + 1;
+		//How many vertices in superstep 0?
+		int  selectedNodeId = rand.nextInt(3) + 1;
 		
 		broadcast("selectedNodeId", new IntWritable(selectedNodeId));
 		
