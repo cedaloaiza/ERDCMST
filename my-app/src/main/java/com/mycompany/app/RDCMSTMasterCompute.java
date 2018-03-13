@@ -9,8 +9,14 @@ import java.util.Random;
 
 import org.apache.giraph.master.MasterCompute;
 import org.apache.giraph.utils.WritableUtils;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
+
+import aggregators.AddDeleteCostReduce;
+import aggregators.SelectedNodeAggregator;
 
 public class RDCMSTMasterCompute extends MasterCompute {
 	
@@ -30,20 +36,14 @@ public class RDCMSTMasterCompute extends MasterCompute {
 
 	@Override
 	public void compute() {
-		try {
-			if(getSuperstep() == 0) {
-				registerPersistentAggregator("selectedNode", SelectedNodeAggregator.class);
-			}else{
-				System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
+
+		if(getSuperstep() == 0) {
+			System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
+		}else{
+			MapWritable deleteCosts = getReduced("addDeleteCosts");
+			for(Writable dw: deleteCosts.values()){
+				System.out.println("Delete Costs:: " + dw);
 			}
-			
-			
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
 	}
@@ -56,6 +56,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		int  selectedNodeId = rand.nextInt(3) + 1;
 		
 		broadcast("selectedNodeId", new IntWritable(selectedNodeId));
+		registerPersistentAggregator("selectedNode", SelectedNodeAggregator.class);
+		registerReducer("addDeleteCosts", new AddDeleteCostReduce());
 		
 	}
 

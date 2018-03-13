@@ -1,6 +1,12 @@
-package com.mycompany.app;
+package aggregators;
 
 import org.apache.giraph.aggregators.BasicAggregator;
+import org.apache.giraph.graph.Vertex;
+import org.apache.hadoop.io.LongWritable;
+
+import com.mycompany.app.RDCMSTValue;
+
+import org.apache.hadoop.io.FloatWritable;;
 
 public class SelectedNodeAggregator extends BasicAggregator<RDCMSTValue> {
 

@@ -10,12 +10,17 @@ import org.apache.hadoop.io.Writable;
 
 public class RDCMSTValue implements Writable{
 	
+	//Id
+	private double id;
 	//The distance from this node to the faciltie
 	private double f;
 	//The distance from this node to the farthest leaf
 	private double b;
 	// Direct distance from this node to any other node in the graph .
 	private double[] distances;
+
+
+
 	// This node is; a predecessor, a successor, or none; of any node in the graph.
 	private Position[] positions;
 	// The Id of the unique predecessor of this node
@@ -48,6 +53,10 @@ public class RDCMSTValue implements Writable{
 	public void write(DataOutput arg0) throws IOException {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public double[] getDistances() {
+		return distances;
 	}
 
 }
