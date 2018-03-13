@@ -2,6 +2,8 @@ package com.mycompany.app;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.google.common.collect.Iterables;
+
+import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
@@ -15,26 +17,33 @@ import org.apache.hadoop.io.Text;
 
 import java.io.IOException;
 
-public class ComputeDegree extends
-        BasicComputation<LongWritable, RDCMSTValue,
+public class EdgeRemovalCompute extends
+        BasicComputation<IntWritable, RDCMSTValue,
         FloatWritable, Text> {
-    public void compute(Vertex<LongWritable, RDCMSTValue,
+   
+	public void compute(Vertex<IntWritable, RDCMSTValue,
     		FloatWritable> vertex, Iterable<Text> iterable) throws IOException {
-        if (getSuperstep() == 0){
-        	if( getBroadcast("selectedNodeId") == vertex.getId() ) {
-        		aggregate("selectedNode", vertex.getValue());
-        		MapWritable vertexSuccessors = new MapWritable();
-        		for(int i = 0; i < vertex.getValue().getDistances().length; i++){
-        			vertexSuccessors.put(new LongWritable(i), new DoubleWritable(vertex.getValue().getDistances()[i]));
-        		}
-        		reduce("addDeleteCosts", vertexSuccessors);
-        	}
-            sendMessageToAllEdges(vertex, new Text());
-        } else if (getSuperstep() == 1){
-            Integer degree = Iterables.size(vertex.getEdges());
-            //vertex.setValue(new LongWritable(degree));
-        }else{
-            vertex.voteToHalt();
-        }
+    	
+    	System.out.println("node:: " + vertex.getId());
+    	System.out.println("selectedNode:: " + getBroadcast("selectedNodeId"));
+    	boolean equal = vertex.getId().equals(getBroadcast("selectedNodeId"));
+    	System.out.println("are they equal:: " + equal );
+    	
+
+    	if(vertex.getId().equals(getBroadcast("selectedNodeId"))){
+    		System.out.println("b::: " + vertex.getValue().getB());
+    		System.out.println("Length Distances:: " + vertex.getValue().getDistances().length);
+    		System.out.println("PredID:: " + vertex.getValue().getPredecessorId());
+    		System.out.println(":: Computing node " + vertex.getId() );
+    		aggregate("selectedNode", vertex.getValue());
+    		MapWritable vertexSuccessors = new MapWritable();
+    		for(Edge<IntWritable, FloatWritable> edge: vertex.getEdges()){  			
+    			vertexSuccessors.put(edge.getTargetVertexId(), new DoubleWritable(vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
+    		}
+    		reduce("addDeleteCosts", vertexSuccessors);
+    	}
+    	
+        sendMessageToAllEdges(vertex, new Text());
+        
     }
 }

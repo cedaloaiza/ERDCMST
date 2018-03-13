@@ -7,6 +7,7 @@ import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexInputFormat;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -26,7 +27,7 @@ import java.util.List;
   *  specified in JSON format.
   */
 public class RDCMSTVertexInputFormat extends
-  TextVertexInputFormat<LongWritable, RDCMSTValue, FloatWritable> {
+  TextVertexInputFormat<IntWritable, RDCMSTValue, FloatWritable> {
 
   @Override
   public TextVertexReader createVertexReader(InputSplit split,
@@ -55,9 +56,9 @@ public class RDCMSTVertexInputFormat extends
     }
 
     @Override
-    protected LongWritable getId(JSONArray jsonVertex) throws JSONException,
+    protected IntWritable getId(JSONArray jsonVertex) throws JSONException,
               IOException {
-      return new LongWritable(jsonVertex.getLong(0));
+      return new IntWritable(jsonVertex.getInt(0));
     }
 
     @Override
@@ -73,33 +74,34 @@ public class RDCMSTVertexInputFormat extends
       Position[] positions = new Position[jsonDistances.length()];
       distances[0] = jsonDistances.getDouble(0);
       positions[0] = Position.SUCCESSOR;
+      System.out.println("Reading node:: " + jsonVertex.getInt(0));
+      System.out.println("distances array:: " + jsonDistances.length());
       for(int i = 1; i < jsonDistances.length(); i++){
     	  distances[i] = jsonDistances.getDouble(i);
     	  positions[i] = pos;
       }
-      return new RDCMSTValue(0, 0, distances, positions, 0, true);
+      return new RDCMSTValue(0, 1, distances, positions, 85, true);
     }
 
     @Override
-    protected Iterable<Edge<LongWritable, FloatWritable>> getEdges(
+    protected Iterable<Edge<IntWritable, FloatWritable>> getEdges(
         JSONArray jsonVertex) throws JSONException, IOException {
-      List<Edge<LongWritable, FloatWritable>> edges = Lists.newArrayList();
+      List<Edge<IntWritable, FloatWritable>> edges = Lists.newArrayList();
       boolean isTheRoot = !jsonVertex.isNull(2);
       if(isTheRoot){
 	      JSONArray jsonEdgeArray = jsonVertex.getJSONArray(2);
 	      edges = Lists.newArrayListWithCapacity(jsonEdgeArray.length());
 	      for (int i = 0; i < jsonEdgeArray.length(); ++i) {
-	        long successor = jsonEdgeArray.getLong(i);
-	        //DANGEROUS CAST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! BE CAREFUL
-	        edges.add(EdgeFactory.create(new LongWritable(successor),
-	            new FloatWritable((float) jsonVertex.getJSONArray(1).getDouble((int) successor))));
+	        int successor = jsonEdgeArray.getInt(i);
+	        edges.add(EdgeFactory.create(new IntWritable(successor),
+	            new FloatWritable((float) jsonVertex.getJSONArray(1).getDouble(successor))));
 	      }
       }  
       return edges;
     }
 
     @Override
-    protected Vertex<LongWritable, RDCMSTValue, FloatWritable> handleException(Text line, JSONArray jsonVertex, JSONException e) {
+    protected Vertex<IntWritable, RDCMSTValue, FloatWritable> handleException(Text line, JSONArray jsonVertex, JSONException e) {
       throw new IllegalArgumentException(
           "Couldn't get vertex from line " + line, e);
     }

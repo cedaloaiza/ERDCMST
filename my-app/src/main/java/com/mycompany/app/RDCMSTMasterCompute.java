@@ -36,14 +36,37 @@ public class RDCMSTMasterCompute extends MasterCompute {
 
 	@Override
 	public void compute() {
-
-		if(getSuperstep() == 0) {
-			System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
-		}else{
-			MapWritable deleteCosts = getReduced("addDeleteCosts");
-			for(Writable dw: deleteCosts.values()){
-				System.out.println("Delete Costs:: " + dw);
-			}
+		
+		
+		
+		int superStepsPerIteration = 5;
+		//DANGEROUS CAST!
+		int superStepPhase =  (int)getSuperstep() % superStepsPerIteration;
+		System.out.println("Master Compute phase:: " + superStepPhase);
+		
+		switch(superStepPhase){
+			case 0:
+				setComputation(EdgeRemovalCompute.class);
+				Random rand = new Random();
+				//How many vertices in superstep 0?
+				int  selectedNodeId = rand.nextInt(3) + 1;
+				System.out.println("Broadcasting:: " + selectedNodeId);
+				System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
+				broadcast("selectedNodeId", new IntWritable(selectedNodeId));
+				registerReducer("addDeleteCosts", new AddDeleteCostReduce());
+				break;
+			case 1:
+				//setComputation(EdgeInsertionCompute.class);
+				MapWritable deleteCosts = getReduced("addDeleteCosts");
+				for(Writable dw: deleteCosts.values()){
+					System.out.println("Delete Costs:: " + dw);
+				}
+				System.out.println("Halting:: ");
+				haltComputation();
+				break;
+			default:
+				;
+				
 		}
 		
 	}
@@ -51,13 +74,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	@Override
 	public void initialize() throws InstantiationException, IllegalAccessException {
 
-		Random rand = new Random();
-		//How many vertices in superstep 0?
-		int  selectedNodeId = rand.nextInt(3) + 1;
 		
-		broadcast("selectedNodeId", new IntWritable(selectedNodeId));
+		
 		registerPersistentAggregator("selectedNode", SelectedNodeAggregator.class);
-		registerReducer("addDeleteCosts", new AddDeleteCostReduce());
+		
 		
 	}
 
