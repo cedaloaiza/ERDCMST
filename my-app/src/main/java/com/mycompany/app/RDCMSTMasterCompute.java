@@ -17,6 +17,7 @@ import org.apache.hadoop.io.Writable;
 
 import aggregators.AddDeleteCostReduce;
 import aggregators.SelectedNodeAggregator;
+import aggregators.SumSuccessorDeleteCostsAggregator;
 
 public class RDCMSTMasterCompute extends MasterCompute {
 	
@@ -46,7 +47,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		switch(superStepPhase){
 			case 0:
-				setComputation(EdgeRemovalCompute.class);
+				setComputation(EdgeRemovalComputation.class);
 				Random rand = new Random();
 				//How many vertices in superstep 0?
 				int  selectedNodeId = rand.nextInt(3) + 1;
@@ -61,11 +62,11 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				for(Writable dw: deleteCosts.values()){
 					System.out.println("Delete Costs:: " + dw);
 				}
-				System.out.println("Halting:: ");
-				haltComputation();
+				setAggregatedValue("sumSuccessorsDeleteCosts", deleteCosts);
 				break;
 			default:
-				;
+				System.out.println("Halting:: ");
+				haltComputation();
 				
 		}
 		
@@ -77,6 +78,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		
 		registerPersistentAggregator("selectedNode", SelectedNodeAggregator.class);
+		registerPersistentAggregator("sumSuccessorsDeleteCosts", SumSuccessorDeleteCostsAggregator.class);
+		registerPersistentAggregator("newBs", SumSuccessorDeleteCostsAggregator.class);
 		
 		
 	}

@@ -6,7 +6,6 @@ import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexInputFormat;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -27,7 +26,7 @@ import java.util.List;
   *  specified in JSON format.
   */
 public class RDCMSTVertexInputFormat extends
-  TextVertexInputFormat<IntWritable, RDCMSTValue, FloatWritable> {
+  TextVertexInputFormat<IntWritable, RDCMSTValue, DoubleWritable> {
 
   @Override
   public TextVertexReader createVertexReader(InputSplit split,
@@ -84,9 +83,9 @@ public class RDCMSTVertexInputFormat extends
     }
 
     @Override
-    protected Iterable<Edge<IntWritable, FloatWritable>> getEdges(
+    protected Iterable<Edge<IntWritable, DoubleWritable>> getEdges(
         JSONArray jsonVertex) throws JSONException, IOException {
-      List<Edge<IntWritable, FloatWritable>> edges = Lists.newArrayList();
+      List<Edge<IntWritable, DoubleWritable>> edges = Lists.newArrayList();
       boolean isTheRoot = !jsonVertex.isNull(2);
       if(isTheRoot){
 	      JSONArray jsonEdgeArray = jsonVertex.getJSONArray(2);
@@ -94,14 +93,14 @@ public class RDCMSTVertexInputFormat extends
 	      for (int i = 0; i < jsonEdgeArray.length(); ++i) {
 	        int successor = jsonEdgeArray.getInt(i);
 	        edges.add(EdgeFactory.create(new IntWritable(successor),
-	            new FloatWritable((float) jsonVertex.getJSONArray(1).getDouble(successor))));
+	            new DoubleWritable( jsonVertex.getJSONArray(1).getDouble(successor))));
 	      }
       }  
       return edges;
     }
 
     @Override
-    protected Vertex<IntWritable, RDCMSTValue, FloatWritable> handleException(Text line, JSONArray jsonVertex, JSONException e) {
+    protected Vertex<IntWritable, RDCMSTValue, DoubleWritable> handleException(Text line, JSONArray jsonVertex, JSONException e) {
       throw new IllegalArgumentException(
           "Couldn't get vertex from line " + line, e);
     }

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableUtils;
 
 
 public class RDCMSTValue implements Writable{
@@ -22,6 +23,7 @@ public class RDCMSTValue implements Writable{
 	private ArrayPrimitiveWritable distances;
 	// This node is; a predecessor, a successor, or none; of any node in the graph.
 	private Position[] positions;
+
 	// The Id of the unique predecessor of this node
 	private int predecessorId;
 	//A flag that indicates if this node can be placed in a better location in the future.
@@ -42,8 +44,8 @@ public class RDCMSTValue implements Writable{
 		super();
 		this.f = 0;
 		this.b = 0;
-		this.distances = new ArrayPrimitiveWritable(new double[1]);;
-		this.positions = new Position[1];
+		this.distances = new ArrayPrimitiveWritable(new double[0]);;
+		this.positions = new Position[0];
 		this.predecessorId = 0;
 		this.inList = false;
 	}
@@ -61,18 +63,31 @@ public class RDCMSTValue implements Writable{
 	public int getPredecessorId() {
 		return predecessorId;
 	}
+	
+	public Position[] getPositions() {
+		return positions;
+	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
 		// TODO Auto-generated method stub
 		out.writeDouble(b);
 		distances.write(out);
+		out.writeInt(positions.length);
+		for(Position p : positions) {
+			WritableUtils.writeEnum(out, p);
+		}
 	}
 
 	@Override
 	public void readFields(DataInput in) throws IOException {
 		b = in.readDouble();
 		distances.readFields(in);
+		int positionsLength = in.readInt();
+		positions = new Position[positionsLength];
+		for(int i = 0; i < positionsLength; i++) {
+			positions[i] = WritableUtils.readEnum(in, Position.class);
+		}
 		
 	}
 

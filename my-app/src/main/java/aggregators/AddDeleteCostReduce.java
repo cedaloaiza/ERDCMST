@@ -9,7 +9,6 @@ import org.apache.giraph.aggregators.BasicAggregator;
 import org.apache.giraph.reducers.ReduceOperation;
 import org.apache.hadoop.io.MapWritable;
 
-import com.mycompany.app.DeleteCost;
 import com.mycompany.app.RDCMSTValue;
 
 public class AddDeleteCostReduce implements ReduceOperation<MapWritable, MapWritable> {
