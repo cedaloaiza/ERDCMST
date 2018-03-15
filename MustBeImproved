@@ -1,0 +1,3 @@
+To use one index for distances and positions.
+We are invoking broadcast several times in master compute to get selectedNodeId
+

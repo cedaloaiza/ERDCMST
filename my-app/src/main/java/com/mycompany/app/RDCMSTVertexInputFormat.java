@@ -79,7 +79,7 @@ public class RDCMSTVertexInputFormat extends
     	  distances[i] = jsonDistances.getDouble(i);
     	  positions[i] = pos;
       }
-      return new RDCMSTValue(0, 1, distances, positions, 85, true);
+      return new RDCMSTValue(0, 1, distances, positions, 85, true, jsonVertex.getInt(0));
     }
 
     @Override

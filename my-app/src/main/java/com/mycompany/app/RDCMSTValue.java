@@ -14,7 +14,7 @@ import org.apache.hadoop.io.WritableUtils;
 public class RDCMSTValue implements Writable{
 	
 	//Id
-	private double id;
+	private int id;
 	//The distance from this node to the faciltie
 	private double f;
 	//The distance from this node to the farthest leaf
@@ -31,13 +31,14 @@ public class RDCMSTValue implements Writable{
 	
 
 	public RDCMSTValue(double f, double b, double[] distances, Position[] positions,
-			int predecessorId, boolean inList) {
+			int predecessorId, boolean inList, int id) {
 		this.f = f;
 		this.b = b;
 		this.distances = new ArrayPrimitiveWritable(distances);
 		this.positions = positions;
 		this.predecessorId = predecessorId;
 		this.inList = inList;
+		this.id = id;
 	}
 	
 	public RDCMSTValue() {
@@ -67,6 +68,14 @@ public class RDCMSTValue implements Writable{
 	public Position[] getPositions() {
 		return positions;
 	}
+	
+	public int getId() {
+		return id;
+	}
+	
+	public void setB(double b) {
+		this.b = b;
+	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
@@ -77,6 +86,7 @@ public class RDCMSTValue implements Writable{
 		for(Position p : positions) {
 			WritableUtils.writeEnum(out, p);
 		}
+		out.writeInt(id);
 	}
 
 	@Override
@@ -88,6 +98,7 @@ public class RDCMSTValue implements Writable{
 		for(int i = 0; i < positionsLength; i++) {
 			positions[i] = WritableUtils.readEnum(in, Position.class);
 		}
+		id = in.readInt();
 		
 	}
 

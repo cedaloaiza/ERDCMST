@@ -6,7 +6,7 @@ import com.google.common.collect.Iterables;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.utils.ArrayWritable;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -22,15 +22,18 @@ import java.util.ArrayList;
 
 public class EdgeRemovalComputation extends
         BasicComputation<IntWritable, RDCMSTValue,
-        DoubleWritable, ArrayWritable<Writable>> {
+        DoubleWritable, MapWritable> {
    
 	public void compute(Vertex<IntWritable, RDCMSTValue,
-			DoubleWritable> vertex, Iterable<ArrayWritable<Writable>> messages) throws IOException {
+			DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException {
     	
     	System.out.println("node:: " + vertex.getId());
     	System.out.println("selectedNode:: " + getBroadcast("selectedNodeId"));
     	boolean equal = vertex.getId().equals(getBroadcast("selectedNodeId"));
     	System.out.println("are they equal:: " + equal );
+//    	
+//    	RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+//    	IntWritable selectedNodeId = new IntWritable(selectedNode.getId());
     	
     	IntWritable selectedNodeId = getBroadcast("selectedNodeId");
 
@@ -44,13 +47,11 @@ public class EdgeRemovalComputation extends
     		MapWritable vertexSuccessors = new MapWritable();
     		for(Edge<IntWritable, DoubleWritable> edge: vertex.getEdges()){  			
     			vertexSuccessors.put(edge.getTargetVertexId(), new DoubleWritable(-vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
+    			vertex.removeEdges(edge.getTargetVertexId());
     		}
-    		//Could be a problematic cast
-    		vertex.removeEdges((IntWritable) vertexSuccessors.keySet());
     		reduce("addDeleteCosts", vertexSuccessors);
     		//ArrayWritable<Writable> messageSuccesorsId = new ArrayWritable<Writable>();
     		//messageSuccesorsId.set((Writable[]) vertexSuccessors.keySet().toArray());
-    		vertex.removeEdges((IntWritable) vertexSuccessors.keySet());
     		removeEdgesRequest(new IntWritable(vertex.getValue().getPredecessorId()), vertex.getId());
     		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageSuccesorsId);
     	}

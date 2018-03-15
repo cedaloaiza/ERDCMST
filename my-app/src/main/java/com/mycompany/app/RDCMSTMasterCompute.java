@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.giraph.master.MasterCompute;
@@ -50,20 +51,25 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				setComputation(EdgeRemovalComputation.class);
 				Random rand = new Random();
 				//How many vertices in superstep 0?
-				int  selectedNodeId = rand.nextInt(3) + 1;
-				System.out.println("Broadcasting:: " + selectedNodeId);
+				int  selectedNodeId = rand.nextInt(3) + 1;	
 				System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
+				System.out.println("Broadcasting:: " + selectedNodeId);
 				broadcast("selectedNodeId", new IntWritable(selectedNodeId));
 				registerReducer("addDeleteCosts", new AddDeleteCostReduce());
 				break;
 			case 1:
-				//setComputation(EdgeInsertionCompute.class);
+				setComputation(EdgeInsertionComputation.class);
 				MapWritable deleteCosts = getReduced("addDeleteCosts");
 				for(Writable dw: deleteCosts.values()){
 					System.out.println("Delete Costs:: " + dw);
 				}
 				setAggregatedValue("sumSuccessorsDeleteCosts", deleteCosts);
 				break;
+			case 2:
+				double longestBranchLength = getLongestBranchLength();
+				RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+				PredecessorsDeleteCost predecessorsDeleteCost = new PredecessorsDeleteCost(selectedNode.getPredecessorId(), longestBranchLength);
+				broadcast("predecessorsDeleteCost", predecessorsDeleteCost);
 			default:
 				System.out.println("Halting:: ");
 				haltComputation();
@@ -78,10 +84,23 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		
 		registerPersistentAggregator("selectedNode", SelectedNodeAggregator.class);
+		//The cost which is necessary to update the values of f the successors branches of the selected node.
+		//<K,V> K: Id of the one of selected node's child; V: Cost necessary to update the values of f in K branch of the selected node.
 		registerPersistentAggregator("sumSuccessorsDeleteCosts", SumSuccessorDeleteCostsAggregator.class);
 		registerPersistentAggregator("newBs", SumSuccessorDeleteCostsAggregator.class);
 		
-		
+	}
+	
+	public double getLongestBranchLength(){
+		MapWritable branchLengths = getAggregatedValue("newBs");
+		double largestBranchLength = 0;
+		for(Writable branch: branchLengths.keySet()){
+			DoubleWritable currentLength = (DoubleWritable) branchLengths.get(branch);
+			if(currentLength.get() > largestBranchLength){
+				largestBranchLength = currentLength.get();
+			}
+		}
+		return largestBranchLength;
 	}
 
 }
