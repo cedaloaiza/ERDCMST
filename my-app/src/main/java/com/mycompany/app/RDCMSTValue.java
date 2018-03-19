@@ -15,7 +15,7 @@ public class RDCMSTValue implements Writable{
 	
 	//Id
 	private int id;
-	//The distance from this node to the faciltie
+	//The distance from this node to the facility
 	private double f;
 	//The distance from this node to the farthest leaf
 	private double b;

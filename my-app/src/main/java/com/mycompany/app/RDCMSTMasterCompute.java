@@ -47,6 +47,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		System.out.println("Master Compute phase:: " + superStepPhase);
 		
 		switch(superStepPhase){
+			//Node selection
 			case 0:
 				setComputation(EdgeRemovalComputation.class);
 				Random rand = new Random();
@@ -87,10 +88,19 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		//The cost which is necessary to update the values of f the successors branches of the selected node.
 		//<K,V> K: Id of the one of selected node's child; V: Cost necessary to update the values of f in K branch of the selected node.
 		registerPersistentAggregator("sumSuccessorsDeleteCosts", SumSuccessorDeleteCostsAggregator.class);
+		//New variable to decide which of the new branches, created after the removing node removal, 
+		//drive now to the farthest leaf.
 		registerPersistentAggregator("newBs", SumSuccessorDeleteCostsAggregator.class);
 		
 	}
 	
+	/**
+	 *  This value is computed as the maximum value in the newBs map, and will become
+	 *  the new b value of the predecessor of the removing node,
+	 *  which means that every predecessor of the removing node will have the chance of update
+	 *  its own value from this value.
+	 * @return
+	 */
 	public double getLongestBranchLength(){
 		MapWritable branchLengths = getAggregatedValue("newBs");
 		double largestBranchLength = 0;

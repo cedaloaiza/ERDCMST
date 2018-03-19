@@ -8,6 +8,21 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 
+/**
+ * Update b and f after the delete.
+   Compute the cost of inserting from node.
+   Send messages to complete information
+
+   In this point, we have enough information to update the b and f values of every node in the graph.
+   Depending on the node, it updates its state in one way or another. 
+   If the node was a predecessor of the removing node, it has to update its b value with predecessorsDeleteCost,
+   only in the case where it does not have a different branch with a farther leaf.
+   If the node was a successor of  the removing node, it has to update its f value according to
+   the value in aggrtrAddDeleteCosts  which matches with the branch where the node is.
+   If the node is neither a predecessor nor a successor of the removing node, nothing happens. 
+ * @author cdlq1
+ *
+ */
 public class BFsUpdateAndBestLocationBeginningComputation extends BasicComputation
 	<IntWritable, RDCMSTValue,
 	DoubleWritable, MapWritable> {

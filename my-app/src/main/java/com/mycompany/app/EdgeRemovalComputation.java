@@ -20,6 +20,12 @@ import org.apache.hadoop.io.Writable;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * The removing node makes a delete request for all its edges as well as the edge that point it from its predecessor. 
+ * Subsequently, the removing node stores in aggrtrAddDeleteCosts the cost of removing each one of its edges.
+ * @author cdlq1
+ *
+ */
 public class EdgeRemovalComputation extends
         BasicComputation<IntWritable, RDCMSTValue,
         DoubleWritable, MapWritable> {

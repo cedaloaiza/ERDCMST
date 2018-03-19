@@ -11,6 +11,14 @@ import org.apache.hadoop.io.MapWritable;
 
 import com.mycompany.app.RDCMSTValue;
 
+/**
+ * The map was designed to store the necessary values to update the b values of the different branches, 
+ * which are born from the removing node across many superstep. 
+ * However, this particular aggregator is only useful to add to the map, the initial values, 
+ * which correspond to the deleting operations costs. 
+ * @author cdlq1
+ *
+ */
 public class AddDeleteCostReduce implements ReduceOperation<MapWritable, MapWritable> {
 	
 	public AddDeleteCostReduce(){

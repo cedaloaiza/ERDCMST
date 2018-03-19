@@ -13,7 +13,18 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-
+/**
+ * Now the predecessor of the removing node has the required information
+ * to compute the costs of the entire delete operation. 
+ * We already have the costs of removing edges, now we need to compute the cost of adding the edges 
+ * between the removing node predecessor and the removing node successors. 
+ * These costs must be aggregated by a sum in both aggrtrAddDeleteCosts and newBs. 
+ * At the same time, the corresponding adding edges requests have to be sent. 
+ * Afterward, The b values of all the successors of the removing node have to be aggregated in newBs. 
+ * Finally, All the predecessors of removing node send b value to their own predecessors.
+ * @author cdlq1
+ *
+ */
 public class EdgeInsertionComputation extends BasicComputation
 		<IntWritable, RDCMSTValue,
 		DoubleWritable, MapWritable> {
