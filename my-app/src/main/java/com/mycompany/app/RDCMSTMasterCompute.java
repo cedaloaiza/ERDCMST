@@ -17,6 +17,7 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
 
 import aggregators.AddDeleteCostReduce;
+import aggregators.BestLocationAggregator;
 import aggregators.SelectedNodeAggregator;
 import aggregators.SumSuccessorDeleteCostsAggregator;
 
@@ -47,8 +48,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		System.out.println("Master Compute phase:: " + superStepPhase);
 		
 		switch(superStepPhase){
-			//Node selection
+			//**DELETE OPERATION
 			case 0:
+				//Node selection
 				setComputation(EdgeRemovalComputation.class);
 				Random rand = new Random();
 				//How many vertices in superstep 0?
@@ -66,11 +68,19 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				}
 				setAggregatedValue("sumSuccessorsDeleteCosts", deleteCosts);
 				break;
+			//**BEST LOCATION OPERATION
+		    //For each node there are two possible ways of inserting a node:
+			//1) directly as a leaf successor of the node, we called this FROM NODE WAY; and 
+			//2) as a predecessor of the node, breaking the existing edge between the old predecessor and it, we called this BREAKING EDGE WAY.
 			case 2:
+				setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
 				double longestBranchLength = getLongestBranchLength();
 				RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
 				PredecessorsDeleteCost predecessorsDeleteCost = new PredecessorsDeleteCost(selectedNode.getPredecessorId(), longestBranchLength);
 				broadcast("predecessorsDeleteCost", predecessorsDeleteCost);
+			case 3:
+				setComputation(BestLocationEndingComputation.class);
+				
 			default:
 				System.out.println("Halting:: ");
 				haltComputation();
@@ -92,6 +102,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		//drive now to the farthest leaf.
 		registerPersistentAggregator("newBs", SumSuccessorDeleteCostsAggregator.class);
 		
+		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
 	}
 	
 	/**
