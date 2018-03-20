@@ -86,6 +86,10 @@ public class RDCMSTValue implements Writable{
 		return f;
 	}
 	
+	public void setF(double f) {
+		this.f = f;
+	}
+	
 	public double getPartialBestLocationCost() {
 		return partialBestLocationCost;
 	}

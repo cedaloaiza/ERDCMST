@@ -39,6 +39,14 @@ public class Location implements Writable {
 		return cost;
 	}
 	
+	public int getNodeId() {
+		return nodeId;
+	}
+	
+	public Way getWay() {
+		return way;
+	}
+
 	@Override
 	public void write(DataOutput out) throws IOException {
 		out.writeInt(nodeId);

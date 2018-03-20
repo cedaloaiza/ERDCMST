@@ -17,6 +17,9 @@ import org.apache.hadoop.io.Text;
 	to insert FROM NODE or BREAKING EDGE. This partial best location has to be aggregated.
     The arePredsAffected flag only can be False if FROM NODE WAY is chosen and the weight of the new edge is greater than the length
     of the other paths that are born from the vId.  
+    
+    Finally, the b value of each node is sent to their respective predecessor.
+
  * @author cesardlq
  *
  */
@@ -26,7 +29,14 @@ public class BestLocationEndingComputation extends BasicComputation
 	
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException { 
-		MapWritable message = messages.iterator().next();
+		
+		MapWritable receivedMessage = messages.iterator().next();
+		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+		computecCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);
+		
+		MapWritable messageToSend =   new MapWritable();
+		messageToSend.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
+		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageToSend);
 		
 	}
 	
