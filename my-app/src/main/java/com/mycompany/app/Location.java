@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
+
+import com.sun.jersey.api.json.JSONConfiguration.Notation;
 /**
  * Define a location where a node can be inserted
  * @author cesardlq
@@ -31,7 +33,10 @@ public class Location implements Writable {
 	}
 	
 	public Location() {
-		this.cost = 1000;
+		this.nodeId = -1;
+		this.cost = Double.POSITIVE_INFINITY;
+		this.way = Way.FROM_NODE;
+		this.arePredecessorsAffected = false;
 		
 	}
 	

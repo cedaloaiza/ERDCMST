@@ -80,7 +80,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				broadcast("predecessorsDeleteCost", predecessorsDeleteCost);
 			case 3:
 				setComputation(BestLocationEndingComputation.class);
-				
+			case 4:
+				setComputation(insertOperationAndBFsUpdate.class);
 			default:
 				System.out.println("Halting:: ");
 				haltComputation();
