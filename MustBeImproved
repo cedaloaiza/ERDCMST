@@ -1,3 +1,4 @@
-To use one index for distances and positions.
-We are invoking broadcast several times in master compute to get selectedNodeId
-In superstep 2, sendBreakingEdgeInfo, distance from vertex to target vertex, could be aggregated inmediatly
+*To use one index for distances and positions.
+*We are invoking broadcast several times in master compute to get selectedNodeId
+*In superstep 2, sendBreakingEdgeInfo, distance from vertex to target vertex, could be aggregated inmediatly
+*We have to deal with nodes that are neither successors, nor predecessors but both
