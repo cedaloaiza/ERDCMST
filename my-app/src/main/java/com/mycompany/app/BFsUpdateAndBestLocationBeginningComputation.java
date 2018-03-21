@@ -24,6 +24,9 @@ public class BFsUpdateAndBestLocationBeginningComputation extends BasicComputati
 
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException {
+		
+		vertex.getValue().print();
+		
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
 		MapWritable message = messages.iterator().next();
 		

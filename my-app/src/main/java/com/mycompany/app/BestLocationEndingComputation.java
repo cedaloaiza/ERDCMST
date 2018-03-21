@@ -30,6 +30,8 @@ public class BestLocationEndingComputation extends BasicComputation
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException { 
 		
+		vertex.getValue().print();
+		
 		MapWritable receivedMessage = messages.iterator().next();
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
 		computecCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);

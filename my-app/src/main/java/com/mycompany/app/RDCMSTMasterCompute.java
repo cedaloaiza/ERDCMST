@@ -45,11 +45,12 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		int superStepsPerIteration = 5;
 		//DANGEROUS CAST!
 		int superStepPhase =  (int)getSuperstep() % superStepsPerIteration;
-		System.out.println("Master Compute phase:: " + superStepPhase);
+		System.out.println("***** Computation " +  superStepPhase + " *****");
 		
 		switch(superStepPhase){
 			//**DELETE OPERATION
 			case 0:
+				
 				//Node selection
 				setComputation(EdgeRemovalComputation.class);
 				Random rand = new Random();
@@ -78,10 +79,13 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
 				PredecessorsDeleteCost predecessorsDeleteCost = new PredecessorsDeleteCost(selectedNode.getPredecessorId(), longestBranchLength);
 				broadcast("predecessorsDeleteCost", predecessorsDeleteCost);
+				break;
 			case 3:
 				setComputation(BestLocationEndingComputation.class);
+				break;
 			case 4:
 				setComputation(insertOperationAndBFsUpdate.class);
+				break;
 			default:
 				System.out.println("Halting:: ");
 				haltComputation();

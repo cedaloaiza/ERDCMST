@@ -15,6 +15,8 @@ public class insertOperationAndBFsUpdate extends BasicComputation
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException { 
 		
+		vertex.getValue().print();
+		
 		MapWritable receivedMessage = messages.iterator().next();
 		IntWritable succesorId = (IntWritable) receivedMessage.keySet().iterator().next();
 		DoubleWritable succesorB = (DoubleWritable) receivedMessage.get(succesorId);

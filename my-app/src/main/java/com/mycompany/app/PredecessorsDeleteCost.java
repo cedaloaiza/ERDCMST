@@ -29,11 +29,16 @@ public class PredecessorsDeleteCost implements Writable {
 	public double getPredeccesorsCost() {
 		return predeccesorsCost;
 	}
+	
+	public PredecessorsDeleteCost() {
+		predeccesorSelectedNodeId = -1;
+		predeccesorsCost = Double.MAX_VALUE;
+	}
 
 	public PredecessorsDeleteCost(int predeccesorSelectedNodeId, double predeccesorsCost) {
 		this.predeccesorSelectedNodeId = predeccesorSelectedNodeId;
 		this.predeccesorsCost = predeccesorsCost;
-		// TODO Auto-generated constructor stub
+
 	}
 	
 	@Override

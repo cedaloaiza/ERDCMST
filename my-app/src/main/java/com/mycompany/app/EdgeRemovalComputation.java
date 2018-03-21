@@ -32,6 +32,8 @@ public class EdgeRemovalComputation extends
    
 	public void compute(Vertex<IntWritable, RDCMSTValue,
 			DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException {
+		
+		vertex.getValue().print();
     	
     	System.out.println("node:: " + vertex.getId());
     	System.out.println("selectedNode:: " + getBroadcast("selectedNodeId"));

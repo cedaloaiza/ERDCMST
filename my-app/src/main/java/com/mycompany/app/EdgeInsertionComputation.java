@@ -32,6 +32,8 @@ public class EdgeInsertionComputation extends BasicComputation
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException {
 		
+		vertex.getValue().print();
+		
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
     	IntWritable selectedNodeId = new IntWritable(selectedNode.getId());
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");

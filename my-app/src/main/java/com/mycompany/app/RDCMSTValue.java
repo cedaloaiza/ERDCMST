@@ -98,6 +98,17 @@ public class RDCMSTValue implements Writable{
 	public void setPartialBestLocationCost(double partialBestLocationCost) {
 		this.partialBestLocationCost = partialBestLocationCost;
 	}
+	
+	public void print() {
+		System.out.println("***NODE " + this.id + "***");
+		System.out.println("f: " + this.f);
+		System.out.println("b: " + this.b);
+		System.out.println("positions: " );	
+		for(Position pos: positions) {
+			System.out.println("\t" + pos);
+		}
+			
+	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
