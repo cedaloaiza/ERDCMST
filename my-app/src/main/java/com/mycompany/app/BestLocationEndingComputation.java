@@ -32,9 +32,15 @@ public class BestLocationEndingComputation extends BasicComputation
 		
 		vertex.getValue().print();
 		
-		MapWritable receivedMessage = messages.iterator().next();
+		
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
-		computecCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);
+		if(messages.iterator().hasNext()){
+			MapWritable receivedMessage = messages.iterator().next();
+			Location partialBestLocation = computecCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);
+			if(partialBestLocation != null){
+				aggregate("bestLocation", partialBestLocation);
+			}
+		}
 		
 		MapWritable messageToSend =   new MapWritable();
 		messageToSend.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
@@ -47,14 +53,15 @@ public class BestLocationEndingComputation extends BasicComputation
 	 * @param vertex
 	 * @param selectedNode
 	 */
-	public void computecCostInsertingBreakingEdge(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode, MapWritable message) {
+	public Location computecCostInsertingBreakingEdge(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode, MapWritable message) {
 		DoubleWritable predecessorF = (DoubleWritable) message.get(new Text("F"));
 		DoubleWritable predecessorToSelectedNode = (DoubleWritable) message.get(new Text("TO_SELEC"));
 		DoubleWritable selectedNodeToHere = (DoubleWritable) message.get(new Text("TO_SUCC"));
+		Location partialBestLocation = null;
 		//feasible insert
 		boolean feasibleInsert = (predecessorF.get() + predecessorToSelectedNode.get()  + selectedNodeToHere.get() + vertex.getValue().getB()) <= 10;
 		if(feasibleInsert){
-			Location partialBestLocation;
+			
 			double costBE =  vertex.getValue().getDistances()[selectedNode.getId()] + selectedNodeToHere.get() - selectedNodeToHere.get();
 			double costFN = vertex.getValue().getPartialBestLocationCost();
 			if(costBE < costFN) {
@@ -63,8 +70,10 @@ public class BestLocationEndingComputation extends BasicComputation
 				boolean arePredsAffected = vertex.getValue().getF() + costFN > vertex.getValue().getB();
 				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costFN, arePredsAffected);
 			}
-			aggregate("bestLocation", partialBestLocation);
+			
 		}
+		
+		return partialBestLocation;
 		
 	}
 

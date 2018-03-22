@@ -5,7 +5,8 @@
 -op ../exampleOut \
 -w 1 \
 -mc com.mycompany.app.RDCMSTMasterCompute \
--ca giraph.SplitMasterWorker=false 
+-ca giraph.SplitMasterWorker=false \
+-ca giraph.logLevel=ERROR
 
 /home/cesardlq/Hadoop/giraph-1.2.0-hadoop2-for-hadoop-2.5.1/bin/giraph target/my-app-1.0-SNAPSHOT.jar com.mycompany.app.EdgeRemovalComputation  \
 -vif com.mycompany.app.RDCMSTVertexInputFormat \
@@ -14,4 +15,5 @@
 -op ../exampleOut \
 -w 1 \
 -mc com.mycompany.app.RDCMSTMasterCompute \
--ca giraph.SplitMasterWorker=false 
+-ca giraph.SplitMasterWorker=false \
+-ca giraph.logLevel=ERROR
