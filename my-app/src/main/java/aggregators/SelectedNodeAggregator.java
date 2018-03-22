@@ -4,7 +4,7 @@ import org.apache.giraph.aggregators.BasicAggregator;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.LongWritable;
 
-import com.mycompany.app.RDCMSTValue;
+import edu.icesi.app.RDCMSTValue;
 
 import org.apache.hadoop.io.FloatWritable;;
 

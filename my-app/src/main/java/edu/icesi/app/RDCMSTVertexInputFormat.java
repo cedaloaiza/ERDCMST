@@ -1,4 +1,4 @@
-package com.mycompany.app;
+package edu.icesi.app;
 
 
 import org.apache.giraph.edge.Edge;

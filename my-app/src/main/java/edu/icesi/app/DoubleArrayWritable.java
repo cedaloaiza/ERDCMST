@@ -1,4 +1,4 @@
-package com.mycompany.app;
+package edu.icesi.app;
 
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.DoubleWritable;

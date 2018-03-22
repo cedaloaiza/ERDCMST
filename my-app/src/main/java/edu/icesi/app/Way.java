@@ -1,4 +1,4 @@
-package com.mycompany.app;
+package edu.icesi.app;
 
 public enum Way {
 	FROM_NODE, BREAKING_EDGE

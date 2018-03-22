@@ -2,7 +2,7 @@ package aggregators;
 
 import org.apache.giraph.aggregators.BasicAggregator;
 
-import com.mycompany.app.Location;
+import edu.icesi.app.Location;
 
 /**
  * To get best location

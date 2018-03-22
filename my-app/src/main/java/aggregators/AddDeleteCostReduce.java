@@ -9,7 +9,7 @@ import org.apache.giraph.aggregators.BasicAggregator;
 import org.apache.giraph.reducers.ReduceOperation;
 import org.apache.hadoop.io.MapWritable;
 
-import com.mycompany.app.RDCMSTValue;
+import edu.icesi.app.RDCMSTValue;
 
 /**
  * The map was designed to store the necessary values to update the b values of the different branches, 

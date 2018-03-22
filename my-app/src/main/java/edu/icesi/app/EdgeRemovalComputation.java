@@ -1,4 +1,4 @@
-package com.mycompany.app;
+package edu.icesi.app;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.google.common.collect.Iterables;
