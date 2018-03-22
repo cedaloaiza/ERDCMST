@@ -1,4 +1,4 @@
-package com.mycompany.app;
+package edu.icesi.app;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
