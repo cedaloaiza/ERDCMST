@@ -9,6 +9,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 /**
  * Update b and f after the delete.
@@ -28,9 +29,9 @@ public class BFsUpdateAndBestLocationBeginningComputation extends BasicComputati
 		vertex.getValue().print();
 		
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
-		MapWritable message = messages.iterator().next();
 		
-		updateBnFs(vertex, selectedNode, message);
+		
+		updateBnFs(vertex, selectedNode, messages);
 		computecCostInsertingFromNode(vertex, selectedNode);
 		sendBreakingEdgeInfo(vertex, selectedNode);
 	}
@@ -49,18 +50,36 @@ public class BFsUpdateAndBestLocationBeginningComputation extends BasicComputati
 	 * @param message
 	 */
 	public void updateBnFs(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode,
-			MapWritable message){
+			Iterable<MapWritable> messages){
 		
-		IntWritable succesorId = (IntWritable) message.keySet().iterator().next();
-		DoubleWritable succesorB = (DoubleWritable) message.get(succesorId);
-		PredecessorsDeleteCost predecessorsDeleteCost = getBroadcast("predecessorsDeleteCost");
+		if(messages.iterator().hasNext()){	
+			
+			MapWritable message = messages.iterator().next();
 		
-		if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR ){
-			double newPossibleLongestPath = succesorB.get() + predecessorsDeleteCost.getPredeccesorsCost() + 
-					vertex.getValue().getDistances()[succesorId.get()];
-			if( newPossibleLongestPath > vertex.getValue().getB() ){				
-				double newB = vertex.getValue().getB() + predecessorsDeleteCost.getPredeccesorsCost();
-				vertex.getValue().setB(newB);
+			IntWritable succesorId = (IntWritable) message.keySet().iterator().next();
+			DoubleWritable succesorB = (DoubleWritable) message.get(succesorId);
+			PredecessorsDeleteCost predecessorsDeleteCost = getBroadcast("predecessorsDeleteCost");
+			
+			if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR ){
+				double newPossibleLongestPath = succesorB.get() + predecessorsDeleteCost.getPredeccesorsCost() + 
+						vertex.getValue().getDistances()[succesorId.get()];
+				if( newPossibleLongestPath > vertex.getValue().getB() ){				
+					double newB = vertex.getValue().getB() + predecessorsDeleteCost.getPredeccesorsCost();
+					vertex.getValue().setB(newB);
+				}
+			}
+		}
+		
+		if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR ){
+			MapWritable deleteCostForSuccessors = getAggregatedValue("sumSuccessorsDeleteCosts");
+			for(Writable branchId: deleteCostForSuccessors.keySet()) {
+				IntWritable branchIdInt = (IntWritable) branchId;
+				//This vertex is in branchId
+				if(vertex.getValue().getPositions()[branchIdInt.get()] == Position.SUCCESSOR){
+					IntWritable branchCost = (IntWritable) deleteCostForSuccessors.get(branchId);
+					double newF = vertex.getValue().getF() + branchCost.get();
+					vertex.getValue().setF(newF);
+				}
 			}
 		}
 	}

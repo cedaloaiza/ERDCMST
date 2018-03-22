@@ -38,7 +38,7 @@ public class EdgeInsertionComputation extends BasicComputation
     	IntWritable selectedNodeId = new IntWritable(selectedNode.getId());
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");
 		
-    	if(vertex.getId().equals(selectedNodeId)){
+    	if(vertex.getId().get() == selectedNode.getPredecessorId()){
     		MapWritable newDeleteCosts = new MapWritable();
     		MapWritable successorsDeleteCosts = getAggregatedValue("sumSuccessorsDeleteCosts");
     		for(Writable branchId: successorsDeleteCosts.keySet()) {
