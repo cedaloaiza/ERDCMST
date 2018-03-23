@@ -85,6 +85,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				break;
 			case 4:
 				setComputation(insertOperationAndBFsUpdate.class);
+				System.out.println("Halting:: ");
+				haltComputation();
 				break;
 			default:
 				System.out.println("Halting:: ");

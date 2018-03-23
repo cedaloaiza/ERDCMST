@@ -17,21 +17,29 @@ public class insertOperationAndBFsUpdate extends BasicComputation
 		
 		vertex.getValue().print();
 		
-		MapWritable receivedMessage = messages.iterator().next();
-		IntWritable succesorId = (IntWritable) receivedMessage.keySet().iterator().next();
-		DoubleWritable succesorB = (DoubleWritable) receivedMessage.get(succesorId);
+		
 		Location bestLocation = getAggregatedValue("bestLocation");
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
 		
-		if(vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR){
-			double newPossibleLongestPath = succesorB.get() + bestLocation.getCost() + 
-					vertex.getValue().getDistances()[succesorId.get()];
-			if( newPossibleLongestPath > vertex.getValue().getB() ){				
-				double newB = vertex.getValue().getB() + bestLocation.getCost();
-				vertex.getValue().setB(newB);
+		
+		if(messages.iterator().hasNext()){
+			
+			MapWritable receivedMessage = messages.iterator().next();
+			IntWritable succesorId = (IntWritable) receivedMessage.keySet().iterator().next();
+			DoubleWritable succesorB = (DoubleWritable) receivedMessage.get(succesorId);
+			
+			if(vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR){
+				double newPossibleLongestPath = succesorB.get() + bestLocation.getCost() + 
+						vertex.getValue().getDistances()[succesorId.get()];
+				if( newPossibleLongestPath > vertex.getValue().getB() ){				
+					double newB = vertex.getValue().getB() + bestLocation.getCost();
+					vertex.getValue().setB(newB);
+				}
+				vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
 			}
-			vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
-		}else if(vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.SUCCESSOR){
+		}
+		
+		if(vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.SUCCESSOR){
 			if(bestLocation.getWay() == Way.FROM_NODE){
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
 			}else if(bestLocation.getWay() == Way.BREAKING_EDGE){
