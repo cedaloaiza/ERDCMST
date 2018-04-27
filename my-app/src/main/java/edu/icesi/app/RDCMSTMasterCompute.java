@@ -78,10 +78,11 @@ public class RDCMSTMasterCompute extends MasterCompute {
 			//2) as a predecessor of the node, breaking the existing edge between the old predecessor and it, we called this BREAKING EDGE WAY.
 			case 2:
 				setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
-				double longestBranchLength = getLongestBranchLength();
-				RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
-				PredecessorsDeleteCost predecessorsDeleteCost = new PredecessorsDeleteCost(selectedNode.getPredecessorId(), longestBranchLength);
-				broadcast("predecessorsDeleteCost", predecessorsDeleteCost);
+				DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
+				broadcast("bestPossibleNewBDirPred", longestBranchLength);
+				/**
+				 * TODO
+				 */
 				break;
 			case 3:
 				setComputation(BestLocationEndingComputation.class);
@@ -116,14 +117,14 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	}
 	
 	/**
-	 *  This value is computed as the maximum value in the newBs map, and will become
+	 *  This value is computed as the maximum value in the possibleNewBsDirPred map, and will become
 	 *  the new b value of the predecessor of the removing node,
 	 *  which means that every predecessor of the removing node will have the chance of update
 	 *  its own value from this value.
 	 * @return
 	 */
 	public double getLongestBranchLength(){
-		MapWritable branchLengths = getAggregatedValue("newBs");
+		MapWritable branchLengths = getAggregatedValue("possibleNewBsDirPred");
 		double largestBranchLength = 0;
 		for(Writable branch: branchLengths.keySet()){
 			DoubleWritable currentLength = (DoubleWritable) branchLengths.get(branch);

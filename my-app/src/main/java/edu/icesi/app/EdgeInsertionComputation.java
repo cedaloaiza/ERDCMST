@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
+import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.ArrayWritable;
@@ -25,9 +26,9 @@ import org.apache.hadoop.io.Writable;
  * @author cdlq1
  *
  */
-public class EdgeInsertionComputation extends BasicComputation
-		<IntWritable, RDCMSTValue,
-		DoubleWritable, MapWritable> {
+public class EdgeInsertionComputation extends AbstractComputation<IntWritable, RDCMSTValue,
+		DoubleWritable, MapWritable, DoubleWritable>
+		 {
 
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException {
@@ -62,12 +63,12 @@ public class EdgeInsertionComputation extends BasicComputation
     		System.out.println("b Value:: " + vertex.getValue().getB());
     		//DoubleWritable[] vertexBValue = new DoubleWritable[]{new DoubleWritable(vertex.getValue().getB())};
     		//DoubleArrayWritable writableVertexBValue = new DoubleArrayWritable();
-    		MapWritable writableVertexBValue = new MapWritable();
-    		writableVertexBValue.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
+//    		MapWritable writableVertexBValue = new MapWritable();
+//    		writableVertexBValue.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
     		DoubleWritable distanceFromPred = (DoubleWritable)messages.iterator().next().get("DIST");
     		DoubleWritable newPossibleB = new DoubleWritable(vertex.getValue().getB() + distanceFromPred.get());
     		//writableVertexBValue.set(vertexBValue);
-    		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  writableVertexBValue);
+    		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  newPossibleB);
     	}
     	
 		

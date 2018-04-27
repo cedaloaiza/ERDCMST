@@ -13,6 +13,7 @@ import org.apache.hadoop.io.Writable;
  * @author cdloaiza
  *
  */
+@Deprecated
 public class PredecessorsDeleteCost implements Writable {
 	
 	//The cost which is necessary to update the values of b in the predecessors of the selected node. 

@@ -3,6 +3,7 @@ package edu.icesi.app;
 import java.io.IOException;
 
 import org.apache.giraph.edge.Edge;
+import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.DoubleWritable;
@@ -19,12 +20,12 @@ import org.apache.hadoop.io.Writable;
  * @author cdlq1
  *
  */
-public class BFsUpdateAndBestLocationBeginningComputation extends BasicComputation
+public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComputation
 	<IntWritable, RDCMSTValue,
-	DoubleWritable, MapWritable> {
+	DoubleWritable, DoubleWritable, MapWritable> {
 
 	@Override
-	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException {
+	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<DoubleWritable> messages) throws IOException {
 		
 		vertex.getValue().print();
 		
@@ -50,27 +51,32 @@ public class BFsUpdateAndBestLocationBeginningComputation extends BasicComputati
 	 * @param message
 	 */
 	public void updateBnFs(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode,
-			Iterable<MapWritable> messages){
+			Iterable<DoubleWritable> messages){
 		
-		if(messages.iterator().hasNext()){	
-			
-			MapWritable message = messages.iterator().next();
-		
-			IntWritable succesorId = (IntWritable) message.keySet().iterator().next();
-			DoubleWritable succesorB = (DoubleWritable) message.get(succesorId);
-			PredecessorsDeleteCost predecessorsDeleteCost = getBroadcast("predecessorsDeleteCost");
-			
-			if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR ){
-				double newPossibleLongestPath = succesorB.get() + predecessorsDeleteCost.getPredeccesorsCost() + 
-						vertex.getValue().getDistances()[succesorId.get()];
-				if( newPossibleLongestPath > vertex.getValue().getB() ){				
-					double newB = vertex.getValue().getB() + predecessorsDeleteCost.getPredeccesorsCost();
-					vertex.getValue().setB(newB);
-				}
-			}
+		double maxPossibbleB = 0;
+		for (DoubleWritable message : messages) {
+			maxPossibbleB = Math.max(maxPossibbleB, message.get());
 		}
+	
 		
-		if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR ){
+	
+//		IntWritable succesorId = (IntWritable) message.keySet().iterator().next();
+//		DoubleWritable succesorB = (DoubleWritable) message.get(succesorId);
+		DoubleWritable bestPossibleNewBDirPred = getBroadcast("bestPossibleNewBDirPred");
+		
+		if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR ){
+			if(vertex.getId().equals(selectedNode.getPredecessorId())){
+				if(maxPossibbleB > bestPossibleNewBDirPred.get()){
+					vertex.getValue().setB(maxPossibbleB);
+				}else{
+					vertex.getValue().setB(bestPossibleNewBDirPred.get());
+				}
+			}else{
+				/*
+				 * TODO
+				 */
+			}
+		}else if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR ){
 			MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
 			for(Writable branchId: deleteCostForSuccessors.keySet()) {
 				IntWritable branchIdInt = (IntWritable) branchId;
