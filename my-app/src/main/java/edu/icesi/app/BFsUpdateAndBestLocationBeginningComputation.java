@@ -71,7 +71,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends BasicComputati
 		}
 		
 		if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR ){
-			MapWritable deleteCostForSuccessors = getAggregatedValue("sumSuccessorsDeleteCosts");
+			MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
 			for(Writable branchId: deleteCostForSuccessors.keySet()) {
 				IntWritable branchIdInt = (IntWritable) branchId;
 				//This vertex is in branchId

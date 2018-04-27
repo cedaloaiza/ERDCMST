@@ -54,20 +54,23 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				//Node selection
 				setComputation(EdgeRemovalComputation.class);
 				Random rand = new Random();
-				//How many vertices in superstep 0?
+				System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int)getTotalNumVertices());
 				int  selectedNodeId = rand.nextInt(3) + 1;	
-				System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
+				//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
 				System.out.println("Broadcasting:: " + selectedNodeId);
 				broadcast("selectedNodeId", new IntWritable(selectedNodeId));
-				registerReducer("addDeleteCosts", new AddDeleteCostReduce());
+				//
+				registerReducer("addDeleteCostForSuccessors", new AddDeleteCostReduce());
 				break;
 			case 1:
 				setComputation(EdgeInsertionComputation.class);
-				MapWritable deleteCosts = getReduced("addDeleteCosts");
+				MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
+				MapWritable possibleNewBsDirPred = new MapWritable();
 				for(Writable dw: deleteCosts.values()){
 					System.out.println("Delete Costs:: " + dw);
+					possibleNewBsDirPred.put(dw, new IntWritable(0));
 				}
-				setAggregatedValue("sumSuccessorsDeleteCosts", deleteCosts);
+				setAggregatedValue("sumDeleteCostForSuccessors", deleteCosts);
 				break;
 			//**BEST LOCATION OPERATION
 		    //For each node there are two possible ways of inserting a node:
@@ -104,10 +107,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		registerPersistentAggregator("selectedNode", SelectedNodeAggregator.class);
 		//The cost which is necessary to update the values of f the successors branches of the selected node.
 		//<K,V> K: Id of the one of selected node's child; V: Cost necessary to update the values of f in K branch of the selected node.
-		registerPersistentAggregator("sumSuccessorsDeleteCosts", SumSuccessorDeleteCostsAggregator.class);
+		registerPersistentAggregator("sumDeleteCostForSuccessors", SumSuccessorDeleteCostsAggregator.class);
 		//New variable to decide which of the new branches, created after the removing node removal, 
 		//drive now to the farthest leaf.
-		registerPersistentAggregator("newBs", SumSuccessorDeleteCostsAggregator.class);
+		registerPersistentAggregator("possibleNewBsDirPred", SumSuccessorDeleteCostsAggregator.class);
 		
 		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
 	}

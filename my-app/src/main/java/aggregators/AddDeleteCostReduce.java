@@ -12,10 +12,11 @@ import org.apache.hadoop.io.MapWritable;
 import edu.icesi.app.RDCMSTValue;
 
 /**
- * The map was designed to store the necessary values to update the b values of the different branches, 
- * which are born from the removing node across many superstep. 
- * However, this particular aggregator is only useful to add to the map, the initial values, 
- * which correspond to the deleting operations costs. 
+ * The value of this ReduceOperation was designed to store the necessary values to update the f values of the different branches that 
+ * are born from the selected node after the Delete Operation. 
+ * However, this particular ReduceOperation is only useful to add to the map, the initial values, 
+ * which correspond to the costs of the edge removal phase. Later, the costs of the edge insertion phase will be added and we will consolidate the costs of 
+ * the complete Delete Operation. 
  * @author cdlq1
  *
  */

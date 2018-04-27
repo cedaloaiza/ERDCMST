@@ -57,11 +57,15 @@ public class EdgeRemovalComputation extends
     			vertexSuccessors.put(edge.getTargetVertexId(), new DoubleWritable(-vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
     			vertex.removeEdges(edge.getTargetVertexId());
     		}
-    		reduce("addDeleteCosts", vertexSuccessors);
+    		reduce("addDeleteCostForSuccessors", vertexSuccessors);
     		//ArrayWritable<Writable> messageSuccesorsId = new ArrayWritable<Writable>();
     		//messageSuccesorsId.set((Writable[]) vertexSuccessors.keySet().toArray());
     		removeEdgesRequest(new IntWritable(vertex.getValue().getPredecessorId()), vertex.getId());
     		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageSuccesorsId);
+    	} else if(vertex.getValue().getPositions()[selectedNodeId.get()].equals(Position.PREDECESSOR)){
+    		/*
+    		 * TODO
+    		 */
     	}
     	
     	

@@ -39,26 +39,33 @@ public class EdgeInsertionComputation extends BasicComputation
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");
 		
     	if(vertex.getId().get() == selectedNode.getPredecessorId()){
-    		MapWritable newDeleteCosts = new MapWritable();
-    		MapWritable successorsDeleteCosts = getAggregatedValue("sumSuccessorsDeleteCosts");
+    		MapWritable possibleNewBsDirPred = new MapWritable();
+    		MapWritable successorsDeleteCosts = getAggregatedValue("sumDeleteCostForSuccessors");
     		for(Writable branchId: successorsDeleteCosts.keySet()) {
     			IntWritable branchIdInt = (IntWritable) branchId;
     			double distanceTo = vertex.getValue().getDistances()[branchIdInt.get()]; 
-    			newDeleteCosts.put(branchId, new DoubleWritable(distanceTo));			
+    			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceTo));			
     			vertex.addEdge(EdgeFactory.create(branchIdInt, new DoubleWritable(distanceTo)));
     		}
-    		aggregate("sumSuccessorsDeleteCosts", newDeleteCosts);
-    		aggregate("newBs", newDeleteCosts);
-    	}else if(vertex.getValue().getPositions()[selectedNodeId.get()] == Position.SUCCESSOR){
+    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
+    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
+    	}else if(vertex.getValue().getPredecessorId() == selectedNodeId.get() ){ //It is a direct successor
     		MapWritable bVal = new MapWritable();
     		bVal.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
-    		aggregate("newBs", bVal);
+    		aggregate("possibleNewBsDirPred", bVal);
     	}else if(vertex.getValue().getPositions()[selectedNodeId.get()] == Position.PREDECESSOR){ 
+    		/*
+    		 * TODO
+    		 */
+    		
+    	}else if(messages.iterator().hasNext()){
     		System.out.println("b Value:: " + vertex.getValue().getB());
     		//DoubleWritable[] vertexBValue = new DoubleWritable[]{new DoubleWritable(vertex.getValue().getB())};
     		//DoubleArrayWritable writableVertexBValue = new DoubleArrayWritable();
     		MapWritable writableVertexBValue = new MapWritable();
     		writableVertexBValue.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
+    		DoubleWritable distanceFromPred = (DoubleWritable)messages.iterator().next().get("DIST");
+    		DoubleWritable newPossibleB = new DoubleWritable(vertex.getValue().getB() + distanceFromPred.get());
     		//writableVertexBValue.set(vertexBValue);
     		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  writableVertexBValue);
     	}
