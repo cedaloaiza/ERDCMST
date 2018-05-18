@@ -2,6 +2,7 @@ package edu.icesi.app;
 
 import java.io.IOException;
 
+import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.DoubleWritable;
@@ -23,28 +24,30 @@ import org.apache.hadoop.io.Text;
  * @author cesardlq
  *
  */
-public class BestLocationEndingComputation extends BasicComputation
-	<IntWritable, RDCMSTValue,
-	DoubleWritable, MapWritable> {
-	
+public class BestLocationEndingComputation extends AbstractComputation
+		<IntWritable, RDCMSTValue, DoubleWritable, MapWritable, IntWritable> { 
+    
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException { 
 		
 		vertex.getValue().print();
-		
-		
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+		
+		if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+			/* TODO
+			 * 
+			 */
+		}
+		
 		if(messages.iterator().hasNext()){
 			MapWritable receivedMessage = messages.iterator().next();
-			Location partialBestLocation = computecCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);
+			Location partialBestLocation = computeCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);
 			if(partialBestLocation != null){
 				aggregate("bestLocation", partialBestLocation);
 			}
 		}
 		
-		MapWritable messageToSend =   new MapWritable();
-		messageToSend.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
-		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageToSend);
+		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), vertex.getId());
 		
 	}
 	
@@ -53,24 +56,21 @@ public class BestLocationEndingComputation extends BasicComputation
 	 * @param vertex
 	 * @param selectedNode
 	 */
-	public Location computecCostInsertingBreakingEdge(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode, MapWritable message) {
+	public Location computeCostInsertingBreakingEdge(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode, MapWritable message) {
 		DoubleWritable predecessorF = (DoubleWritable) message.get(new Text("F"));
 		DoubleWritable predecessorToSelectedNode = (DoubleWritable) message.get(new Text("TO_SELEC"));
 		DoubleWritable selectedNodeToHere = (DoubleWritable) message.get(new Text("TO_SUCC"));
 		Location partialBestLocation = null;
 		//feasible insert
 		boolean feasibleInsert = (predecessorF.get() + predecessorToSelectedNode.get()  + selectedNodeToHere.get() + vertex.getValue().getB()) <= 10;
-		if(feasibleInsert){
-			
+		if (feasibleInsert) {	
 			double costBE =  vertex.getValue().getDistances()[selectedNode.getId()] + selectedNodeToHere.get() - selectedNodeToHere.get();
 			double costFN = vertex.getValue().getPartialBestLocationCost();
-			if(costBE < costFN) {
-				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE, true);
-			}else {
-				boolean arePredsAffected = vertex.getValue().getF() + costFN > vertex.getValue().getB();
-				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costFN, arePredsAffected);
-			}
-			
+			if (costBE < costFN) {
+				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE);
+			} else {
+				partialBestLocation = new Location(vertex.getId().get(), Way.FROM_NODE, costFN);
+			}	
 		}
 		
 		return partialBestLocation;

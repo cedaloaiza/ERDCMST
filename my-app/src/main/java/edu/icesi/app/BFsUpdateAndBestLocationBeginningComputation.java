@@ -21,8 +21,7 @@ import org.apache.hadoop.io.Writable;
  *
  */
 public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComputation
-	<IntWritable, RDCMSTValue,
-	DoubleWritable, DoubleWritable, MapWritable> {
+		<IntWritable, RDCMSTValue, DoubleWritable, DoubleWritable, MapWritable> {
 
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<DoubleWritable> messages) throws IOException {
@@ -64,24 +63,24 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 //		DoubleWritable succesorB = (DoubleWritable) message.get(succesorId);
 		DoubleWritable bestPossibleNewBDirPred = getBroadcast("bestPossibleNewBDirPred");
 		
-		if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR ){
-			if(vertex.getId().equals(selectedNode.getPredecessorId())){
-				if(maxPossibbleB > bestPossibleNewBDirPred.get()){
+		if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+			if (vertex.getId().equals(selectedNode.getPredecessorId())) {
+				if (maxPossibbleB > bestPossibleNewBDirPred.get()) {
 					vertex.getValue().setB(maxPossibbleB);
-				}else{
+				} else {
 					vertex.getValue().setB(bestPossibleNewBDirPred.get());
 				}
-			}else{
+			} else {
 				/*
 				 * TODO
 				 */
 			}
-		}else if(vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR ){
+		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR) {
 			MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
-			for(Writable branchId: deleteCostForSuccessors.keySet()) {
+			for (Writable branchId : deleteCostForSuccessors.keySet()) {
 				IntWritable branchIdInt = (IntWritable) branchId;
 				//This vertex is in branchId
-				if(vertex.getValue().getPositions()[branchIdInt.get()] == Position.SUCCESSOR){
+				if (vertex.getValue().getPositions()[branchIdInt.get()] == Position.SUCCESSOR) {
 					IntWritable branchCost = (IntWritable) deleteCostForSuccessors.get(branchId);
 					double newF = vertex.getValue().getF() + branchCost.get();
 					vertex.getValue().setF(newF);

@@ -10,10 +10,10 @@ import org.apache.hadoop.io.MapWritable;
 
 public class insertOperationAndBFsUpdate extends BasicComputation
 	<IntWritable, RDCMSTValue,
-	DoubleWritable, MapWritable> {
+	DoubleWritable, IntWritable> {
 	
 	@Override
-	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException { 
+	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<IntWritable> messages) throws IOException { 
 		
 		vertex.getValue().print();
 		
@@ -21,33 +21,43 @@ public class insertOperationAndBFsUpdate extends BasicComputation
 		Location bestLocation = getAggregatedValue("bestLocation");
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
 		
-		
-		if(messages.iterator().hasNext()){
-			
-			MapWritable receivedMessage = messages.iterator().next();
-			IntWritable succesorId = (IntWritable) receivedMessage.keySet().iterator().next();
-			DoubleWritable succesorB = (DoubleWritable) receivedMessage.get(succesorId);
-			
-			if(vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR){
-				double newPossibleLongestPath = succesorB.get() + bestLocation.getCost() + 
-						vertex.getValue().getDistances()[succesorId.get()];
-				if( newPossibleLongestPath > vertex.getValue().getB() ){				
-					double newB = vertex.getValue().getB() + bestLocation.getCost();
-					vertex.getValue().setB(newB);
-				}
-				vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
+		if (vertex.getId().get() == selectedNode.getId()) {
+			if (bestLocation.getWay() == Way.FROM_NODE) {
+				/*
+				 * TODO 
+				 */
+			} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
+				/*
+				 * TODO
+				 */
 			}
-		}
-		
-		if(vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.SUCCESSOR){
-			if(bestLocation.getWay() == Way.FROM_NODE){
+		} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR) {
+			if (messages.iterator().hasNext()) {
+				IntWritable succesorId = messages.iterator().next();
+				/*
+				 * TODO
+				 */
+				vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
+				
+			}
+		} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.SUCCESSOR) {
+			if (bestLocation.getWay() == Way.FROM_NODE) {
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
-			}else if(bestLocation.getWay() == Way.BREAKING_EDGE){
+			} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
 				double newF = vertex.getValue().getF() + bestLocation.getCost();
 				vertex.getValue().setF(newF);
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.SUCCESSOR;
+				selectedNode.getPositions()[vertex.getId().get()] = Position.PREDECESSOR;
 			}
+		} else if (vertex.getId().get() == bestLocation.getNodeId() && bestLocation.getWay() == Way.FROM_NODE) {
+			/*
+			 * TODO
+			 */
 		}
+		
+		
+		
+		
 
 	}
 }

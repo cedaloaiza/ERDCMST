@@ -85,6 +85,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				 */
 				break;
 			case 3:
+				computeBValues();
 				setComputation(BestLocationEndingComputation.class);
 				break;
 			case 4:
@@ -99,6 +100,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		}
 		
 	}
+
 
 	@Override
 	public void initialize() throws InstantiationException, IllegalAccessException {
@@ -133,6 +135,14 @@ public class RDCMSTMasterCompute extends MasterCompute {
 			}
 		}
 		return largestBranchLength;
+	}
+	
+	/**
+	 * Compute B values for all predecessors of the selected node
+	 */
+	private void computeBValues() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
