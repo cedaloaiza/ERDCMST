@@ -44,7 +44,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		int superStepsPerIteration = 5;
 		//DANGEROUS CAST!
-		int superStepPhase =  (int)getSuperstep() % superStepsPerIteration;
+		int superStepPhase =  (int) getSuperstep() % superStepsPerIteration;
 		System.out.println("***** Computation " +  superStepPhase + " *****");
 		
 		switch(superStepPhase){
@@ -54,7 +54,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				//Node selection
 				setComputation(EdgeRemovalComputation.class);
 				Random rand = new Random();
-				System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int)getTotalNumVertices());
+				System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int) getTotalNumVertices());
 				int  selectedNodeId = rand.nextInt(3) + 1;	
 				//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
 				System.out.println("Broadcasting:: " + selectedNodeId);
@@ -66,7 +66,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				setComputation(EdgeInsertionComputation.class);
 				MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
 				MapWritable possibleNewBsDirPred = new MapWritable();
-				for(Writable dw: deleteCosts.values()){
+				for (Writable dw: deleteCosts.values()) {
 					System.out.println("Delete Costs:: " + dw);
 					possibleNewBsDirPred.put(dw, new IntWritable(0));
 				}
@@ -123,12 +123,12 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	 *  its own value from this value.
 	 * @return
 	 */
-	public double getLongestBranchLength(){
+	public double getLongestBranchLength() {
 		MapWritable branchLengths = getAggregatedValue("possibleNewBsDirPred");
 		double largestBranchLength = 0;
-		for(Writable branch: branchLengths.keySet()){
+		for (Writable branch: branchLengths.keySet()) {
 			DoubleWritable currentLength = (DoubleWritable) branchLengths.get(branch);
-			if(currentLength.get() > largestBranchLength){
+			if (currentLength.get() > largestBranchLength) {
 				largestBranchLength = currentLength.get();
 			}
 		}
