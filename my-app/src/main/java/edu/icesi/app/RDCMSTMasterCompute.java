@@ -24,6 +24,9 @@ import aggregators.SumSuccessorDeleteCostsAggregator;
 public class RDCMSTMasterCompute extends MasterCompute {
 	
 	private ArrayList<Integer> list;
+	private int SUPER_STEPS_PER_ITERATION = 5;
+	private int iteration = 0;
+	private int MAX_ITERARIONS = 5;
 
 	@Override
 	public void readFields(DataInput arg0) throws IOException {
@@ -42,61 +45,63 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		
 		
-		int superStepsPerIteration = 5;
+		
 		//DANGEROUS CAST!
-		int superStepPhase =  (int) getSuperstep() % superStepsPerIteration;
+		int superStepPhase =  (int) getSuperstep() % SUPER_STEPS_PER_ITERATION;
 		System.out.println("***** Computation " +  superStepPhase + " *****");
 		
-		switch(superStepPhase){
-			//**DELETE OPERATION
-			case 0:
-				
-				//Node selection
-				setComputation(EdgeRemovalComputation.class);
-				Random rand = new Random();
-				System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int) getTotalNumVertices());
-				int  selectedNodeId = rand.nextInt(3) + 1;	
-				//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
-				System.out.println("Broadcasting:: " + selectedNodeId);
-				broadcast("selectedNodeId", new IntWritable(selectedNodeId));
-				//
-				registerReducer("addDeleteCostForSuccessors", new AddDeleteCostReduce());
-				break;
-			case 1:
-				setComputation(EdgeInsertionComputation.class);
-				MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
-				MapWritable possibleNewBsDirPred = new MapWritable();
-				for (Writable dw: deleteCosts.values()) {
-					System.out.println("Delete Costs:: " + dw);
-					possibleNewBsDirPred.put(dw, new IntWritable(0));
-				}
-				setAggregatedValue("sumDeleteCostForSuccessors", deleteCosts);
-				break;
-			//**BEST LOCATION OPERATION
-		    //For each node there are two possible ways of inserting a node:
-			//1) directly as a leaf successor of the node, we called this FROM NODE WAY; and 
-			//2) as a predecessor of the node, breaking the existing edge between the old predecessor and it, we called this BREAKING EDGE WAY.
-			case 2:
-				setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
-				DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
-				broadcast("bestPossibleNewBDirPred", longestBranchLength);
-				/**
-				 * TODO
-				 */
-				break;
-			case 3:
-				computeBValues();
-				setComputation(BestLocationEndingComputation.class);
-				break;
-			case 4:
-				setComputation(insertOperationAndBFsUpdate.class);
-				System.out.println("Halting:: ");
-				haltComputation();
-				break;
-			default:
-				System.out.println("Halting:: ");
-				haltComputation();
-				
+		if (iteration < MAX_ITERARIONS) {		
+			switch (superStepPhase) {
+				//**DELETE OPERATION
+				case 0:					
+					//Node selection
+					setComputation(EdgeRemovalComputation.class);
+					Random rand = new Random();
+					System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int) getTotalNumVertices());
+					int  selectedNodeId = rand.nextInt(3) + 1;	
+					//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
+					System.out.println("Broadcasting:: " + selectedNodeId);
+					broadcast("selectedNodeId", new IntWritable(selectedNodeId));
+					//
+					registerReducer("addDeleteCostForSuccessors", new AddDeleteCostReduce());
+					break;
+				case 1:
+					setComputation(EdgeInsertionComputation.class);
+					MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
+					MapWritable possibleNewBsDirPred = new MapWritable();
+					for (Writable dw: deleteCosts.values()) {
+						System.out.println("Delete Costs:: " + dw);
+						possibleNewBsDirPred.put(dw, new IntWritable(0));
+					}
+					setAggregatedValue("sumDeleteCostForSuccessors", deleteCosts);
+					break;
+				//**BEST LOCATION OPERATION
+			    //For each node there are two possible ways of inserting a node:
+				//1) directly as a leaf successor of the node, we called this FROM NODE WAY; and 
+				//2) as a predecessor of the node, breaking the existing edge between the old predecessor and it, we called this BREAKING EDGE WAY.
+				case 2:
+					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
+					DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
+					broadcast("bestPossibleNewBDirPred", longestBranchLength);
+					/**
+					 * TODO
+					 */
+					break;
+				case 3:
+					computeBValues();
+					setComputation(BestLocationEndingComputation.class);
+					break;
+				case 4:
+					setComputation(insertOperationAndBFsUpdate.class);
+					break;
+				default:
+					
+					
+			}
+			iteration++;
+		} else {
+			System.out.println("Halting:: ");
+			haltComputation();
 		}
 		
 	}
