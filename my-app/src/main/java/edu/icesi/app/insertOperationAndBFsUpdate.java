@@ -2,6 +2,7 @@ package edu.icesi.app;
 
 import java.io.IOException;
 
+import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.DoubleWritable;
@@ -30,6 +31,7 @@ public class insertOperationAndBFsUpdate extends BasicComputation
 				/*
 				 * TODO
 				 */
+				vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(5)));
 			}
 		} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR) {
 			if (messages.iterator().hasNext()) {
@@ -38,7 +40,10 @@ public class insertOperationAndBFsUpdate extends BasicComputation
 				 * TODO
 				 */
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
-				
+			}
+			if (vertex.getId().get() == bestLocation.getPredecessorId()){
+				vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(5)));
+				vertex.removeEdges(new IntWritable(bestLocation.getNodeId()));
 			}
 		} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.SUCCESSOR) {
 			if (bestLocation.getWay() == Way.FROM_NODE) {
@@ -53,6 +58,7 @@ public class insertOperationAndBFsUpdate extends BasicComputation
 			/*
 			 * TODO
 			 */
+			vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(5)));
 		}
 		
 		

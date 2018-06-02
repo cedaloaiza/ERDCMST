@@ -67,9 +67,9 @@ public class BestLocationEndingComputation extends AbstractComputation
 			double costBE =  vertex.getValue().getDistances()[selectedNode.getId()] + selectedNodeToHere.get() - selectedNodeToHere.get();
 			double costFN = vertex.getValue().getPartialBestLocationCost();
 			if (costBE < costFN) {
-				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE);
+				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE, vertex.getValue().getPredecessorId());
 			} else {
-				partialBestLocation = new Location(vertex.getId().get(), Way.FROM_NODE, costFN);
+				partialBestLocation = new Location(vertex.getId().get(), Way.FROM_NODE, costFN, vertex.getValue().getPredecessorId());
 			}	
 		}
 		
