@@ -5,10 +5,13 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.apache.giraph.utils.ArrayWritable;
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
+
+import edu.icesi.app.PositionWritable.Position;
 
 
 public class RDCMSTValue implements Writable{
@@ -22,7 +25,7 @@ public class RDCMSTValue implements Writable{
 	// Direct distance from this node to any other node in the graph .
 	private ArrayPrimitiveWritable distances;
 	// This node is; a predecessor, a successor, or none; of any node in the graph.
-	private Position[] positions;
+	private ArrayWritable<PositionWritable> positions;
 	// The Id of the unique predecessor of this node
 	private int predecessorId;
 	//A flag that indicates if this node can be placed in a better location in the future.
@@ -118,10 +121,7 @@ public class RDCMSTValue implements Writable{
 	public void write(DataOutput out) throws IOException {
 		out.writeDouble(b);
 		distances.write(out);
-		out.writeInt(positions.length);
-		for(Position p : positions) {
-			WritableUtils.writeEnum(out, p);
-		}
+		positions.write(out);
 		out.writeInt(id);
 	}
 
