@@ -99,6 +99,10 @@ public class RDCMSTValue implements Writable{
 		this.partialBestLocationCost = partialBestLocationCost;
 	}
 	
+	public void setPositions(Position[] positions) {
+		this.positions = positions;
+	}
+	
 	public void print() {
 		System.out.println("***NODE " + this.id + "***");
 		System.out.println("f: " + this.f);

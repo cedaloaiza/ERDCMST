@@ -18,6 +18,7 @@ import org.apache.hadoop.io.Writable;
 
 import aggregators.AddDeleteCostReduce;
 import aggregators.BestLocationAggregator;
+import aggregators.ArrayPrimitiveOverwriteAggregator;
 import aggregators.SelectedNodeAggregator;
 import aggregators.SumSuccessorDeleteCostsAggregator;
 
@@ -121,6 +122,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		registerPersistentAggregator("possibleNewBsDirPred", SumSuccessorDeleteCostsAggregator.class);
 		
 		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
+		
+		registerPersistentAggregator("bestLocationPositions", ArrayPrimitiveOverwriteAggregator.class);
 	}
 	
 	/**

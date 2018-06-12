@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.google.common.collect.Iterables;
 
 import org.apache.giraph.edge.Edge;
+import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.ArrayWritable;
@@ -27,13 +28,19 @@ import java.util.ArrayList;
  *
  */
 public class EdgeRemovalComputation extends
-        BasicComputation<IntWritable, RDCMSTValue,
-        DoubleWritable, MapWritable> {
+        AbstractComputation<IntWritable, RDCMSTValue,
+        DoubleWritable, IntWritable, MapWritable> {
    
 	public void compute(Vertex<IntWritable, RDCMSTValue,
-			DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException {
+			DoubleWritable> vertex, Iterable<IntWritable> messages) throws IOException {
 		
 		vertex.getValue().print();
+		
+		//Completing the previous movement
+		if (getSuperstep() != 0 ) {
+			
+			
+		}
     	
     	System.out.println("node:: " + vertex.getId());
     	System.out.println("selectedNode:: " + getBroadcast("selectedNodeId"));
@@ -45,7 +52,7 @@ public class EdgeRemovalComputation extends
     	
     	IntWritable selectedNodeId = getBroadcast("selectedNodeId");
 
-    	if(vertex.getId().equals(selectedNodeId)){
+    	if (vertex.getId().equals(selectedNodeId)) {
     		System.out.println("b::: " + vertex.getValue().getB());
     		System.out.println("Length Distances:: " + vertex.getValue().getDistances().length);
     		System.out.println("PredID:: " + vertex.getValue().getPredecessorId());
@@ -53,7 +60,7 @@ public class EdgeRemovalComputation extends
     		aggregate("selectedNode", vertex.getValue());
    
     		MapWritable vertexSuccessors = new MapWritable();
-    		for(Edge<IntWritable, DoubleWritable> edge: vertex.getEdges()){  			
+    		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  			
     			vertexSuccessors.put(edge.getTargetVertexId(), new DoubleWritable(-vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
     			vertex.removeEdges(edge.getTargetVertexId());
     		}
@@ -62,7 +69,7 @@ public class EdgeRemovalComputation extends
     		//messageSuccesorsId.set((Writable[]) vertexSuccessors.keySet().toArray());
     		removeEdgesRequest(new IntWritable(vertex.getValue().getPredecessorId()), vertex.getId());
     		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageSuccesorsId);
-    	} else if(vertex.getValue().getPositions()[selectedNodeId.get()].equals(Position.PREDECESSOR)){
+    	} else if (vertex.getValue().getPositions()[selectedNodeId.get()].equals(Position.PREDECESSOR)) {
     		/*
     		 * TODO
     		 */
@@ -72,4 +79,24 @@ public class EdgeRemovalComputation extends
         //sendMessageToAllEdges(vertex, new Text());
         
     }
+	
+	public void updatePositionsFormerSelectedNode(Vertex<IntWritable, RDCMSTValue,
+			DoubleWritable> vertex, Iterable<IntWritable> messages) {
+		Location bestLocation = getAggregatedValue("bestLocation");
+		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+		if (vertex.getId().get() == selectedNode.getId()) {
+			ArrayPrimitiveWritable bestLocationPositions = getAggregatedValue("bestLocationPositions");
+			vertex.getValue().setPositions((Position[]) bestLocationPositions.get());
+			if (bestLocation.getWay() == Way.BREAKING_EDGE) {
+				vertex.getValue().getPositions()[vertex.getId().get()] = Position.NONE;
+				vertex.getValue().getPositions()[bestLocation.getNodeId()] = Position.PREDECESSOR;
+			} else if (bestLocation.getWay() == Way.FROM_NODE) {
+				if (messages.iterator().hasNext()) {
+					IntWritable notRelatedVertexId = messages.iterator().next();
+					vertex.getValue().getPositions()[notRelatedVertexId.get()] = Position.NONE;
+				}
+			}
+		}
+		
+	}
 }
