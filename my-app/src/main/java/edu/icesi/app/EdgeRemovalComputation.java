@@ -29,17 +29,21 @@ import java.util.ArrayList;
  */
 public class EdgeRemovalComputation extends
         AbstractComputation<IntWritable, RDCMSTValue,
-        DoubleWritable, IntWritable, MapWritable> {
+        DoubleWritable, EntryWritable, MapWritable> {
    
 	public void compute(Vertex<IntWritable, RDCMSTValue,
-			DoubleWritable> vertex, Iterable<IntWritable> messages) throws IOException {
+			DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
 		vertex.getValue().print();
 		
 		//Completing the previous movement
-		if (getSuperstep() != 0 ) {
-			
-			
+		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+		if (selectedNode.getId() == vertex.getId().get()) {
+			for (EntryWritable entry : messages) {
+				IntWritable key = (IntWritable) entry.getKey();
+				PositionWritable positionW = (PositionWritable) entry.get(key);
+				vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
+			}	
 		}
     	
     	System.out.println("node:: " + vertex.getId());
