@@ -36,6 +36,7 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 		vertex.getValue().print();
 		
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+		System.out.println("Selected node at superstep 1: " + selectedNode.getId());
     	IntWritable selectedNodeId = new IntWritable(selectedNode.getId());
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");
 		
@@ -71,6 +72,8 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  newPossibleB);
     	}
     	
+    	//JUST FOR DEBUGGING
+    	System.out.println("Selected node at the end of superstep 1: " + selectedNode.getId());
 		
 	}
 	

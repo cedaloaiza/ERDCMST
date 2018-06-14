@@ -18,7 +18,7 @@ public class SelectedNodeAggregator extends BasicAggregator<RDCMSTValue> {
 
 	@Override
 	public RDCMSTValue createInitialValue() {
-		// TODO Auto-generated method stub
+		System.out.println("Initializing SelectedNodeAggregator");
 		return new RDCMSTValue();
 	}
 

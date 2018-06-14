@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 
 public class EntryWritable implements Writable {
@@ -13,7 +14,8 @@ public class EntryWritable implements Writable {
 	private Writable value;
 	
 	public EntryWritable() {
-
+		this.key = new IntWritable(-1);
+		this.value = new PositionWritable(Position.NONE);
 	}
 
 	public EntryWritable(Writable key, Writable value) {

@@ -36,6 +36,10 @@ public class EdgeRemovalComputation extends
 		
 		vertex.getValue().print();
 		
+		//JUST FOR DEBUGGING
+		Location bestLocation = getAggregatedValue("bestLocation");
+		System.out.println("Best Location at superstep 0:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
+		
 		//Completing the previous movement
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
 		if (selectedNode.getId() == vertex.getId().get()) {

@@ -44,8 +44,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	@Override
 	public void compute() {
 		
-		
-		
+		System.out.println("Iteration: " + iteration);
 		
 		//DANGEROUS CAST!
 		int superStepPhase =  (int) getSuperstep() % SUPER_STEPS_PER_ITERATION;
@@ -81,6 +80,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				//1) directly as a leaf successor of the node, we called this FROM NODE WAY; and 
 				//2) as a predecessor of the node, breaking the existing edge between the old predecessor and it, we called this BREAKING EDGE WAY.
 				case 2:
+					RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+					System.out.println("Selected node at master Compute 2: " + selectedNode.getId());
 					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
 					DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
 					broadcast("bestPossibleNewBDirPred", longestBranchLength);
@@ -94,12 +95,12 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					break;
 				case 4:
 					setComputation(insertOperationAndBFsUpdate.class);
+					iteration++;
 					break;
 				default:
 					
 					
 			}
-			iteration++;
 		} else {
 			System.out.println("Halting:: ");
 			haltComputation();
@@ -123,7 +124,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
 		
-		registerPersistentAggregator("bestLocationPositions", ArrayPrimitiveOverwriteAggregator.class);
+		//We are doing the positions' update of selected node just with messages
+//		registerPersistentAggregator("bestLocationPositions", ArrayPrimitiveOverwriteAggregator.class);
 	}
 	
 	/**
