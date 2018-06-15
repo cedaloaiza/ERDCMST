@@ -28,7 +28,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 		
 		vertex.getValue().print();
 		
-		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		System.out.println("Selected node at superstep 2: " + selectedNode.getId());
 		
 		

@@ -54,7 +54,7 @@ public class RDCMSTValue implements Writable{
 		this.positions = new Position[0];
 		this.predecessorId = 0;
 		this.inList = false;
-//		this.id = 2;
+//		this.id = 1;
 	}
 
 

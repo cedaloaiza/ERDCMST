@@ -24,7 +24,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		
 		Location bestLocation = getAggregatedValue("bestLocation");
 		System.out.println("Best Location:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
-		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		
 		if (vertex.getId().get() == selectedNode.getId()) {
 			if (bestLocation.getWay() == Way.FROM_NODE) {

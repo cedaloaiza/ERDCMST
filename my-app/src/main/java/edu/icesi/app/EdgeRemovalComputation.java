@@ -34,6 +34,7 @@ public class EdgeRemovalComputation extends
 	public void compute(Vertex<IntWritable, RDCMSTValue,
 			DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
+		
 		vertex.getValue().print();
 		
 		//JUST FOR DEBUGGING
@@ -41,7 +42,7 @@ public class EdgeRemovalComputation extends
 		System.out.println("Best Location at superstep 0:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
 		
 		//Completing the previous movement
-		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
+		RDCMSTValue selectedNode = getAggregatedValue("selectedNodeA");
 		if (selectedNode.getId() == vertex.getId().get()) {
 			for (EntryWritable entry : messages) {
 				IntWritable key = (IntWritable) entry.getKey();
@@ -51,7 +52,7 @@ public class EdgeRemovalComputation extends
 		}
     	
     	System.out.println("node:: " + vertex.getId());
-    	System.out.println("selectedNode:: " + getBroadcast("selectedNodeId"));
+    	System.out.println("selectedNode broadcasted:: " + getBroadcast("selectedNodeId"));
     	boolean equal = vertex.getId().equals(getBroadcast("selectedNodeId"));
     	System.out.println("are they equal:: " + equal );
 //    	
@@ -65,7 +66,7 @@ public class EdgeRemovalComputation extends
     		System.out.println("Length Distances:: " + vertex.getValue().getDistances().length);
     		System.out.println("PredID:: " + vertex.getValue().getPredecessorId());
     		System.out.println(":: Computing node " + vertex.getId() );
-    		aggregate("selectedNode", vertex.getValue());
+    		aggregate("selectedNodeA", vertex.getValue());
    
     		MapWritable vertexSuccessors = new MapWritable();
     		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  			

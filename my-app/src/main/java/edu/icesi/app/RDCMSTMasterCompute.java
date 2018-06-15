@@ -28,6 +28,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private int SUPER_STEPS_PER_ITERATION = 5;
 	private int iteration = 0;
 	private int MAX_ITERARIONS = 5;
+	
+	private RDCMSTValue selectedNode;
 
 	@Override
 	public void readFields(DataInput arg0) throws IOException {
@@ -66,6 +68,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					registerReducer("addDeleteCostForSuccessors", new AddDeleteCostReduce());
 					break;
 				case 1:
+					
+					selectedNode = getAggregatedValue("selectedNodeA");
+					broadcast("selectedNode", selectedNode);
 					setComputation(EdgeInsertionComputation.class);
 					MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
 					MapWritable possibleNewBsDirPred = new MapWritable();
@@ -80,8 +85,12 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				//1) directly as a leaf successor of the node, we called this FROM NODE WAY; and 
 				//2) as a predecessor of the node, breaking the existing edge between the old predecessor and it, we called this BREAKING EDGE WAY.
 				case 2:
-					RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
-					System.out.println("Selected node at master Compute 2: " + selectedNode.getId());
+//					selectedNode = getAggregatedValue("selectedNode");
+//					Location bestLocation = getAggregatedValue("bestLocation");
+//					System.out.println("Selected node at master Compute 2: " + selectedNode.getId());
+//					System.out.println("Best Location at master Compute 2: " + bestLocation.getNodeId());
+					
+					broadcast("selectedNode", selectedNode);
 					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
 					DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
 					broadcast("bestPossibleNewBDirPred", longestBranchLength);
@@ -90,10 +99,12 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					 */
 					break;
 				case 3:
+					broadcast("selectedNode", selectedNode);
 					computeBValues();
 					setComputation(BestLocationEndingComputation.class);
 					break;
 				case 4:
+					broadcast("selectedNode", selectedNode);
 					setComputation(insertOperationAndBFsUpdate.class);
 					iteration++;
 					break;
@@ -112,9 +123,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	@Override
 	public void initialize() throws InstantiationException, IllegalAccessException {
 
+		System.out.println("Master compute's initialize()");
 		
-		
-		registerPersistentAggregator("selectedNode", SelectedNodeAggregator.class);
+		registerPersistentAggregator("selectedNodeA", SelectedNodeAggregator.class);
 		//The cost which is necessary to update the values of f the successors branches of the selected node.
 		//<K,V> K: Id of the one of selected node's child; V: Cost necessary to update the values of f in K branch of the selected node.
 		registerPersistentAggregator("sumDeleteCostForSuccessors", SumSuccessorDeleteCostsAggregator.class);
