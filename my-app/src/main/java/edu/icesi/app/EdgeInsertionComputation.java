@@ -44,18 +44,20 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     	if(vertex.getId().get() == selectedNode.getPredecessorId()){
     		MapWritable possibleNewBsDirPred = new MapWritable();
     		MapWritable successorsDeleteCosts = getAggregatedValue("sumDeleteCostForSuccessors");
+    		System.out.println("Length of KeySet to delete insertion: " + successorsDeleteCosts.keySet().size());
     		for(Writable branchId: successorsDeleteCosts.keySet()) {
     			IntWritable branchIdInt = (IntWritable) branchId;
     			double distanceTo = vertex.getValue().getDistances()[branchIdInt.get()]; 
+    			System.out.println("Inserting edge from " + vertex.getId() + " to " + branchIdInt );
     			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceTo));			
     			vertex.addEdge(EdgeFactory.create(branchIdInt, new DoubleWritable(distanceTo)));
     		}
-    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
-    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
+//    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
+//    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
     	}else if(vertex.getValue().getPredecessorId() == selectedNodeId.get() ){ //It is a direct successor
     		MapWritable bVal = new MapWritable();
     		bVal.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
-    		aggregate("possibleNewBsDirPred", bVal);
+//    		aggregate("possibleNewBsDirPred", bVal);
     	}else if(vertex.getValue().getPositions()[selectedNodeId.get()] == Position.PREDECESSOR){ 
     		/*
     		 * TODO

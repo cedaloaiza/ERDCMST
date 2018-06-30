@@ -36,6 +36,11 @@ public class EdgeRemovalComputation extends
 		
 		
 		vertex.getValue().print();
+		System.out.print("Children: ");
+		for (Edge<IntWritable, DoubleWritable> e : vertex.getEdges()) {
+			System.out.print(e.getTargetVertexId() + " ");
+		}
+		System.out.println("");
 		
 		//JUST FOR DEBUGGING
 		Location bestLocation = getAggregatedValue("bestLocation");
@@ -51,10 +56,11 @@ public class EdgeRemovalComputation extends
 			}	
 		}
     	
-    	System.out.println("node:: " + vertex.getId());
-    	System.out.println("selectedNode broadcasted:: " + getBroadcast("selectedNodeId"));
-    	boolean equal = vertex.getId().equals(getBroadcast("selectedNodeId"));
-    	System.out.println("are they equal:: " + equal );
+		//ERASE
+//    	System.out.println("node:: " + vertex.getId());
+//    	System.out.println("selectedNode broadcasted:: " + getBroadcast("selectedNodeId"));
+//    	boolean equal = vertex.getId().equals(getBroadcast("selectedNodeId"));
+//    	System.out.println("are they equal:: " + equal );
 //    	
 //    	RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
 //    	IntWritable selectedNodeId = new IntWritable(selectedNode.getId());
@@ -62,20 +68,30 @@ public class EdgeRemovalComputation extends
     	IntWritable selectedNodeId = getBroadcast("selectedNodeId");
 
     	if (vertex.getId().equals(selectedNodeId)) {
-    		System.out.println("b::: " + vertex.getValue().getB());
-    		System.out.println("Length Distances:: " + vertex.getValue().getDistances().length);
-    		System.out.println("PredID:: " + vertex.getValue().getPredecessorId());
-    		System.out.println(":: Computing node " + vertex.getId() );
+    		
+    		//ERASE
+//    		System.out.println("b::: " + vertex.getValue().getB());
+//    		System.out.println("Length Distances:: " + vertex.getValue().getDistances().length);
+//    		System.out.println("PredID:: " + vertex.getValue().getPredecessorId());
+//    		System.out.println(":: Computing node " + vertex.getId() );
     		aggregate("selectedNodeA", vertex.getValue());
    
     		MapWritable vertexSuccessors = new MapWritable();
-    		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  			
-    			vertexSuccessors.put(edge.getTargetVertexId(), new DoubleWritable(-vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
+    		
+    		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  		
+    			System.out.println("Key: " + edge.getTargetVertexId() + " - Delete Costs:: " + -vertex.getValue().getDistances()[edge.getTargetVertexId().get()]);
+    			vertexSuccessors.put(new IntWritable(edge.getTargetVertexId().get()), new DoubleWritable(-vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
+    			System.out.println("Removing edge from " + vertex.getId() + " to " +  edge.getTargetVertexId());
     			vertex.removeEdges(edge.getTargetVertexId());
+    		}
+    		System.out.println("Size of reduced object: " + vertexSuccessors.size());
+    		for (Writable dw: vertexSuccessors.keySet()) {
+    			System.out.println("Key: " + dw + " - Delete Costs:: " + vertexSuccessors.get(dw));
     		}
     		reduce("addDeleteCostForSuccessors", vertexSuccessors);
     		//ArrayWritable<Writable> messageSuccesorsId = new ArrayWritable<Writable>();
     		//messageSuccesorsId.set((Writable[]) vertexSuccessors.keySet().toArray());
+    		System.out.println("Removing edge from " + vertex.getValue().getPredecessorId() + " to " +  vertex.getId());
     		removeEdgesRequest(new IntWritable(vertex.getValue().getPredecessorId()), vertex.getId());
     		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageSuccesorsId);
     	} else if (vertex.getValue().getPositions()[selectedNodeId.get()].equals(Position.PREDECESSOR)) {

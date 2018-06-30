@@ -39,11 +39,14 @@ public class BestLocationEndingComputation extends AbstractComputation
 			 */
 		}
 		
-		if(messages.iterator().hasNext()){
-			MapWritable receivedMessage = messages.iterator().next();
-			Location partialBestLocation = computeCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);
-			if(partialBestLocation != null){
-				aggregate("bestLocation", partialBestLocation);
+		//PARTIAL SOLUTION
+		if (vertex.getId().get() != selectedNode.getId()) {
+			if (messages.iterator().hasNext()) {
+				MapWritable receivedMessage = messages.iterator().next();
+				Location partialBestLocation = computeCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);
+				if(partialBestLocation != null){
+					aggregate("bestLocation", partialBestLocation);
+				}
 			}
 		}
 		
@@ -65,7 +68,8 @@ public class BestLocationEndingComputation extends AbstractComputation
 		boolean feasibleInsert = (predecessorF.get() + predecessorToSelectedNode.get()  + selectedNodeToHere.get() + vertex.getValue().getB()) <= 10;
 		if (feasibleInsert) {	
 			double costBE =  vertex.getValue().getDistances()[selectedNode.getId()] + selectedNodeToHere.get() - selectedNodeToHere.get();
-			double costFN = vertex.getValue().getPartialBestLocationCost();
+			//double costFN = vertex.getValue().getPartialBestLocationCost();
+			double costFN = Double.POSITIVE_INFINITY;
 			if (costBE < costFN) {
 				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE, vertex.getValue().getPredecessorId());
 			} else {

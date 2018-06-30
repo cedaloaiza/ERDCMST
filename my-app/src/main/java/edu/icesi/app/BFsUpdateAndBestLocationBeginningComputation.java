@@ -86,6 +86,10 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 					double newF = vertex.getValue().getF() + branchCost.get();
 					vertex.getValue().setF(newF);
 				}
+				if (vertex.getId().get() == branchIdInt.get()) {
+					System.out.println("Updating parent after delete...");
+					vertex.getValue().setPredecessorId(selectedNode.getPredecessorId());
+				}
 			}
 		}
 	}

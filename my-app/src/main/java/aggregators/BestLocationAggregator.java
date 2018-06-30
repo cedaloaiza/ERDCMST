@@ -24,7 +24,7 @@ public class BestLocationAggregator extends BasicAggregator<Location> {
 	@Override
 	public Location createInitialValue() {
 		// TODO Auto-generated method stub
-		System.out.println("Initializing BestLocationAggregator");
+//		System.out.println("Initializing BestLocationAggregator");
 		return new Location();
 	}
 

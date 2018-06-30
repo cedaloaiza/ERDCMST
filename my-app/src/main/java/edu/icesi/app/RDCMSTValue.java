@@ -25,6 +25,7 @@ public class RDCMSTValue implements Writable{
 	private Position[] positions;
 	// The Id of the unique predecessor of this node
 	private int predecessorId;
+
 	//A flag that indicates if this node can be placed in a better location in the future.
 	private boolean inList;
 	//Best cost of inserting in this location in either way: FROM NODE or BREAKING EDGE
@@ -102,6 +103,10 @@ public class RDCMSTValue implements Writable{
 	
 	public void setPositions(Position[] positions) {
 		this.positions = positions;
+	}
+	
+	public void setPredecessorId(int predecessorId) {
+		this.predecessorId = predecessorId;
 	}
 	
 	public void print() {

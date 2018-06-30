@@ -36,6 +36,9 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				 * TODO
 				 */
 				System.out.println("Connecting selected node " + selectedNode.getId() + " with best location node by breaking edge way ");
+				System.out.println("Inserting edge from " + vertex.getId() + " to " + bestLocation.getNodeId());
+				System.out.println("Updating parent after insert...");
+				vertex.getValue().setPredecessorId(bestLocation.getPredecessorId());
 				vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(5)));
 			}
 		} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR) {
@@ -49,9 +52,11 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 			vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
 			EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.SUCCESSOR));
 			sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
-			if (vertex.getId().get() == bestLocation.getPredecessorId()){
+			if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE){
 				System.out.println("Inserting the selected node " + selectedNode.getId() + " from best location predecessor ");
+				System.out.println("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
 				vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(5)));
+				System.out.println("Removing edge from " + vertex.getId() + " to " +  bestLocation.getNodeId());
 				vertex.removeEdges(new IntWritable(bestLocation.getNodeId()));
 			}
 		} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.SUCCESSOR) {
@@ -75,6 +80,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				 */
 				//aggregate("bestLocationPositions", new ArrayPrimitiveWritable(vertex.getValue().getPositions()));
 				System.out.println("Connecting best location node with selected node " + selectedNode.getId() );
+				System.out.println("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
 				vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(5)));
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.SUCCESSOR));
@@ -84,6 +90,8 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				 * TODO
 				 */
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.SUCCESSOR;
+				System.out.println("Updating parent after insert...");
+				vertex.getValue().setPredecessorId(selectedNode.getId());
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.PREDECESSOR));
 				sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 			}

@@ -29,6 +29,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private int iteration = 0;
 	private int MAX_ITERARIONS = 5;
 	
+	//JUST FOR DEBUGGING
+	private int[] selectedNodes = new int[]{2, 1, 3, 2, 3};
+	
 	private RDCMSTValue selectedNode;
 
 	@Override
@@ -46,12 +49,14 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	@Override
 	public void compute() {
 		
-		System.out.println("Iteration: " + iteration);
+		
 		
 		//DANGEROUS CAST!
 		int superStepPhase =  (int) getSuperstep() % SUPER_STEPS_PER_ITERATION;
+		System.out.println("\n\n" + iteration);
+		System.out.println("Iteration/Movement: " + iteration);
 		System.out.println("***** Computation " +  superStepPhase + " *****");
-		
+		System.out.println("***MASTER ***");
 		if (iteration < MAX_ITERARIONS) {		
 			switch (superStepPhase) {
 				//**DELETE OPERATION
@@ -60,7 +65,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					setComputation(EdgeRemovalComputation.class);
 					Random rand = new Random();
 					System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int) getTotalNumVertices());
-					int  selectedNodeId = rand.nextInt(3) + 1;	
+//					int  selectedNodeId = rand.nextInt(3) + 1;	
+					//JUST FOE DEBUGGING
+					int  selectedNodeId = selectedNodes[iteration];
 					//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
 					System.out.println("Broadcasting:: " + selectedNodeId);
 					broadcast("selectedNodeId", new IntWritable(selectedNodeId));
@@ -73,9 +80,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					broadcast("selectedNode", selectedNode);
 					setComputation(EdgeInsertionComputation.class);
 					MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
+					System.out.println("Length of KeySet of reduce operation: " + deleteCosts.keySet().size());
 					MapWritable possibleNewBsDirPred = new MapWritable();
-					for (Writable dw: deleteCosts.values()) {
-						System.out.println("Delete Costs:: " + dw);
+					for (Writable dw: deleteCosts.keySet()) {
+						System.out.println("Key: " + dw + " - Delete Costs:: " + deleteCosts.get(dw));
 						possibleNewBsDirPred.put(dw, new IntWritable(0));
 					}
 					setAggregatedValue("sumDeleteCostForSuccessors", deleteCosts);
@@ -133,7 +141,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		//drive now to the farthest leaf.
 		registerPersistentAggregator("possibleNewBsDirPred", SumSuccessorDeleteCostsAggregator.class);
 		
-		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
+		registerAggregator("bestLocation", BestLocationAggregator.class);
 		
 		//We are doing the positions' update of selected node just with messages
 //		registerPersistentAggregator("bestLocationPositions", ArrayPrimitiveOverwriteAggregator.class);
