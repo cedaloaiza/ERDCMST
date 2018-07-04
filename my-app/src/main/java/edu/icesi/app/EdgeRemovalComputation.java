@@ -76,7 +76,8 @@ public class EdgeRemovalComputation extends
 //    		System.out.println("Length Distances:: " + vertex.getValue().getDistances().length);
 //    		System.out.println("PredID:: " + vertex.getValue().getPredecessorId());
 //    		System.out.println(":: Computing node " + vertex.getId() );
-    		aggregate("selectedNodeA", vertex.getValue());
+    		System.out.println("Selected node's parent before aggregate: " + vertex.getValue().getPredecessorId());
+    		aggregate("selectedNodeA", new RDCMSTValue(vertex.getValue()));
    
     		MapWritable vertexSuccessors = new MapWritable();
     		

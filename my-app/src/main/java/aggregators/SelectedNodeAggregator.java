@@ -12,7 +12,11 @@ public class SelectedNodeAggregator extends BasicAggregator<RDCMSTValue> {
 
 	@Override
 	public void aggregate(RDCMSTValue value) {
+		System.out.println("Selected Node AGGREGGATE: Aggregate node " + value.getId() + " with parent " + value.getPredecessorId() + 
+				" into " + getAggregatedValue().getId() + " with parent " + getAggregatedValue().getPredecessorId());
 		this.setAggregatedValue(value);
+		System.out.println("After aggregate: " + getAggregatedValue().getId() + " with parent " + getAggregatedValue().getPredecessorId());
+		value.print();
 		
 	}
 

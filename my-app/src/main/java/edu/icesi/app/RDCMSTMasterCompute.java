@@ -78,6 +78,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				case 1:
 					
 					selectedNode = getAggregatedValue("selectedNodeA");
+					System.out.println("Selected node's parent at master: " + selectedNode.getPredecessorId());
 					broadcast("selectedNode", selectedNode);
 					setComputation(EdgeInsertionComputation.class);
 					MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
@@ -137,7 +138,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		selectedNode = new RDCMSTValue();
 		selectedNode.setId(-1);
 		
-		registerPersistentAggregator("selectedNodeA", SelectedNodeAggregator.class);
+		registerAggregator("selectedNodeA", SelectedNodeAggregator.class);
 		//The cost which is necessary to update the values of f the successors branches of the selected node.
 		//<K,V> K: Id of the one of selected node's child; V: Cost necessary to update the values of f in K branch of the selected node.
 		registerPersistentAggregator("sumDeleteCostForSuccessors", SumSuccessorDeleteCostsAggregator.class);

@@ -40,6 +40,7 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 		System.out.println("Selected node at superstep 1: " + selectedNode.getId());
     	IntWritable selectedNodeId = new IntWritable(selectedNode.getId());
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");
+    	System.out.println("Selected node's parent: " + selectedNode.getPredecessorId());
 		
     	if(vertex.getId().get() == selectedNode.getPredecessorId()){
     		MapWritable possibleNewBsDirPred = new MapWritable();

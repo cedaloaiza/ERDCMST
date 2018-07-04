@@ -45,6 +45,15 @@ public class RDCMSTValue implements Writable{
 		this.inList = inList;
 		this.id = id;
 	}
+	
+	public RDCMSTValue(RDCMSTValue val) {
+		this.f = val.getF();
+		this.b = val.getB();
+		this.distances = new ArrayPrimitiveWritable(val.getDistances());
+		this.positions = val.getPositions();
+		this.predecessorId = val.getPredecessorId();
+		this.id = val.getId();
+	}
 
 
 	public RDCMSTValue() {
@@ -121,6 +130,7 @@ public class RDCMSTValue implements Writable{
 		for(Position pos: positions) {
 			System.out.println("\t" + pos);
 		}
+		System.out.println("Parent: " + this.predecessorId);
 			
 	}
 
