@@ -35,6 +35,17 @@ public class EdgeRemovalComputation extends
 			DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
 		
+		//Completing the previous movement
+		RDCMSTValue selectedNode = getBroadcast("selectedNode");
+		if (selectedNode.getId() == vertex.getId().get()) {
+			for (EntryWritable entry : messages) {
+				System.out.println("Updating positions of selected node");
+				IntWritable key = (IntWritable) entry.getKey();
+				PositionWritable positionW = (PositionWritable) entry.get(key);
+				vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
+			}	
+		}
+		
 		vertex.getValue().print();
 		System.out.print("Children: ");
 		for (Edge<IntWritable, DoubleWritable> e : vertex.getEdges()) {
@@ -43,18 +54,9 @@ public class EdgeRemovalComputation extends
 		System.out.println("");
 		
 		//JUST FOR DEBUGGING
-		Location bestLocation = getAggregatedValue("bestLocation");
-		System.out.println("Best Location at superstep 0:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
+//		Location bestLocation = getAggregatedValue("bestLocation");
+//		System.out.println("Best Location at superstep 0:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
 		
-		//Completing the previous movement
-		RDCMSTValue selectedNode = getAggregatedValue("selectedNodeA");
-		if (selectedNode.getId() == vertex.getId().get()) {
-			for (EntryWritable entry : messages) {
-				IntWritable key = (IntWritable) entry.getKey();
-				PositionWritable positionW = (PositionWritable) entry.get(key);
-				vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
-			}	
-		}
     	
 		//ERASE
 //    	System.out.println("node:: " + vertex.getId());

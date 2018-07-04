@@ -71,6 +71,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
 					System.out.println("Broadcasting:: " + selectedNodeId);
 					broadcast("selectedNodeId", new IntWritable(selectedNodeId));
+					broadcast("selectedNode", selectedNode);
 					//
 					registerReducer("addDeleteCostForSuccessors", new AddDeleteCostReduce());
 					break;
@@ -132,6 +133,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	public void initialize() throws InstantiationException, IllegalAccessException {
 
 		System.out.println("Master compute's initialize()");
+		
+		selectedNode = new RDCMSTValue();
+		selectedNode.setId(-1);
 		
 		registerPersistentAggregator("selectedNodeA", SelectedNodeAggregator.class);
 		//The cost which is necessary to update the values of f the successors branches of the selected node.
