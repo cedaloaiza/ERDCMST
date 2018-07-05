@@ -31,6 +31,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				/*
 				 * TODO 
 				 */
+				vertex.getValue().setPredecessorId(bestLocation.getNodeId());
 			} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
 				/*
 				 * TODO

@@ -77,7 +77,7 @@ public class EdgeRemovalComputation extends
 //    		System.out.println("PredID:: " + vertex.getValue().getPredecessorId());
 //    		System.out.println(":: Computing node " + vertex.getId() );
     		System.out.println("Selected node's parent before aggregate: " + vertex.getValue().getPredecessorId());
-    		aggregate("selectedNodeA", new RDCMSTValue(vertex.getValue()));
+    		aggregate("selectedNodeA", vertex.getValue());
    
     		MapWritable vertexSuccessors = new MapWritable();
     		

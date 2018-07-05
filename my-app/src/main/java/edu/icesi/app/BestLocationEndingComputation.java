@@ -66,10 +66,18 @@ public class BestLocationEndingComputation extends AbstractComputation
 		Location partialBestLocation = null;
 		//feasible insert
 		boolean feasibleInsert = (predecessorF.get() + predecessorToSelectedNode.get()  + selectedNodeToHere.get() + vertex.getValue().getB()) <= 10;
+		System.out.println("Feasible Insert: " + feasibleInsert);
 		if (feasibleInsert) {	
+			
 			double costBE =  vertex.getValue().getDistances()[selectedNode.getId()] + selectedNodeToHere.get() - selectedNodeToHere.get();
-			//double costFN = vertex.getValue().getPartialBestLocationCost();
+			
+			//JUST FOR DEBUGGING
+			int iteration = (int) getSuperstep() / 5;
+			System.out.println("Iteration on phase 3: " + iteration);
 			double costFN = Double.POSITIVE_INFINITY;
+			if (iteration % 2 == 0) 
+				costFN = vertex.getValue().getPartialBestLocationCost();
+			
 			if (costBE < costFN) {
 				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE, vertex.getValue().getPredecessorId());
 			} else {

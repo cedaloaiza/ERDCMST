@@ -65,21 +65,23 @@ public class RDCMSTVertexInputFormat extends
       	JSONException, IOException {
       boolean isTheRoot = !jsonVertex.isNull(2);
       Position pos = Position.NONE;
-      if(isTheRoot){
-    	  pos = Position.PREDECESSOR;
-      }
       JSONArray jsonDistances = jsonVertex.getJSONArray(1);
       double[] distances = new double[jsonDistances.length()];
       Position[] positions = new Position[jsonDistances.length()];
+      if (isTheRoot) {
+    	  pos = Position.PREDECESSOR;
+    	  positions[0] = Position.NONE;
+      } else {
+    	  positions[0] = Position.SUCCESSOR;
+      }
       distances[0] = jsonDistances.getDouble(0);
-      positions[0] = Position.SUCCESSOR;
       System.out.println("Reading node:: " + jsonVertex.getInt(0));
       System.out.println("distances array:: " + jsonDistances.length());
       for(int i = 1; i < jsonDistances.length(); i++){
     	  distances[i] = jsonDistances.getDouble(i);
     	  positions[i] = pos;
       }
-      return new RDCMSTValue(0, 1, distances, positions, 85, true, jsonVertex.getInt(0));
+      return new RDCMSTValue(0, 1, distances, positions, 0, true, jsonVertex.getInt(0));
     }
 
     @Override

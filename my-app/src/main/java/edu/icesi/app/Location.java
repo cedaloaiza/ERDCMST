@@ -33,10 +33,10 @@ public class Location implements Writable {
 	}
 	
 	public Location() {
-		this.nodeId = -1;
+		this.nodeId = 0;
 		this.cost = Double.POSITIVE_INFINITY;
 		this.way = Way.FROM_NODE;
-		this.predecessorId = -1;
+		this.predecessorId = 0;
 	}
 	
 	public double getCost() {

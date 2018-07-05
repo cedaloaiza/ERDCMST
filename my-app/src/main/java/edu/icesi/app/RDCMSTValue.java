@@ -64,7 +64,7 @@ public class RDCMSTValue implements Writable{
 		this.positions = new Position[0];
 		this.predecessorId = 0;
 		this.inList = false;
-//		this.id = 1;
+		this.id = 0;
 	}
 
 
@@ -143,6 +143,7 @@ public class RDCMSTValue implements Writable{
 			WritableUtils.writeEnum(out, p);
 		}
 		out.writeInt(id);
+		out.writeInt(predecessorId);
 	}
 
 	@Override
@@ -155,6 +156,7 @@ public class RDCMSTValue implements Writable{
 			positions[i] = WritableUtils.readEnum(in, Position.class);
 		}
 		id = in.readInt();
+		predecessorId = in.readInt();
 		
 	}
 
