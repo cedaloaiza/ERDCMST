@@ -14,7 +14,10 @@ public class SumSuccessorDeleteCostsAggregator extends BasicAggregator<MapWritab
 		for(Writable branchId: newValue.keySet()) {
 			DoubleWritable newValueDouble = (DoubleWritable) newValue.get(branchId);
 			DoubleWritable curValueDouble = (DoubleWritable) newAggregatedValue.get(branchId);
-			double aggregated = curValueDouble.get() + newValueDouble.get(); 
+			double aggregated = newValueDouble.get();
+			if( curValueDouble != null) {
+				aggregated = curValueDouble.get() + newValueDouble.get(); 
+			}
 			newAggregatedValue.put(branchId, new DoubleWritable(aggregated));			
 		}
 		setAggregatedValue(newAggregatedValue);

@@ -8,8 +8,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.master.MasterCompute;
 import org.apache.giraph.utils.WritableUtils;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -28,6 +30,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private int SUPER_STEPS_PER_ITERATION = 5;
 	private int iteration = 0;
 	private int MAX_ITERARIONS = 5;
+	private int lambda = 100;
+	private int superstepDeviation = 0;
 	
 	//JUST FOR DEBUGGING
 	private int[] selectedNodes = new int[]{2, 1, 3, 2, 3};
@@ -52,7 +56,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		
 		//DANGEROUS CAST!
-		int superStepPhase =  (int) getSuperstep() % SUPER_STEPS_PER_ITERATION;
+		int superStepPhase =  ((int) getSuperstep() + superstepDeviation) % SUPER_STEPS_PER_ITERATION;
 		System.out.println("\n\n" + iteration);
 		System.out.println("Iteration/Movement: " + iteration);
 		System.out.println("***** Computation " +  superStepPhase + " *****");
@@ -61,22 +65,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 			switch (superStepPhase) {
 				//**DELETE OPERATION
 				case 0:					
-					//Node selection
-					setComputation(EdgeRemovalComputation.class);
-					Random rand = new Random();
-					System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int) getTotalNumVertices());
-//					int  selectedNodeId = rand.nextInt(3) + 1;	
-					//JUST FOE DEBUGGING
-					int  selectedNodeId = selectedNodes[iteration];
-					//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
-					System.out.println("Broadcasting:: " + selectedNodeId);
-					broadcast("selectedNodeId", new IntWritable(selectedNodeId));
-					broadcast("selectedNode", selectedNode);
-					//
-					registerReducer("addDeleteCostForSuccessors", new AddDeleteCostReduce());
+					selectANode();
 					break;
 				case 1:
-					
 					selectedNode = getAggregatedValue("selectedNodeA");
 					System.out.println("Selected node's parent at master: " + selectedNode.getPredecessorId());
 					broadcast("selectedNode", selectedNode);
@@ -100,6 +91,15 @@ public class RDCMSTMasterCompute extends MasterCompute {
 //					System.out.println("Selected node at master Compute 2: " + selectedNode.getId());
 //					System.out.println("Best Location at master Compute 2: " + bestLocation.getNodeId());
 					
+					double bestPossibleNewBDirPred = getLongestBranchLength();
+					DoubleWritable parentF = (DoubleWritable) getAggregatedValue("parentF");
+					if (parentF.get() + bestPossibleNewBDirPred > lambda) {
+						superstepDeviation += 3;
+						broadcast("everythingUpdated", new BooleanWritable(true));
+						selectANode();
+						iteration++;
+						break;
+					}
 					broadcast("selectedNode", selectedNode);
 					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
 					DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
@@ -148,6 +148,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		registerAggregator("bestLocation", BestLocationAggregator.class);
 		
+		registerAggregator("parentF", DoubleSumAggregator.class);
+		
 		//We are doing the positions' update of selected node just with messages
 //		registerPersistentAggregator("bestLocationPositions", ArrayPrimitiveOverwriteAggregator.class);
 	}
@@ -178,5 +180,27 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	private void selectANode() {
+		//Node selection
+		setComputation(EdgeRemovalComputation.class);
+		Random rand = new Random();
+		System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int) getTotalNumVertices());
+//		int  selectedNodeId = rand.nextInt(3) + 1;	
+		//JUST FOE DEBUGGING
+		int  selectedNodeId = selectedNodes[iteration];
+		//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
+		System.out.println("Broadcasting:: " + selectedNodeId);
+		broadcast("selectedNodeId", new IntWritable(selectedNodeId));
+		broadcast("selectedNode", selectedNode);
+		//
+		registerReducer("addDeleteCostForSuccessors", new AddDeleteCostReduce());
+	}
+	
+	private void resetPersistentAggregators() {
+		setAggregatedValue("sumDeleteCostForSuccessors", new MapWritable());
+		setAggregatedValue("sumDeleteCostForSuccessors", new MapWritable());
+	}
+	
 
 }

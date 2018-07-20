@@ -3,6 +3,7 @@ package edu.icesi.app;
 import java.io.IOException;
 
 import org.apache.giraph.edge.Edge;
+import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
@@ -21,10 +22,10 @@ import org.apache.hadoop.io.Writable;
  *
  */
 public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComputation
-		<IntWritable, RDCMSTValue, DoubleWritable, DoubleWritable, MapWritable> {
+		<IntWritable, RDCMSTValue, DoubleWritable, EntryWritable, MapWritable> {
 
 	@Override
-	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<DoubleWritable> messages) throws IOException {
+	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
 		vertex.getValue().print();
 		
@@ -51,11 +52,12 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	 * @param message
 	 */
 	public void updateBnFs(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode,
-			Iterable<DoubleWritable> messages){
+			Iterable<EntryWritable> messages){
 		
 		double maxPossibbleB = 0;
-		for (DoubleWritable message : messages) {
-			maxPossibbleB = Math.max(maxPossibbleB, message.get());
+		for (EntryWritable message : messages) {
+			DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());
+			maxPossibbleB = Math.max(maxPossibbleB,  possibleB.get() );
 		}
 	
 		
@@ -64,8 +66,22 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 //		DoubleWritable succesorB = (DoubleWritable) message.get(succesorId);
 		DoubleWritable bestPossibleNewBDirPred = getBroadcast("bestPossibleNewBDirPred");
 		
-		if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
-			if (vertex.getId().equals(selectedNode.getPredecessorId())) {
+		if (vertex.getId().get() == selectedNode.getId()) {
+			//THIS SHOULD BE IMPROVED
+			for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) { 
+				System.out.println("Removing edge from " + vertex.getId() + " to " +  edge.getTargetVertexId());
+    			vertex.removeEdges(edge.getTargetVertexId());
+    		}
+		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+			if (vertex.getId().get() == selectedNode.getPredecessorId()) {
+				System.out.println("Removing edge from " + vertex.getValue() + " to " +  selectedNode.getId());
+	    		vertex.removeEdges(new IntWritable(selectedNode.getId()));
+	    		MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
+				for (Writable branchId : deleteCostForSuccessors.keySet()) {
+					System.out.println("id in deleteCostForSuccessors: " + branchId);
+	    			System.out.println("Inserting edge from " + vertex.getId() + " to " + branchId );
+					vertex.addEdge(EdgeFactory.create((IntWritable) branchId, new DoubleWritable(0.0)));
+				}
 				if (maxPossibbleB > bestPossibleNewBDirPred.get()) {
 					vertex.getValue().setB(maxPossibbleB);
 				} else {

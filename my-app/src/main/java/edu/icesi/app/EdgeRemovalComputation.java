@@ -8,6 +8,7 @@ import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -37,13 +38,16 @@ public class EdgeRemovalComputation extends
 		
 		//Completing the previous movement
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
-		if (selectedNode.getId() == vertex.getId().get()) {
-			for (EntryWritable entry : messages) {
-				System.out.println("Updating positions of selected node");
-				IntWritable key = (IntWritable) entry.getKey();
-				PositionWritable positionW = (PositionWritable) entry.get(key);
-				vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
-			}	
+		BooleanWritable everythingUpdate = getBroadcast("everythingUpdate");
+		if (everythingUpdate == null) {
+			if (selectedNode.getId() == vertex.getId().get()) {
+				for (EntryWritable entry : messages) {
+					System.out.println("Updating positions of selected node");
+					IntWritable key = (IntWritable) entry.getKey();
+					PositionWritable positionW = (PositionWritable) entry.get(key);
+					vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
+				}	
+			}
 		}
 		
 		vertex.getValue().print();
@@ -84,8 +88,6 @@ public class EdgeRemovalComputation extends
     		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  		
     			System.out.println("Key: " + edge.getTargetVertexId() + " - Delete Costs:: " + -vertex.getValue().getDistances()[edge.getTargetVertexId().get()]);
     			vertexSuccessors.put(new IntWritable(edge.getTargetVertexId().get()), new DoubleWritable(-vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
-    			System.out.println("Removing edge from " + vertex.getId() + " to " +  edge.getTargetVertexId());
-    			vertex.removeEdges(edge.getTargetVertexId());
     		}
     		System.out.println("Size of reduced object: " + vertexSuccessors.size());
     		for (Writable dw: vertexSuccessors.keySet()) {
@@ -94,8 +96,6 @@ public class EdgeRemovalComputation extends
     		reduce("addDeleteCostForSuccessors", vertexSuccessors);
     		//ArrayWritable<Writable> messageSuccesorsId = new ArrayWritable<Writable>();
     		//messageSuccesorsId.set((Writable[]) vertexSuccessors.keySet().toArray());
-    		System.out.println("Removing edge from " + vertex.getValue().getPredecessorId() + " to " +  vertex.getId());
-    		removeEdgesRequest(new IntWritable(vertex.getValue().getPredecessorId()), vertex.getId());
     		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageSuccesorsId);
     	} else if (vertex.getValue().getPositions()[selectedNodeId.get()].equals(Position.PREDECESSOR)) {
     		/*

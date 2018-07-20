@@ -27,7 +27,7 @@ import org.apache.hadoop.io.Writable;
  *
  */
 public class EdgeInsertionComputation extends AbstractComputation<IntWritable, RDCMSTValue,
-		DoubleWritable, MapWritable, DoubleWritable>
+		DoubleWritable, MapWritable, EntryWritable>
 		 {
 
 	@Override
@@ -49,22 +49,22 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     		for(Writable branchId: successorsDeleteCosts.keySet()) {
     			IntWritable branchIdInt = (IntWritable) branchId;
     			double distanceTo = vertex.getValue().getDistances()[branchIdInt.get()]; 
-    			System.out.println("Inserting edge from " + vertex.getId() + " to " + branchIdInt );
     			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceTo));			
-    			vertex.addEdge(EdgeFactory.create(branchIdInt, new DoubleWritable(distanceTo)));
     		}
-//    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
-//    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
+    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
+    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
+    		aggregate("parentF", new DoubleWritable(vertex.getValue().getF()));
     	}else if(vertex.getValue().getPredecessorId() == selectedNodeId.get() ){ //It is a direct successor
     		MapWritable bVal = new MapWritable();
     		bVal.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
-//    		aggregate("possibleNewBsDirPred", bVal);
+    		System.out.println("Aggregating possibleNewBsDirPred. key:" + vertex.getId() + " value: " + vertex.getValue().getB());
+    		aggregate("possibleNewBsDirPred", bVal);
     	}else if(vertex.getValue().getPositions()[selectedNodeId.get()] == Position.PREDECESSOR){ 
     		/*
     		 * TODO
     		 */
     		
-    	}else if(messages.iterator().hasNext()){
+    	}else if (messages.iterator().hasNext()) {
     		System.out.println("b Value:: " + vertex.getValue().getB());
     		//DoubleWritable[] vertexBValue = new DoubleWritable[]{new DoubleWritable(vertex.getValue().getB())};
     		//DoubleArrayWritable writableVertexBValue = new DoubleArrayWritable();
@@ -73,7 +73,8 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     		DoubleWritable distanceFromPred = (DoubleWritable)messages.iterator().next().get("DIST");
     		DoubleWritable newPossibleB = new DoubleWritable(vertex.getValue().getB() + distanceFromPred.get());
     		//writableVertexBValue.set(vertexBValue);
-    		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  newPossibleB);
+    		EntryWritable message = new EntryWritable(vertex.getId(), newPossibleB);
+    		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  message);
     	}
     	
     	//JUST FOR DEBUGGING
