@@ -18,6 +18,7 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.join.TupleWritable;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
  */
 public class EdgeRemovalComputation extends
         AbstractComputation<IntWritable, RDCMSTValue,
-        DoubleWritable, EntryWritable, MapWritable> {
+        DoubleWritable, EntryWritable, DoubleWritable> {
    
 	public void compute(Vertex<IntWritable, RDCMSTValue,
 			DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
@@ -44,7 +45,10 @@ public class EdgeRemovalComputation extends
 				for (EntryWritable entry : messages) {
 					System.out.println("Updating positions of selected node");
 					IntWritable key = (IntWritable) entry.getKey();
+					System.out.println("Key: " + key);
 					PositionWritable positionW = (PositionWritable) entry.get(key);
+					System.out.println("Position: " + positionW.getPosition());
+					System.out.println("Updating positions of selected node");
 					vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
 				}	
 			}
@@ -98,6 +102,11 @@ public class EdgeRemovalComputation extends
     		//messageSuccesorsId.set((Writable[]) vertexSuccessors.keySet().toArray());
     		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageSuccesorsId);
     	} else if (vertex.getValue().getPositions()[selectedNodeId.get()].equals(Position.PREDECESSOR)) {
+    		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  		
+    			double distanceToChild = vertex.getValue().getDistances()[edge.getTargetVertexId().get()];
+    			System.out.println("Distance to child: " + distanceToChild);
+    			sendMessage(edge.getTargetVertexId(), new DoubleWritable(distanceToChild));
+    		}
     		/*
     		 * TODO
     		 */

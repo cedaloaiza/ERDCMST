@@ -5,31 +5,76 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.GenericWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 public class EntryWritable implements Writable {
 	
-	private Writable key;
-	private Writable value;
+	private GenericWritable key;
+	private GenericWritable value;
 	
 	public EntryWritable() {
-		this.key = new IntWritable(-1);
-		this.value = new PositionWritable(Position.NONE);
+		this.key = new GenericWritable() {
+			
+			@Override
+			protected Class<? extends Writable>[] getTypes() {
+				Class[] CLASSES = {
+			               IntWritable.class, 
+			               Text.class,
+			               };
+				return CLASSES;
+			}
+		};
+		this.value = new GenericWritable() {
+			
+			@Override
+			protected Class<? extends Writable>[] getTypes() {
+				Class[] CLASSES = {
+			               PositionWritable.class, 
+			               DoubleWritable.class,
+			               };
+				return CLASSES;
+			}
+		};
 	}
 
 	public EntryWritable(Writable key, Writable value) {
-		super();
-		this.key = key;
-		this.value = value;
+		//super();
+		this.key = new GenericWritable() {
+			
+			@Override
+			protected Class<? extends Writable>[] getTypes() {
+				Class[] CLASSES = {
+			               IntWritable.class, 
+			               Text.class,
+			               };
+				return CLASSES;
+			}
+		};
+		this.value = new GenericWritable() {
+					
+					@Override
+					protected Class<? extends Writable>[] getTypes() {
+						Class[] CLASSES = {
+					               PositionWritable.class, 
+					               DoubleWritable.class,
+					               };
+						return CLASSES;
+					}
+		};
+		this.key.set(key);
+		this.value.set(value);
 	}
 	
 	public Writable get(Writable key) {
-		return value;
+		return value.get();
 	}
 	
 	public Writable getKey() {
-		return key;
+		return key.get();
 	}
 	
 	@Override

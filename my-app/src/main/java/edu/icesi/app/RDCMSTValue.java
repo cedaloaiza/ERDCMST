@@ -13,6 +13,8 @@ import org.apache.hadoop.io.WritableUtils;
 
 public class RDCMSTValue implements Writable{
 	
+	public static final int NONE_PARENT = -1;
+	
 	//Id
 	private int id;
 	//The distance from this node to the facility

@@ -150,6 +150,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		registerAggregator("parentF", DoubleSumAggregator.class);
 		
+		registerAggregator("parentB", DoubleSumAggregator.class);
+		
+		
+		
 		//We are doing the positions' update of selected node just with messages
 //		registerPersistentAggregator("bestLocationPositions", ArrayPrimitiveOverwriteAggregator.class);
 	}
@@ -165,6 +169,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		MapWritable branchLengths = getAggregatedValue("possibleNewBsDirPred");
 		double largestBranchLength = 0;
 		for (Writable branch: branchLengths.keySet()) {
+			
 			DoubleWritable currentLength = (DoubleWritable) branchLengths.get(branch);
 			if (currentLength.get() > largestBranchLength) {
 				largestBranchLength = currentLength.get();

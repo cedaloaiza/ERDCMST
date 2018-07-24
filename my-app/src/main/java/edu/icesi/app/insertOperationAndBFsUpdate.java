@@ -11,6 +11,8 @@ import org.apache.hadoop.io.ArrayPrimitiveWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.join.TupleWritable;
 
 public class insertOperationAndBFsUpdate extends AbstractComputation
 		<IntWritable, RDCMSTValue,
@@ -52,6 +54,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 			}
 			vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
 			EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.SUCCESSOR));
+			//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.SUCCESSOR)});
 			sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 			if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE){
 				System.out.println("Inserting the selected node " + selectedNode.getId() + " from best location predecessor ");
@@ -64,6 +67,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 			if (bestLocation.getWay() == Way.FROM_NODE) {
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.NONE));
+				//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.NONE)});
 				sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 				//This has to be refactored using the new type of messages
 				//sendMessage(new IntWritable(selectedNode.getId()), vertex.getId());
@@ -72,6 +76,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				vertex.getValue().setF(newF);
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.SUCCESSOR;
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.PREDECESSOR));
+				//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.PREDECESSOR)});
 				sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 			}
 		} else if (vertex.getId().get() == bestLocation.getNodeId()) {
@@ -85,6 +90,9 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(5)));
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.SUCCESSOR));
+				//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.SUCCESSOR)});
+				//PositionWritable pos = (PositionWritable) outgoingMessage.get(1);
+				//System.out.println("Sending from best location position: " + pos.getPosition());
 				sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 			} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
 				/*
@@ -94,6 +102,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				System.out.println("Updating parent after insert...");
 				vertex.getValue().setPredecessorId(selectedNode.getId());
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.PREDECESSOR));
+				//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.PREDECESSOR)});
 				sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 			}
 			/*
@@ -103,7 +112,8 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		} else {
 			vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
 			EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.NONE));
-			sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
+			//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.NONE)});
+			//sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 		}
 		
 		

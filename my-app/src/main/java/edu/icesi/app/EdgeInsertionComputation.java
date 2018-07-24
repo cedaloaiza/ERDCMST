@@ -14,6 +14,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.join.TupleWritable;
 /**
  * Now the predecessor of the removing node has the required information
  * to compute the costs of the entire delete operation. 
@@ -27,11 +28,11 @@ import org.apache.hadoop.io.Writable;
  *
  */
 public class EdgeInsertionComputation extends AbstractComputation<IntWritable, RDCMSTValue,
-		DoubleWritable, MapWritable, EntryWritable>
+		DoubleWritable, DoubleWritable, EntryWritable>
 		 {
 
 	@Override
-	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException {
+	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<DoubleWritable> messages) throws IOException {
 		
 		vertex.getValue().print();
 		
@@ -60,9 +61,10 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     		System.out.println("Aggregating possibleNewBsDirPred. key:" + vertex.getId() + " value: " + vertex.getValue().getB());
     		aggregate("possibleNewBsDirPred", bVal);
     	}else if(vertex.getValue().getPositions()[selectedNodeId.get()] == Position.PREDECESSOR){ 
-    		/*
-    		 * TODO
-    		 */
+    		if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
+    			EntryWritable message = new EntryWritable(new Text("ID"), vertex.getId());
+    			sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  message);
+    		}
     		
     	}else if (messages.iterator().hasNext()) {
     		System.out.println("b Value:: " + vertex.getValue().getB());
@@ -70,15 +72,19 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     		//DoubleArrayWritable writableVertexBValue = new DoubleArrayWritable();
 //    		MapWritable writableVertexBValue = new MapWritable();
 //    		writableVertexBValue.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
-    		DoubleWritable distanceFromPred = (DoubleWritable)messages.iterator().next().get("DIST");
+    		DoubleWritable distanceFromPred = (DoubleWritable) messages.iterator().next();
+    		System.out.println("The distance: " + vertex.getId() + ": " + distanceFromPred);
     		DoubleWritable newPossibleB = new DoubleWritable(vertex.getValue().getB() + distanceFromPred.get());
     		//writableVertexBValue.set(vertexBValue);
-    		EntryWritable message = new EntryWritable(vertex.getId(), newPossibleB);
+    		System.out.println("New possible b of " + vertex.getId() + ": " + newPossibleB);
+    		EntryWritable message = new EntryWritable(new Text("POSSB"), newPossibleB);
+    		//TupleWritable message = new TupleWritable(new Writable[] {vertex.getId(), newPossibleB});
     		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  message);
     	}
     	
+    	
     	//JUST FOR DEBUGGING
-    	System.out.println("Selected node at the end of superstep 1: " + selectedNode.getId());
+//    	System.out.println("Selected node at the end of superstep 1: " + selectedNode.getId());
 		
 	}
 	
