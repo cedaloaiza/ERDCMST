@@ -20,6 +20,7 @@ import org.apache.hadoop.io.Writable;
 
 import aggregators.AddDeleteCostReduce;
 import aggregators.BestLocationAggregator;
+import aggregators.EntryAssignmentReduce;
 import aggregators.ArrayPrimitiveOverwriteAggregator;
 import aggregators.SelectedNodeAggregator;
 import aggregators.SumSuccessorDeleteCostsAggregator;
@@ -101,6 +102,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 						break;
 					}
 					broadcast("selectedNode", selectedNode);
+					registerReducer("parentB", new EntryAssignmentReduce());
 					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
 					DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
 					broadcast("bestPossibleNewBDirPred", longestBranchLength);
