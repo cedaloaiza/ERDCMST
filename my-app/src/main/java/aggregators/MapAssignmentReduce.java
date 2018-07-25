@@ -22,9 +22,9 @@ import edu.icesi.app.RDCMSTValue;
  * @author cdlq1
  *
  */
-public class AddDeleteCostReduce implements ReduceOperation<MapWritable, MapWritable> {
+public class MapAssignmentReduce implements ReduceOperation<MapWritable, MapWritable> {
 	
-	public AddDeleteCostReduce(){
+	public MapAssignmentReduce(){
 		
 	}
 

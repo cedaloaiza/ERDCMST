@@ -55,11 +55,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	public void updateBnFs(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode,
 			Iterable<EntryWritable> messages){
 		
-		double maxPossibbleB = 0;
-		for (EntryWritable message : messages) {
-			DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());
-			maxPossibbleB = Math.max(maxPossibbleB,  possibleB.get() );
-		}
+		
 	
 		
 	
@@ -74,6 +70,18 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
     			vertex.removeEdges(edge.getTargetVertexId());
     		}
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+			int childToSelectedNode = -1;
+			double maxPossibbleB = 0;
+			for (EntryWritable message : messages) {
+				Text messageKey = (Text) message.getKey();
+				if (messageKey.toString().equals("ID")) {
+					IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
+					childToSelectedNode = childToSelectedNodeWritable.get();
+				} else {
+					DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());
+					maxPossibbleB = Math.max(maxPossibbleB,  possibleB.get() );
+				}
+			}
 			if (vertex.getId().get() == selectedNode.getPredecessorId()) {
 				System.out.println("Removing edge from " + vertex.getValue() + " to " +  selectedNode.getId());
 	    		vertex.removeEdges(new IntWritable(selectedNode.getId()));
@@ -89,9 +97,9 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 					vertex.getValue().setB(bestPossibleNewBDirPred.get());
 				}
 			} else {
-				/*
-				 * TODO
-				 */
+				ElementsToComputeB elementsToComputeB = new ElementsToComputeB(vertex.getValue().getPredecessorId(), maxPossibbleB, 
+						vertex.getValue().getDistances()[childToSelectedNode]);
+				reduce("allPredecessorsPossibleNewBs", elementsToComputeB);
 			}
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR) {
 			MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");

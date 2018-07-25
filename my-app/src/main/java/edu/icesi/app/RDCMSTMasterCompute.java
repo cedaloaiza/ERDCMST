@@ -18,7 +18,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
 
-import aggregators.AddDeleteCostReduce;
+import aggregators.MapAssignmentReduce;
 import aggregators.BestLocationAggregator;
 import aggregators.EntryAssignmentReduce;
 import aggregators.ArrayPrimitiveOverwriteAggregator;
@@ -103,6 +103,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					}
 					broadcast("selectedNode", selectedNode);
 					registerReducer("parentB", new EntryAssignmentReduce());
+					registerReducer("allPredecessorsPossibleNewBs", new MapAssignmentReduce());
 					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
 					DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
 					broadcast("bestPossibleNewBDirPred", longestBranchLength);
@@ -201,7 +202,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		broadcast("selectedNodeId", new IntWritable(selectedNodeId));
 		broadcast("selectedNode", selectedNode);
 		//
-		registerReducer("addDeleteCostForSuccessors", new AddDeleteCostReduce());
+		registerReducer("addDeleteCostForSuccessors", new MapAssignmentReduce());
 	}
 	
 	private void resetPersistentAggregators() {
