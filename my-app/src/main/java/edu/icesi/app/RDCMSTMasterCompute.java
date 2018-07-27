@@ -61,6 +61,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		System.out.println("\n\n" + iteration);
 		System.out.println("Iteration/Movement: " + iteration);
 		System.out.println("***** Computation " +  superStepPhase + " *****");
+		System.out.println("Number of vertices: " + getTotalNumVertices());
 		System.out.println("***MASTER ***");
 		if (iteration < MAX_ITERARIONS) {		
 			switch (superStepPhase) {
@@ -153,8 +154,6 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		registerAggregator("parentF", DoubleSumAggregator.class);
 		
-		registerAggregator("parentB", DoubleSumAggregator.class);
-		
 		
 		
 		//We are doing the positions' update of selected node just with messages
@@ -185,7 +184,27 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	 * Compute B values for all predecessors of the selected node
 	 */
 	private void computeBValues() {
-		// TODO Auto-generated method stub
+		MapWritable allPredecessorsPossibleNewBs = getReduced("allPredecessorsPossibleNewBs");
+		MapWritable newBs = new MapWritable();
+		EntryWritable parentB = getReduced("parentB");
+		IntWritable parentId = (IntWritable) parentB.getKey();
+		DoubleWritable bValueWritable = (DoubleWritable) parentB.get(parentId);
+		double bValue = bValueWritable.get();
+		while (!allPredecessorsPossibleNewBs.isEmpty()) {
+			ElementsToComputeB elementsToComputeB = (ElementsToComputeB) allPredecessorsPossibleNewBs.get(parentId);
+			double unaffectedBranchesB = elementsToComputeB.getUnaffectedBranchesB();
+			double affectedBranchB = elementsToComputeB.getPartialAffectedBranchB() +  bValue;
+			if (unaffectedBranchesB > affectedBranchB) {
+				bValue = unaffectedBranchesB;
+			} else {
+				bValue = affectedBranchB;
+			}
+			newBs.put(parentId, new DoubleWritable(bValue));
+			allPredecessorsPossibleNewBs.remove(parentId);
+			//WARNING!!!!!
+			parentId = new IntWritable(elementsToComputeB.getIdParent());
+		}
+		broadcast("newBs", newBs);
 		
 	}
 	

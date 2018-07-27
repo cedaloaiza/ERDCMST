@@ -35,6 +35,7 @@ public class EntryWritable implements Writable {
 				Class[] CLASSES = {
 			               PositionWritable.class, 
 			               DoubleWritable.class,
+			               IntWritable.class,
 			               };
 				return CLASSES;
 			}
@@ -61,6 +62,7 @@ public class EntryWritable implements Writable {
 						Class[] CLASSES = {
 					               PositionWritable.class, 
 					               DoubleWritable.class,
+					               IntWritable.class,
 					               };
 						return CLASSES;
 					}

@@ -17,6 +17,12 @@ public class ElementsToComputeB implements Writable {
 	//This value plus the new b value of that child is the other possible new value of the vertex
 	private double partialAffectedBranchB;
 	
+	public ElementsToComputeB() {
+		this.idParent = -1;
+		this.unaffectedBranchesB = 0;
+		this.partialAffectedBranchB = 0;
+	}
+	
 	public ElementsToComputeB(int idParent, double unaffectedBranchesB, double partialAffectedBranchB) {
 		super();
 		this.idParent = idParent;

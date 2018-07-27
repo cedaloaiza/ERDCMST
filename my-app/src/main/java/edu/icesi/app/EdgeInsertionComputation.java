@@ -43,29 +43,30 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");
     	System.out.println("Selected node's parent: " + selectedNode.getPredecessorId());
 		
-    	if(vertex.getId().get() == selectedNode.getPredecessorId()){
-    		MapWritable possibleNewBsDirPred = new MapWritable();
-    		MapWritable successorsDeleteCosts = getAggregatedValue("sumDeleteCostForSuccessors");
-    		System.out.println("Length of KeySet to delete insertion: " + successorsDeleteCosts.keySet().size());
-    		for(Writable branchId: successorsDeleteCosts.keySet()) {
-    			IntWritable branchIdInt = (IntWritable) branchId;
-    			double distanceTo = vertex.getValue().getDistances()[branchIdInt.get()]; 
-    			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceTo));			
+    	if(vertex.getValue().getPositions()[selectedNodeId.get()] == Position.PREDECESSOR){ 
+    		if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
+    			System.out.println("Sending ID message to its parent");
+    			EntryWritable message = new EntryWritable(new Text("ID"), vertex.getId());
+    			sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  message);
     		}
-    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
-    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
-    		aggregate("parentF", new DoubleWritable(vertex.getValue().getF()));
+	    	if (vertex.getId().get() == selectedNode.getPredecessorId()) {
+	    		MapWritable possibleNewBsDirPred = new MapWritable();
+	    		MapWritable successorsDeleteCosts = getAggregatedValue("sumDeleteCostForSuccessors");
+	    		System.out.println("Length of KeySet to delete insertion: " + successorsDeleteCosts.keySet().size());
+	    		for(Writable branchId: successorsDeleteCosts.keySet()) {
+	    			IntWritable branchIdInt = (IntWritable) branchId;
+	    			double distanceTo = vertex.getValue().getDistances()[branchIdInt.get()]; 
+	    			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceTo));			
+	    		}
+	    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
+	    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
+	    		aggregate("parentF", new DoubleWritable(vertex.getValue().getF()));
+	    	}
     	}else if(vertex.getValue().getPredecessorId() == selectedNodeId.get() ){ //It is a direct successor
     		MapWritable bVal = new MapWritable();
     		bVal.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
     		System.out.println("Aggregating possibleNewBsDirPred. key:" + vertex.getId() + " value: " + vertex.getValue().getB());
     		aggregate("possibleNewBsDirPred", bVal);
-    	}else if(vertex.getValue().getPositions()[selectedNodeId.get()] == Position.PREDECESSOR){ 
-    		if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
-    			EntryWritable message = new EntryWritable(new Text("ID"), vertex.getId());
-    			sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  message);
-    		}
-    		
     	}else if (messages.iterator().hasNext()) {
     		System.out.println("b Value:: " + vertex.getValue().getB());
     		//DoubleWritable[] vertexBValue = new DoubleWritable[]{new DoubleWritable(vertex.getValue().getB())};

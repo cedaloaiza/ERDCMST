@@ -32,6 +32,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 		
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		System.out.println("Selected node at superstep 2: " + selectedNode.getId());
+		System.out.println("Selected node parent: " + selectedNode.getPredecessorId());
 		
 		
 		updateBnFs(vertex, selectedNode, messages);
@@ -66,7 +67,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 		if (vertex.getId().get() == selectedNode.getId()) {
 			//THIS SHOULD BE IMPROVED
 			for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) { 
-				System.out.println("Removing edge from " + vertex.getId() + " to " +  edge.getTargetVertexId());
+				System.out.println("Removing edge from " + vertex.getId().get() + " to " +  edge.getTargetVertexId());
     			vertex.removeEdges(edge.getTargetVertexId());
     		}
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
@@ -88,7 +89,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	    		MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
 				for (Writable branchId : deleteCostForSuccessors.keySet()) {
 					System.out.println("id in deleteCostForSuccessors: " + branchId);
-	    			System.out.println("Inserting edge from " + vertex.getId() + " to " + branchId );
+	    			System.out.println("Inserting edge from " + vertex.getId().get() + " to " + branchId );
 					vertex.addEdge(EdgeFactory.create((IntWritable) branchId, new DoubleWritable(0.0)));
 				}
 				if (maxPossibbleB > bestPossibleNewBDirPred.get()) {
@@ -96,10 +97,13 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 				} else {
 					vertex.getValue().setB(bestPossibleNewBDirPred.get());
 				}
+				reduce("parentB", new EntryWritable(new IntWritable(vertex.getValue().getPredecessorId()), new DoubleWritable(vertex.getValue().getB())));
 			} else {
 				ElementsToComputeB elementsToComputeB = new ElementsToComputeB(vertex.getValue().getPredecessorId(), maxPossibbleB, 
-						vertex.getValue().getDistances()[childToSelectedNode]);
-				reduce("allPredecessorsPossibleNewBs", elementsToComputeB);
+						vertex.getValue().getDistances()[childToSelectedNode]);			
+				MapWritable elementsToComputeBMap = new MapWritable();
+				elementsToComputeBMap.put(vertex.getId(), elementsToComputeB);
+				reduce("allPredecessorsPossibleNewBs", elementsToComputeBMap);
 			}
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR) {
 			MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
@@ -145,7 +149,6 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			IntWritable targetId = edge.getTargetVertexId();
 			messages.put(new Text("TO_SUCC"), new DoubleWritable(vertex.getValue().getDistances()[targetId.get()]));
 			messages.put(new Text("TO_SELEC"), new DoubleWritable(vertex.getValue().getDistances()[selectedNode.getId()]));
-			messages.put(new Text("F"), new DoubleWritable(vertex.getValue().getF()));
 			sendMessage(targetId, messages);
 		}
 	}

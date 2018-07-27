@@ -33,10 +33,11 @@ public class BestLocationEndingComputation extends AbstractComputation
 		vertex.getValue().print();
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		
-		if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
-			/* TODO
-			 * 
-			 */
+		if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR &&
+				vertex.getId().get() != selectedNode.getPredecessorId()) {
+			MapWritable newBs = getBroadcast("newBs");
+			DoubleWritable newB = (DoubleWritable) newBs.get(vertex.getId());
+			vertex.getValue().setB(newB.get());
 		}
 		
 		//PARTIAL SOLUTION
@@ -49,8 +50,10 @@ public class BestLocationEndingComputation extends AbstractComputation
 				}
 			}
 		}
-		
-		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), vertex.getId());
+		/* TODO
+		 * 
+		 */
+		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), vertex.getId());
 		
 	}
 	
@@ -60,31 +63,26 @@ public class BestLocationEndingComputation extends AbstractComputation
 	 * @param selectedNode
 	 */
 	public Location computeCostInsertingBreakingEdge(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode, MapWritable message) {
-		DoubleWritable predecessorF = (DoubleWritable) message.get(new Text("F"));
-		DoubleWritable predecessorToSelectedNode = (DoubleWritable) message.get(new Text("TO_SELEC"));
-		DoubleWritable selectedNodeToHere = (DoubleWritable) message.get(new Text("TO_SUCC"));
+		DoubleWritable parentToSelectedNode = (DoubleWritable) message.get(new Text("TO_SELEC"));
+		DoubleWritable parentToHere = (DoubleWritable) message.get(new Text("TO_SUCC"));
 		Location partialBestLocation = null;
+		double costBE =  parentToSelectedNode.get() + selectedNode.getDistances()[vertex.getValue().getId()] - parentToHere.get();
 		//feasible insert
-		boolean feasibleInsert = (predecessorF.get() + predecessorToSelectedNode.get()  + selectedNodeToHere.get() + vertex.getValue().getB()) <= 10;
+		boolean feasibleInsert = (vertex.getValue().getF() + costBE + vertex.getValue().getB()) <= 10;
 		System.out.println("Feasible Insert: " + feasibleInsert);
 		if (feasibleInsert) {	
-			
-			double costBE =  vertex.getValue().getDistances()[selectedNode.getId()] + selectedNodeToHere.get() - selectedNodeToHere.get();
-			
 			//JUST FOR DEBUGGING
 			int iteration = (int) getSuperstep() / 5;
 			System.out.println("Iteration on phase 3: " + iteration);
 			double costFN = Double.POSITIVE_INFINITY;
 			if (iteration % 2 == 0) 
 				costFN = vertex.getValue().getPartialBestLocationCost();
-			
 			if (costBE < costFN) {
 				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE, vertex.getValue().getPredecessorId());
 			} else {
 				partialBestLocation = new Location(vertex.getId().get(), Way.FROM_NODE, costFN, vertex.getValue().getPredecessorId());
 			}	
 		}
-		
 		return partialBestLocation;
 		
 	}
