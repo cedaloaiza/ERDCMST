@@ -32,9 +32,6 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		
 		if (vertex.getId().get() == selectedNode.getId()) {
 			if (bestLocation.getWay() == Way.FROM_NODE) {
-				/*
-				 * TODO 
-				 */
 				vertex.getValue().setPredecessorId(bestLocation.getNodeId());
 			} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
 				/*
@@ -45,6 +42,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				System.out.println("Updating parent after insert...");
 				vertex.getValue().setPredecessorId(bestLocation.getPredecessorId());
 				vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(5)));
+				aggregate("bestPossibleNewBDirPred", new DoubleWritable(vertex.getValue().getDistances()[bestLocation.getNodeId()]));
 			}
 		} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR) {
 			if (messages.iterator().hasNext()) {

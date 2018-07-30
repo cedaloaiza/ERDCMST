@@ -154,6 +154,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		
 		registerAggregator("parentF", DoubleSumAggregator.class);
 		
+		registerAggregator("bestPossibleNewBDirPred", DoubleSumAggregator.class);
+		
 		
 		
 		//We are doing the positions' update of selected node just with messages
