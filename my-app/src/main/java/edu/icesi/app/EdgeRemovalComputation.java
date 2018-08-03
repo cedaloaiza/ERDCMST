@@ -185,13 +185,13 @@ public class EdgeRemovalComputation extends
 			if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE || 
 					vertex.getId().get() == bestLocation.getNodeId() && bestLocation.getWay() == Way.FROM_NODE) {
 				if (bestLocation.getWay() == Way.BREAKING_EDGE) {
-					
 					if (maxPossibbleB > bestPossibleNewBDirPred.get()) {
 						vertex.getValue().setB(maxPossibbleB);
 					} else {
 						vertex.getValue().setB(bestPossibleNewBDirPred.get());
 					}
 				}
+				System.out.println("b value of parent vertex " + vertex.getId() + ": " + vertex.getValue().getB());
 				reduce("parentB", new EntryWritable(new IntWritable(vertex.getValue().getPredecessorId()), new DoubleWritable(vertex.getValue().getB())));
 			} else {
 				ElementsToComputeB elementsToComputeB = new ElementsToComputeB(vertex.getValue().getPredecessorId(), maxPossibbleB, 

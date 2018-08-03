@@ -31,7 +31,7 @@ public class RDCMSTValue implements Writable{
 	//A flag that indicates if this node can be placed in a better location in the future.
 	private boolean inList;
 	//Best cost of inserting in this location in either way: FROM NODE or BREAKING EDGE
-	private double partialBestLocationCost;
+	private double partialBestLocationCost = Double.POSITIVE_INFINITY;
 	
 
 

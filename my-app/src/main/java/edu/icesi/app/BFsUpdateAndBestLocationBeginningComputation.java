@@ -64,6 +64,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 //		DoubleWritable succesorB = (DoubleWritable) message.get(succesorId);
 		DoubleWritable bestPossibleNewBDirPred = getBroadcast("bestPossibleNewBDirPred");
 		
+		
 		if (vertex.getId().get() == selectedNode.getId()) {
 			//THIS SHOULD BE IMPROVED
 			for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) { 
@@ -98,6 +99,9 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 				} else {
 					vertex.getValue().setB(bestPossibleNewBDirPred.get());
 				}
+				System.out.println("best posible b coming from unaffected branch: " + maxPossibbleB);
+				System.out.println("best posible b coming from affected branch: " + bestPossibleNewBDirPred);
+				System.out.println("b value of parent vertex " + vertex.getId() + ": " + vertex.getValue().getB());
 				reduce("parentB", new EntryWritable(new IntWritable(vertex.getValue().getPredecessorId()), new DoubleWritable(vertex.getValue().getB())));
 			} else {
 				System.out.println("storing in allPredecessorsPossibleNewBs");
@@ -132,7 +136,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	 */
 	public void computecCostInsertingFromNode(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode) {
 		//feasible insert
-		boolean feasibleInsert = (vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()] + 0) <= 10;
+		boolean feasibleInsert = (vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()] + 0) <= 100;
 		if(feasibleInsert){
 			double cost =  vertex.getValue().getDistances()[selectedNode.getId()];
 			vertex.getValue().setPartialBestLocationCost(cost);

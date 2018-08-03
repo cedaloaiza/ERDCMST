@@ -120,6 +120,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					setComputation(BestLocationEndingComputation.class);
 					break;
 				case 4:
+					Location bl = getAggregatedValue("bestLocation");
+					System.out.println("Best Location: ");
+					bl.print();
 					broadcast("selectedNode", selectedNode);
 					setComputation(insertOperationAndBFsUpdate.class);
 					iteration++;
@@ -150,7 +153,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		registerPersistentAggregator("sumDeleteCostForSuccessors", SumSuccessorDeleteCostsAggregator.class);
 		//New variable to decide which of the new branches, created after the removing node removal, 
 		//drive now to the farthest leaf.
-		registerPersistentAggregator("possibleNewBsDirPred", SumSuccessorDeleteCostsAggregator.class);
+		registerAggregator("possibleNewBsDirPred", SumSuccessorDeleteCostsAggregator.class);
 		
 		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
 		
@@ -204,7 +207,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 			} else {
 				bValue = affectedBranchB;
 			}
-			System.out.println("Storing new b value for " + parentId);
+			System.out.println("Storing new b value for " + parentId + ": " + bValue);
 			newBs.put(parentId, new DoubleWritable(bValue));
 			allPredecessorsPossibleNewBs.remove(parentId);
 			//WARNING!!!!!
