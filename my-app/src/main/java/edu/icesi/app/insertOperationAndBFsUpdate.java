@@ -40,22 +40,27 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				System.out.println("Updating parent after insert...");
 				vertex.getValue().setPredecessorId(bestLocation.getPredecessorId());
 				vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(5)));
-				aggregate("bestPossibleNewBDirPred", new DoubleWritable(vertex.getValue().getDistances()[bestLocation.getNodeId()]));
+				aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getDistances()[bestLocation.getNodeId()]));
 			}
 		} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR) {
 			vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
 			EntryWritable updatePositionMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.SUCCESSOR));
-			EntryWritable childToInsertionMessage = new EntryWritable(new IntWritable(selectedNode.getId()), vertex.getId());
+			
 			//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.SUCCESSOR)});
-			sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), childToInsertionMessage);
+			
 			sendMessage(new IntWritable(selectedNode.getId()), updatePositionMessage);
+			if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
+				EntryWritable childToInsertionMessage = new EntryWritable(new Text("ID"), vertex.getId());
+				System.out.println("From best location predecessor Sending message to: " + vertex.getValue().getPredecessorId());
+				sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), childToInsertionMessage);
+			} 
 			if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE){
 				System.out.println("Inserting the selected node " + selectedNode.getId() + " from best location predecessor ");
 				System.out.println("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
 				vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(5)));
 				System.out.println("Removing edge from " + vertex.getId() + " to " +  bestLocation.getNodeId());
 				vertex.removeEdges(new IntWritable(bestLocation.getNodeId()));
-				aggregate("bestPossibleNewBDirPred", new DoubleWritable(vertex.getValue().getDistances()[selectedNode.getId()]));
+				aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getDistances()[selectedNode.getId()]));
 				double selectedNodeF = vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()];
 				sendMessage(new IntWritable(selectedNode.getId()), new EntryWritable(new Text("F"), new DoubleWritable(selectedNodeF)));
 			}
@@ -92,12 +97,17 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 				double selectedNodeF = vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()];
 				sendMessage(new IntWritable(selectedNode.getId()), new EntryWritable(new Text("F"), new DoubleWritable(selectedNodeF)));
+				if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
+					EntryWritable childToInsertionMessage = new EntryWritable(new Text("ID"), vertex.getId());
+					System.out.println("From best location Sending message to: " + vertex.getValue().getPredecessorId());
+					sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), childToInsertionMessage);
+				}
 			} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
 				vertex.getValue().setF(vertex.getValue().getF() + bestLocation.getCost());
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.SUCCESSOR;
 				System.out.println("Updating parent after insert...");
 				vertex.getValue().setPredecessorId(selectedNode.getId());
-				aggregate("bestPossibleNewBDirPred", new DoubleWritable(vertex.getValue().getB()));
+				aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getB()));
 				sendMessage(new IntWritable(selectedNode.getId()), new EntryWritable(new Text("BEST_LOCATION_B"), new DoubleWritable(vertex.getValue().getB())));
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.PREDECESSOR));
 				//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.PREDECESSOR)});
@@ -110,6 +120,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		} else {
 			vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
 			EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.NONE));
+			System.out.println("From Others Sending message to: " + vertex.getValue().getPredecessorId());
 			sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), new EntryWritable(new Text("PARTIAL_B"), new DoubleWritable(vertex.getValue().getB())));
 			//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.NONE)});
 			//sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);

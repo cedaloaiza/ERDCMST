@@ -34,6 +34,16 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<DoubleWritable> messages) throws IOException {
 		
+		
+		//Completing previous phase
+		MapWritable newBs = getBroadcast("newBs");
+		if (!newBs.isEmpty()) {
+			if (newBs.containsKey(vertex.getId())) {
+				DoubleWritable newB = (DoubleWritable) newBs.get(vertex.getId());
+				vertex.getValue().setB(newB.get());
+			}
+		}
+		
 		vertex.getValue().print();
 		
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");

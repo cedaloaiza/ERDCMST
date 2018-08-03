@@ -138,6 +138,7 @@ public class RDCMSTValue implements Writable{
 
 	@Override
 	public void write(DataOutput out) throws IOException {
+		out.writeDouble(f);
 		out.writeDouble(b);
 		distances.write(out);
 		out.writeInt(positions.length);
@@ -150,6 +151,7 @@ public class RDCMSTValue implements Writable{
 
 	@Override
 	public void readFields(DataInput in) throws IOException {
+		f = in.readDouble();
 		b = in.readDouble();
 		distances.readFields(in);
 		int positionsLength = in.readInt();

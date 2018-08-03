@@ -70,6 +70,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					selectANode();
 					break;
 				case 1:
+					computeBValues();
+					setAggregatedValue("bestLocation", new Location());
 					selectedNode = getAggregatedValue("selectedNodeA");
 					System.out.println("Selected node's parent at master: " + selectedNode.getPredecessorId());
 					broadcast("selectedNode", selectedNode);
@@ -150,11 +152,11 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		//drive now to the farthest leaf.
 		registerPersistentAggregator("possibleNewBsDirPred", SumSuccessorDeleteCostsAggregator.class);
 		
-		registerAggregator("bestLocation", BestLocationAggregator.class);
+		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
 		
 		registerAggregator("parentF", DoubleSumAggregator.class);
 		
-		registerAggregator("bestPossibleNewBDirPred", DoubleSumAggregator.class);
+		registerAggregator("bestPossibleNewBDirPredA", DoubleSumAggregator.class);
 		
 		
 		
@@ -193,6 +195,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		DoubleWritable bValueWritable = (DoubleWritable) parentB.get(parentId);
 		double bValue = bValueWritable.get();
 		while (!allPredecessorsPossibleNewBs.isEmpty()) {
+			System.out.println("allPredecessorsPossibleNewBs length: " + allPredecessorsPossibleNewBs.size());
 			ElementsToComputeB elementsToComputeB = (ElementsToComputeB) allPredecessorsPossibleNewBs.get(parentId);
 			double unaffectedBranchesB = elementsToComputeB.getUnaffectedBranchesB();
 			double affectedBranchB = elementsToComputeB.getPartialAffectedBranchB() +  bValue;
@@ -201,10 +204,12 @@ public class RDCMSTMasterCompute extends MasterCompute {
 			} else {
 				bValue = affectedBranchB;
 			}
+			System.out.println("Storing new b value for " + parentId);
 			newBs.put(parentId, new DoubleWritable(bValue));
 			allPredecessorsPossibleNewBs.remove(parentId);
 			//WARNING!!!!!
 			parentId = new IntWritable(elementsToComputeB.getIdParent());
+			System.out.println("Parent ID " + parentId);
 		}
 		broadcast("newBs", newBs);
 		
@@ -224,6 +229,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		broadcast("selectedNode", selectedNode);
 		//
 		registerReducer("addDeleteCostForSuccessors", new MapAssignmentReduce());
+		registerReducer("parentB", new EntryAssignmentReduce(), new EntryWritable());
+		registerReducer("allPredecessorsPossibleNewBs", new MapAssignmentReduce());
 	}
 	
 	private void resetPersistentAggregators() {

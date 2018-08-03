@@ -5,6 +5,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.giraph.reducers.ReduceOperation;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
 
@@ -31,7 +33,8 @@ public class EntryAssignmentReduce implements ReduceOperation<EntryWritable, Ent
 	@Override
 	public EntryWritable createInitialValue() {
 		// TODO Auto-generated method stub
-		return new EntryWritable();
+		return new EntryWritable(new IntWritable(-1), new DoubleWritable(0));
+		//return new EntryWritable();
 	}
 
 	@Override

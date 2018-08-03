@@ -69,6 +69,14 @@ public class Location implements Writable {
 		cost = in.readDouble();
 		predecessorId = in.readInt();
 	}
+	
+	public void print() {
+		System.out.println("*Location*");
+		System.out.println("ID: " + nodeId);
+		System.out.println("Way: " + way);
+		System.out.println("Parent ID: " + predecessorId);
+		System.out.println("Cost: " + cost);
+	}
 
 	
 }

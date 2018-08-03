@@ -53,7 +53,8 @@ public class MapAssignmentReduce implements ReduceOperation<MapWritable, MapWrit
 		for (Writable dw: valueToReduce.keySet()) {
 			System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
 		}
-		return valueToReduce ;
+		curValue.putAll(valueToReduce);
+		return  curValue;
 	}
 
 	@Override
@@ -64,7 +65,8 @@ public class MapAssignmentReduce implements ReduceOperation<MapWritable, MapWrit
 		for (Writable dw: valueToReduce.keySet()) {
 			System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
 		}
-		return valueToReduce;
+		curValue.putAll(valueToReduce);
+		return curValue;
 	}
 
 

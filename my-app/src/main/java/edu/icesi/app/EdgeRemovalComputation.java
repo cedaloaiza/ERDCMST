@@ -37,22 +37,15 @@ public class EdgeRemovalComputation extends
 			DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
 		
-		//Completing the previous movement
-		RDCMSTValue selectedNode = getBroadcast("selectedNode");
+		
 		BooleanWritable everythingUpdate = getBroadcast("everythingUpdate");
-		if (everythingUpdate == null) {
-			if (selectedNode.getId() == vertex.getId().get()) {
-				for (EntryWritable entry : messages) {
-					System.out.println("Updating positions of selected node");
-					IntWritable key = (IntWritable) entry.getKey();
-					System.out.println("Key: " + key);
-					PositionWritable positionW = (PositionWritable) entry.get(key);
-					System.out.println("Position: " + positionW.getPosition());
-					System.out.println("Updating positions of selected node");
-					vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
-				}	
-			}
+		if (everythingUpdate == null && (int) getSuperstep() != 0) {
+			RDCMSTValue selectedNode = getBroadcast("selectedNode");
+			System.out.println("Old selected vertex: " + selectedNode.getId());
+			Location bestLocation = getAggregatedValue("bestLocation");
+			completePreviousMovement(vertex, messages, selectedNode, bestLocation);
 		}
+		
 		
 		vertex.getValue().print();
 		System.out.print("Children: ");
@@ -60,6 +53,8 @@ public class EdgeRemovalComputation extends
 			System.out.print(e.getTargetVertexId() + " ");
 		}
 		System.out.println("");
+		//Completing the previous movement
+		
 		
 		//JUST FOR DEBUGGING
 //		Location bestLocation = getAggregatedValue("bestLocation");
@@ -135,5 +130,76 @@ public class EdgeRemovalComputation extends
 			}
 		}
 		
+	}
+	
+	public void completePreviousMovement (Vertex<IntWritable, RDCMSTValue,
+			DoubleWritable> vertex, Iterable<EntryWritable> messages, RDCMSTValue selectedNode, Location bestLocation) {
+		System.out.println("Positions length: " + vertex.getValue().getPositions().length);
+		System.out.println("Is selected node´s predecessor? " + (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR));
+		if (selectedNode.getId() == vertex.getId().get()) {
+			double selectedNodeNewF = 0;
+			double bestLocationB = 0;
+			for (EntryWritable entry : messages) {
+				if (entry.getKey() instanceof Text) {
+					Text header = (Text) entry.getKey();
+					if (header.toString().equals("F")) {
+						DoubleWritable selectedNodeNewFW = (DoubleWritable) entry.get(header);
+						selectedNodeNewF = selectedNodeNewFW.get();
+					} else if (header.toString().equals("BEST_LOCATION_B")) {
+						DoubleWritable bestLocationBW = (DoubleWritable) entry.get(header);
+						bestLocationB = bestLocationBW.get();
+					}
+				} else {
+					System.out.println("Updating positions of selected node");
+					IntWritable key = (IntWritable) entry.getKey();
+					System.out.println("Key: " + key);
+					PositionWritable positionW = (PositionWritable) entry.get(key);
+					System.out.println("Position: " + positionW.getPosition());
+					System.out.println("Updating positions of selected node");
+					vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
+				}
+			}
+			vertex.getValue().setF(selectedNodeNewF);
+			if (bestLocation.getWay() == Way.FROM_NODE) {
+				vertex.getValue().setB(0);
+			} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
+				double newB = bestLocationB + vertex.getValue().getDistances()[bestLocation.getNodeId()]; 
+				vertex.getValue().setB(newB);
+			}
+		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+			DoubleWritable bestPossibleNewBDirPred = getAggregatedValue("bestPossibleNewBDirPredA");
+			int childToSelectedNode = -1;
+			double maxPossibbleB = 0;
+			for (EntryWritable message : messages) {
+				Text messageKey = (Text) message.getKey();
+				if (messageKey.toString().equals("PARTIAL_B")) {
+					DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());
+					maxPossibbleB = Math.max(maxPossibbleB,  possibleB.get() );
+				} else if (messageKey.toString().equals("ID")) {
+					IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
+					childToSelectedNode = childToSelectedNodeWritable.get();
+				}
+			}
+			bestLocation.print();
+			//if vertex is parent of selected node
+			if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE || 
+					vertex.getId().get() == bestLocation.getNodeId() && bestLocation.getWay() == Way.FROM_NODE) {
+				if (bestLocation.getWay() == Way.BREAKING_EDGE) {
+					
+					if (maxPossibbleB > bestPossibleNewBDirPred.get()) {
+						vertex.getValue().setB(maxPossibbleB);
+					} else {
+						vertex.getValue().setB(bestPossibleNewBDirPred.get());
+					}
+				}
+				reduce("parentB", new EntryWritable(new IntWritable(vertex.getValue().getPredecessorId()), new DoubleWritable(vertex.getValue().getB())));
+			} else {
+				ElementsToComputeB elementsToComputeB = new ElementsToComputeB(vertex.getValue().getPredecessorId(), maxPossibbleB, 
+						vertex.getValue().getDistances()[childToSelectedNode]);			
+				MapWritable elementsToComputeBMap = new MapWritable();
+				elementsToComputeBMap.put(vertex.getId(), elementsToComputeB);
+				reduce("allPredecessorsPossibleNewBs", elementsToComputeBMap);
+			}
+		}
 	}
 }

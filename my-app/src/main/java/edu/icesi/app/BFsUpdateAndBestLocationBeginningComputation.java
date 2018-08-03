@@ -71,6 +71,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
     			vertex.removeEdges(edge.getTargetVertexId());
     		}
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+			System.out.println("It is a selected node's predecessor");
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;
 			for (EntryWritable message : messages) {
@@ -99,6 +100,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 				}
 				reduce("parentB", new EntryWritable(new IntWritable(vertex.getValue().getPredecessorId()), new DoubleWritable(vertex.getValue().getB())));
 			} else {
+				System.out.println("storing in allPredecessorsPossibleNewBs");
 				ElementsToComputeB elementsToComputeB = new ElementsToComputeB(vertex.getValue().getPredecessorId(), maxPossibbleB, 
 						vertex.getValue().getDistances()[childToSelectedNode]);			
 				MapWritable elementsToComputeBMap = new MapWritable();
