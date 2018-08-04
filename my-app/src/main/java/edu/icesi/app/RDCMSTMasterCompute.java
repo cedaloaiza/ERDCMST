@@ -30,12 +30,12 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private ArrayList<Integer> list;
 	private int SUPER_STEPS_PER_ITERATION = 5;
 	private int iteration = 0;
-	private int MAX_ITERARIONS = 5;
+	private int MAX_ITERARIONS = 6;
 	private int lambda = 100;
 	private int superstepDeviation = 0;
 	
 	//JUST FOR DEBUGGING
-	private int[] selectedNodes = new int[]{2, 1, 3, 2, 3};
+	private int[] selectedNodes = new int[]{2, 1, 3, 2, 3, 2};
 	
 	private RDCMSTValue selectedNode;
 

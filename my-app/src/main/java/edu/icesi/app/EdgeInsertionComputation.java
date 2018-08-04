@@ -53,7 +53,7 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");
     	System.out.println("Selected node's parent: " + selectedNode.getPredecessorId());
 		
-    	if(vertex.getValue().getPositions()[selectedNodeId.get()] == Position.PREDECESSOR){ 
+    	if (vertex.getValue().getPositions()[selectedNodeId.get()] == Position.PREDECESSOR) { 
     		if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
     			System.out.println("Sending ID message to its parent");
     			EntryWritable message = new EntryWritable(new Text("ID"), vertex.getId());
@@ -65,19 +65,20 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 	    		System.out.println("Length of KeySet to delete insertion: " + successorsDeleteCosts.keySet().size());
 	    		for(Writable branchId: successorsDeleteCosts.keySet()) {
 	    			IntWritable branchIdInt = (IntWritable) branchId;
-	    			double distanceTo = vertex.getValue().getDistances()[branchIdInt.get()]; 
-	    			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceTo));			
+	    			double distanceToNewChild = vertex.getValue().getDistances()[branchIdInt.get()]; 
+	    			double distanceToSelectedNode = vertex.getValue().getDistances()[selectedNode.getId()]; 
+	    			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceToNewChild - distanceToSelectedNode));			
 	    		}
 	    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
 	    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
 	    		aggregate("parentF", new DoubleWritable(vertex.getValue().getF()));
 	    	}
-    	}else if(vertex.getValue().getPredecessorId() == selectedNodeId.get() ){ //It is a direct successor
+    	} else if(vertex.getValue().getPredecessorId() == selectedNodeId.get() ){ //It is a direct successor
     		MapWritable bVal = new MapWritable();
     		bVal.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
     		System.out.println("Aggregating possibleNewBsDirPred. key:" + vertex.getId() + " value: " + vertex.getValue().getB());
     		aggregate("possibleNewBsDirPred", bVal);
-    	}else if (messages.iterator().hasNext()) {
+    	} else if (vertex.getId().get() != selectedNode.getId() && messages.iterator().hasNext()) {
     		System.out.println("b Value:: " + vertex.getValue().getB());
     		//DoubleWritable[] vertexBValue = new DoubleWritable[]{new DoubleWritable(vertex.getValue().getB())};
     		//DoubleArrayWritable writableVertexBValue = new DoubleArrayWritable();

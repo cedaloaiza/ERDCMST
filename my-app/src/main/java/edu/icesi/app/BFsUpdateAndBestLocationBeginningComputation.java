@@ -76,7 +76,9 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;
 			for (EntryWritable message : messages) {
+				
 				Text messageKey = (Text) message.getKey();
+				System.out.println("Incoming messages. Key: " + messageKey + " Value: " + message.get(messageKey));
 				if (messageKey.toString().equals("ID")) {
 					IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
 					childToSelectedNode = childToSelectedNodeWritable.get();
@@ -113,17 +115,20 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			}
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR) {
 			MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
+			System.out.println("deleteCostForSuccessors:");
 			for (Writable branchId : deleteCostForSuccessors.keySet()) {
 				IntWritable branchIdInt = (IntWritable) branchId;
+				System.out.println("Key: " + branchIdInt + " Value: " + deleteCostForSuccessors.get(branchId));
 				//This vertex is in branchId
-				if (vertex.getValue().getPositions()[branchIdInt.get()] == Position.SUCCESSOR) {
-					IntWritable branchCost = (IntWritable) deleteCostForSuccessors.get(branchId);
+				if (vertex.getValue().getPositions()[branchIdInt.get()] == Position.SUCCESSOR || vertex.getId().get() == branchIdInt.get()) {
+					DoubleWritable branchCost = (DoubleWritable) deleteCostForSuccessors.get(branchId);
 					double newF = vertex.getValue().getF() + branchCost.get();
+					System.out.println("newF: " + newF);
 					vertex.getValue().setF(newF);
-				}
-				if (vertex.getId().get() == branchIdInt.get()) {
-					System.out.println("Updating parent after delete...");
-					vertex.getValue().setPredecessorId(selectedNode.getPredecessorId());
+					if (vertex.getId().get() == branchIdInt.get()) {
+						System.out.println("Updating parent after delete...");
+						vertex.getValue().setPredecessorId(selectedNode.getPredecessorId());
+					}
 				}
 			}
 		}

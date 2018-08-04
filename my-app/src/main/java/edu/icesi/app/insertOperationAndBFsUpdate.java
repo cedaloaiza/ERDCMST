@@ -123,7 +123,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 			System.out.println("From Others Sending message to: " + vertex.getValue().getPredecessorId());
 			sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), new EntryWritable(new Text("PARTIAL_B"), new DoubleWritable(vertex.getValue().getB())));
 			//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.NONE)});
-			//sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
+			sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 		}
 		
 		
