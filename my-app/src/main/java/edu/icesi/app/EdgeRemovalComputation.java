@@ -84,15 +84,19 @@ public class EdgeRemovalComputation extends
    
     		MapWritable vertexSuccessors = new MapWritable();
     		
+    		double movementCost = 0;
+    		
     		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  		
     			System.out.println("Key: " + edge.getTargetVertexId() + " - Delete Costs:: " + -vertex.getValue().getDistances()[edge.getTargetVertexId().get()]);
     			vertexSuccessors.put(new IntWritable(edge.getTargetVertexId().get()), new DoubleWritable(-vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
+    			movementCost -= vertex.getValue().getDistances()[edge.getTargetVertexId().get()];
     		}
     		System.out.println("Size of reduced object: " + vertexSuccessors.size());
     		for (Writable dw: vertexSuccessors.keySet()) {
     			System.out.println("Key: " + dw + " - Delete Costs:: " + vertexSuccessors.get(dw));
     		}
     		reduce("addDeleteCostForSuccessors", vertexSuccessors);
+    		aggregate("movementCost", new DoubleWritable(movementCost));
     		//ArrayWritable<Writable> messageSuccesorsId = new ArrayWritable<Writable>();
     		//messageSuccesorsId.set((Writable[]) vertexSuccessors.keySet().toArray());
     		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageSuccesorsId);

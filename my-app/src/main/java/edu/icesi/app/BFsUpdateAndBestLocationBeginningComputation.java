@@ -1,12 +1,14 @@
 package edu.icesi.app;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
+import org.apache.hadoop.io.ArrayPrimitiveWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
@@ -67,10 +69,15 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 		
 		if (vertex.getId().get() == selectedNode.getId()) {
 			//THIS SHOULD BE IMPROVED
+			int[] childrenIds = new int[vertex.getNumEdges()];
+			int i = 0;
 			for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) { 
 				System.out.println("Removing edge from " + vertex.getId().get() + " to " +  edge.getTargetVertexId());
     			vertex.removeEdges(edge.getTargetVertexId());
+    			childrenIds[i] = edge.getTargetVertexId().get();
+    			i++;
     		}
+			reduce("selectedVertexChildren", new ArrayPrimitiveWritable(childrenIds));
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
 			System.out.println("It is a selected node's predecessor");
 			int childToSelectedNode = -1;

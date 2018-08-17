@@ -21,6 +21,10 @@ public class RDCMSTValue implements Writable{
 	private double f;
 	//The distance from this node to the farthest leaf
 	private double b;
+	//The distance from this node to the facility before the deleteOperation
+	private double oldF;
+	//The distance from this node to the farthest leaf before the deleteOperation
+	private double oldB;
 	// Direct distance from this node to any other node in the graph .
 	private ArrayPrimitiveWritable distances;
 	// This node is; a predecessor, a successor, or none; of any node in the graph.
@@ -91,6 +95,14 @@ public class RDCMSTValue implements Writable{
 		return id;
 	}
 	
+	public double getOldB() {
+		return oldB;
+	}
+	
+	public double getOldF() {
+		return oldF;
+	}
+	
 	public void setB(double b) {
 		this.b = b;
 	}
@@ -111,7 +123,6 @@ public class RDCMSTValue implements Writable{
 		return partialBestLocationCost;
 	}
 
-
 	public void setPartialBestLocationCost(double partialBestLocationCost) {
 		this.partialBestLocationCost = partialBestLocationCost;
 	}
@@ -123,7 +134,15 @@ public class RDCMSTValue implements Writable{
 	public void setPredecessorId(int predecessorId) {
 		this.predecessorId = predecessorId;
 	}
-	
+
+	public void setOldF(double oldF) {
+		this.oldF = oldF;
+	}
+
+	public void setOldB(double oldB) {
+		this.oldB = oldB;
+	}
+
 	public void print() {
 		System.out.println("***NODE " + this.id + "***");
 		System.out.println("f: " + this.f);
@@ -140,6 +159,8 @@ public class RDCMSTValue implements Writable{
 	public void write(DataOutput out) throws IOException {
 		out.writeDouble(f);
 		out.writeDouble(b);
+		out.writeDouble(oldF);
+		out.writeDouble(oldB);
 		distances.write(out);
 		out.writeInt(positions.length);
 		for(Position p : positions) {
@@ -153,6 +174,8 @@ public class RDCMSTValue implements Writable{
 	public void readFields(DataInput in) throws IOException {
 		f = in.readDouble();
 		b = in.readDouble();
+		oldF = in.readDouble();
+		oldB = in.readDouble();
 		distances.readFields(in);
 		int positionsLength = in.readInt();
 		positions = new Position[positionsLength];

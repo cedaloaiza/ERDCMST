@@ -11,6 +11,7 @@ import java.util.Random;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.master.MasterCompute;
 import org.apache.giraph.utils.WritableUtils;
+import org.apache.hadoop.io.ArrayPrimitiveWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -21,6 +22,7 @@ import org.apache.hadoop.io.Writable;
 import aggregators.MapAssignmentReduce;
 import aggregators.BestLocationAggregator;
 import aggregators.EntryAssignmentReduce;
+import aggregators.ArrayAssignmentReduce;
 import aggregators.ArrayPrimitiveOverwriteAggregator;
 import aggregators.SelectedNodeAggregator;
 import aggregators.SumSuccessorDeleteCostsAggregator;
@@ -33,6 +35,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private int MAX_ITERARIONS = 6;
 	private int lambda = 100;
 	private int superstepDeviation = 0;
+	private ArrayPrimitiveWritable selectedVertexChildrenWritable;
 	
 	//JUST FOR DEBUGGING
 	private int[] selectedNodes = new int[]{2, 1, 3, 2, 3, 2};
@@ -110,11 +113,13 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
 					DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
 					broadcast("bestPossibleNewBDirPred", longestBranchLength);
+					registerReducer("selectedVertexChildren", new ArrayAssignmentReduce());
 					/**
 					 * TODO
 					 */
 					break;
 				case 3:
+					selectedVertexChildrenWritable = getReduced("selectedVertexChildren");
 					broadcast("selectedNode", selectedNode);
 					computeBValues();
 					setComputation(BestLocationEndingComputation.class);
@@ -123,6 +128,11 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					Location bl = getAggregatedValue("bestLocation");
 					System.out.println("Best Location: ");
 					bl.print();
+					DoubleWritable movementCostW = getAggregatedValue("movementCost");
+					double movementCost = movementCostW.get() + bl.getCost();
+					if (movementCost > 0) {
+						broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
+					}
 					broadcast("selectedNode", selectedNode);
 					setComputation(insertOperationAndBFsUpdate.class);
 					iteration++;
@@ -156,6 +166,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		registerAggregator("possibleNewBsDirPred", SumSuccessorDeleteCostsAggregator.class);
 		
 		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
+		
+		registerPersistentAggregator("movementCost", DoubleSumAggregator.class);
 		
 		registerAggregator("parentF", DoubleSumAggregator.class);
 		
