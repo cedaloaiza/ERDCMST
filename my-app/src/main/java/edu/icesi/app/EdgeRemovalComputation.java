@@ -38,8 +38,8 @@ public class EdgeRemovalComputation extends
 		
 		
 		
-		BooleanWritable everythingUpdate = getBroadcast("everythingUpdate");
-		if (everythingUpdate == null && (int) getSuperstep() != 0) {
+		BooleanWritable startingNormalMovement = getBroadcast("startingNormalMovement");
+		if (startingNormalMovement != null && (int) getSuperstep() != 0) {
 			RDCMSTValue selectedNode = getBroadcast("selectedNode");
 			System.out.println("Old selected vertex: " + selectedNode.getId());
 			Location bestLocation = getAggregatedValue("bestLocation");

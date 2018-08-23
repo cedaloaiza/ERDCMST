@@ -36,6 +36,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private int lambda = 100;
 	private int superstepDeviation = 0;
 	private ArrayPrimitiveWritable selectedVertexChildrenWritable;
+	private boolean abortedMovement = false;
 	
 	//JUST FOR DEBUGGING
 	private int[] selectedNodes = new int[]{2, 1, 3, 2, 3, 2};
@@ -69,7 +70,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		if (iteration < MAX_ITERARIONS) {		
 			switch (superStepPhase) {
 				//**DELETE OPERATION
-				case 0:					
+				case 0:	
+					if (!abortedMovement) {
+						broadcast("startingNormalMovement", new BooleanWritable(true));
+					}
 					selectANode();
 					break;
 				case 1:
@@ -102,7 +106,6 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					DoubleWritable parentF = (DoubleWritable) getAggregatedValue("parentF");
 					if (parentF.get() + bestPossibleNewBDirPred > lambda) {
 						superstepDeviation += 3;
-						broadcast("everythingUpdated", new BooleanWritable(true));
 						selectANode();
 						iteration++;
 						break;
@@ -132,6 +135,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					double movementCost = movementCostW.get() + bl.getCost();
 					if (movementCost > 0) {
 						broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
+						abortedMovement = true;
+					} else {
+						abortedMovement = false;
 					}
 					broadcast("selectedNode", selectedNode);
 					setComputation(insertOperationAndBFsUpdate.class);
