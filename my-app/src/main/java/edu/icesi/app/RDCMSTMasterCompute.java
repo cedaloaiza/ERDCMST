@@ -133,6 +133,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					bl.print();
 					DoubleWritable movementCostW = getAggregatedValue("movementCost");
 					double movementCost = movementCostW.get() + bl.getCost();
+					System.out.println("Movement Cost: " +  movementCost);
 					if (movementCost > 0) {
 						broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
 						abortedMovement = true;
@@ -141,6 +142,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					}
 					broadcast("selectedNode", selectedNode);
 					setComputation(insertOperationAndBFsUpdate.class);
+					setAggregatedValue("movementCost", new DoubleWritable(0));
 					iteration++;
 					break;
 				default:
