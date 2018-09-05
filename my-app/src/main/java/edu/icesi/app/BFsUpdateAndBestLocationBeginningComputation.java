@@ -101,7 +101,9 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 				for (Writable branchId : deleteCostForSuccessors.keySet()) {
 					System.out.println("id in deleteCostForSuccessors: " + branchId);
 	    			System.out.println("Inserting edge from " + vertex.getId().get() + " to " + branchId );
-					vertex.addEdge(EdgeFactory.create((IntWritable) branchId, new DoubleWritable(0.0)));
+	    			IntWritable IntBranchId = (IntWritable) branchId;
+	    			double edgeWeight = vertex.getValue().getDistances()[IntBranchId.get()];
+					vertex.addEdge(EdgeFactory.create((IntWritable) branchId, new DoubleWritable(edgeWeight)));
 				}
 				if (maxPossibbleB > bestPossibleNewBDirPred.get()) {
 					vertex.getValue().setB(maxPossibbleB);

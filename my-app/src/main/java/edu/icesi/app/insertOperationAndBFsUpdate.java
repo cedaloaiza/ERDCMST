@@ -43,7 +43,8 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					System.out.println("Inserting edge from " + vertex.getId() + " to " + bestLocation.getNodeId());
 					System.out.println("Updating parent after insert...");
 					vertex.getValue().setPredecessorId(bestLocation.getPredecessorId());
-					vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(5)));
+					double edgeWeight = vertex.getValue().getDistances()[bestLocation.getNodeId()];
+					vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(edgeWeight)));
 					aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getDistances()[bestLocation.getNodeId()]));
 				}
 			} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR) {
@@ -61,7 +62,8 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE){
 					System.out.println("Inserting the selected node " + selectedNode.getId() + " from best location predecessor ");
 					System.out.println("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
-					vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(5)));
+					double edgeWeight = vertex.getValue().getDistances()[selectedNode.getId()];
+					vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(edgeWeight)));
 					System.out.println("Removing edge from " + vertex.getId() + " to " +  bestLocation.getNodeId());
 					vertex.removeEdges(new IntWritable(bestLocation.getNodeId()));
 					aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getDistances()[selectedNode.getId()]));
@@ -92,7 +94,8 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					//aggregate("bestLocationPositions", new ArrayPrimitiveWritable(vertex.getValue().getPositions()));
 					System.out.println("Connecting best location node with selected node " + selectedNode.getId() );
 					System.out.println("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
-					vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(5)));
+					double edgeWeight = vertex.getValue().getDistances()[selectedNode.getId()];
+					vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(edgeWeight)));
 					vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
 					EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.SUCCESSOR));
 					//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.SUCCESSOR)});
@@ -145,10 +148,12 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		int[] selectedVertexChildren = (int[]) selectedVertexChildrenW.get();
 		if (vertex.getId().get() == selectedNode.getId()) {
 			for (int child : selectedVertexChildren) {
-				vertex.addEdge(EdgeFactory.create(new IntWritable(child), new DoubleWritable(0)));
+				double edgeWeight = vertex.getValue().getDistances()[child];
+				vertex.addEdge(EdgeFactory.create(new IntWritable(child), new DoubleWritable(edgeWeight)));
 			}
 		} else if (vertex.getId().get() == selectedNode.getPredecessorId()) {
-			vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(0)));
+			double edgeWeight = vertex.getValue().getDistances()[selectedNode.getId()];
+			vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(edgeWeight)));
 			for (int child : selectedVertexChildren) {
 				vertex.removeEdges(new IntWritable(child));
 			}
