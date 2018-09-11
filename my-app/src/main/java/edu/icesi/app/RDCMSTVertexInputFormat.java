@@ -67,7 +67,7 @@ public class RDCMSTVertexInputFormat extends
       Position pos = Position.NONE;
       int parent = 0;
       double f = 0;
-      double b = 5;
+      double b = 0;
       JSONArray jsonDistances = jsonVertex.getJSONArray(1);
       double[] distances = new double[jsonDistances.length()];
       Position[] positions = new Position[jsonDistances.length()];
@@ -77,11 +77,6 @@ public class RDCMSTVertexInputFormat extends
     	  parent = RDCMSTValue.NONE_PARENT;
       } else {
     	  positions[0] = Position.SUCCESSOR;
-    	  b = 0;
-    	  f = 5;
-    	  if (jsonVertex.getInt(0) == 3) {
-    		  f = 3;
-    	  }
       }
       distances[0] = jsonDistances.getDouble(0);
       System.out.println("Reading node:: " + jsonVertex.getInt(0));
@@ -90,6 +85,8 @@ public class RDCMSTVertexInputFormat extends
     	  distances[i] = jsonDistances.getDouble(i);
     	  positions[i] = pos;
       }
+      b = jsonVertex.getDouble(3);
+      f = jsonVertex.getDouble(4);
       return new RDCMSTValue(f, b, distances, positions, parent, true, jsonVertex.getInt(0));
     }
 
