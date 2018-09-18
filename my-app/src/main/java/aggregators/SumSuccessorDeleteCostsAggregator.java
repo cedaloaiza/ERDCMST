@@ -9,18 +9,20 @@ public class SumSuccessorDeleteCostsAggregator extends BasicAggregator<MapWritab
 
 	@Override
 	public void aggregate(MapWritable newValue) {
-		 
-		MapWritable newAggregatedValue = getAggregatedValue();
-		for(Writable branchId: newValue.keySet()) {
-			DoubleWritable newValueDouble = (DoubleWritable) newValue.get(branchId);
-			DoubleWritable curValueDouble = (DoubleWritable) newAggregatedValue.get(branchId);
-			double aggregated = newValueDouble.get();
-			if( curValueDouble != null) {
-				aggregated = curValueDouble.get() + newValueDouble.get(); 
+		
+		if (newValue.size() != 0) {
+			MapWritable newAggregatedValue = getAggregatedValue();
+			for(Writable branchId: newValue.keySet()) {
+				DoubleWritable newValueDouble = (DoubleWritable) newValue.get(branchId);
+				DoubleWritable curValueDouble = (DoubleWritable) newAggregatedValue.get(branchId);
+				double aggregated = newValueDouble.get();
+				if( curValueDouble != null) {
+					aggregated = curValueDouble.get() + newValueDouble.get(); 
+				}
+				newAggregatedValue.put(branchId, new DoubleWritable(aggregated));			
 			}
-			newAggregatedValue.put(branchId, new DoubleWritable(aggregated));			
+			setAggregatedValue(newAggregatedValue);
 		}
-		setAggregatedValue(newAggregatedValue);
 		
 	}
 

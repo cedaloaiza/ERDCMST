@@ -14,7 +14,9 @@ public class SelectedNodeAggregator extends BasicAggregator<RDCMSTValue> {
 	public void aggregate(RDCMSTValue value) {
 //		System.out.println("Selected Node AGGREGGATE: Aggregate node " + value.getId() + " with parent " + value.getPredecessorId() + 
 //				" into " + getAggregatedValue().getId() + " with parent " + getAggregatedValue().getPredecessorId());
-		this.setAggregatedValue(value);
+		if (value.getId() != 0) {
+			this.setAggregatedValue(value);
+		}
 //		System.out.println("After aggregate: " + getAggregatedValue().getId() + " with parent " + getAggregatedValue().getPredecessorId());
 //		value.print();
 		

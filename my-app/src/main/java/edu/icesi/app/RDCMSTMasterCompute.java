@@ -216,23 +216,25 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		EntryWritable parentB = getReduced("parentB");
 		IntWritable parentId = (IntWritable) parentB.getKey();
 		DoubleWritable bValueWritable = (DoubleWritable) parentB.get(parentId);
-		double bValue = bValueWritable.get();
-		while (!allPredecessorsPossibleNewBs.isEmpty()) {
-			System.out.println("allPredecessorsPossibleNewBs length: " + allPredecessorsPossibleNewBs.size());
-			ElementsToComputeB elementsToComputeB = (ElementsToComputeB) allPredecessorsPossibleNewBs.get(parentId);
-			double unaffectedBranchesB = elementsToComputeB.getUnaffectedBranchesB();
-			double affectedBranchB = elementsToComputeB.getPartialAffectedBranchB() +  bValue;
-			if (unaffectedBranchesB > affectedBranchB) {
-				bValue = unaffectedBranchesB;
-			} else {
-				bValue = affectedBranchB;
-			}
-			System.out.println("Storing new b value for " + parentId + ": " + bValue);
-			newBs.put(parentId, new DoubleWritable(bValue));
-			allPredecessorsPossibleNewBs.remove(parentId);
-			//WARNING!!!!!
-			parentId = new IntWritable(elementsToComputeB.getIdParent());
-			System.out.println("Parent ID " + parentId);
+		if (bValueWritable != null) {
+			double bValue = bValueWritable.get();
+			while (!allPredecessorsPossibleNewBs.isEmpty()) {
+				System.out.println("allPredecessorsPossibleNewBs length: " + allPredecessorsPossibleNewBs.size());
+				ElementsToComputeB elementsToComputeB = (ElementsToComputeB) allPredecessorsPossibleNewBs.get(parentId);
+				double unaffectedBranchesB = elementsToComputeB.getUnaffectedBranchesB();
+				double affectedBranchB = elementsToComputeB.getPartialAffectedBranchB() +  bValue;
+				if (unaffectedBranchesB > affectedBranchB) {
+					bValue = unaffectedBranchesB;
+				} else {
+					bValue = affectedBranchB;
+				}
+				System.out.println("Storing new b value for " + parentId + ": " + bValue);
+				newBs.put(parentId, new DoubleWritable(bValue));
+				allPredecessorsPossibleNewBs.remove(parentId);
+				//WARNING!!!!!
+				parentId = new IntWritable(elementsToComputeB.getIdParent());
+				System.out.println("Parent ID " + parentId);
+			}	
 		}
 		broadcast("newBs", newBs);
 		

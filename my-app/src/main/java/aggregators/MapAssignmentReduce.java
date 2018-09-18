@@ -48,24 +48,27 @@ public class MapAssignmentReduce implements ReduceOperation<MapWritable, MapWrit
 
 	@Override
 	public MapWritable reduce(MapWritable curValue, MapWritable valueToReduce) {
-		System.out.println("*reduce*");
-		System.out.println("reducing map of size " + valueToReduce.size() + " into a map of size " + curValue.size());
-		for (Writable dw: valueToReduce.keySet()) {
-			System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
+		if (valueToReduce.size() != 0) {
+			System.out.println("*reduce*");
+			System.out.println("reducing map of size " + valueToReduce.size() + " into a map of size " + curValue.size());
+			for (Writable dw: valueToReduce.keySet()) {
+				System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
+			}
+			curValue.putAll(valueToReduce);
 		}
-		curValue.putAll(valueToReduce);
 		return  curValue;
 	}
 
 	@Override
 	public MapWritable reduceMerge(MapWritable curValue, MapWritable valueToReduce) {
-		
-		System.out.println("*reduceMerge*");
-		System.out.println("reducing map of size " + valueToReduce.size() + " into a map of size " + curValue.size());
-		for (Writable dw: valueToReduce.keySet()) {
-			System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
+		if (valueToReduce.size() != 0) {
+			System.out.println("*reduceMerge*");
+			System.out.println("reducing map of size " + valueToReduce.size() + " into a map of size " + curValue.size());
+			for (Writable dw: valueToReduce.keySet()) {
+				System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
+			}
+			curValue.putAll(valueToReduce);
 		}
-		curValue.putAll(valueToReduce);
 		return curValue;
 	}
 

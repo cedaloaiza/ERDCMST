@@ -11,14 +11,16 @@ public class ArrayPrimitiveOverwriteAggregator extends BasicAggregator<ArrayPrim
 
 	@Override
 	public void aggregate(ArrayPrimitiveWritable value) {
-		this.setAggregatedValue(value);
-		
+		int [] newValue = (int[]) value.get();
+		if (newValue.length != 0) {
+			this.setAggregatedValue(value);
+		}
 	}
 
 	@Override
 	public ArrayPrimitiveWritable createInitialValue() {
 		// TODO Auto-generated method stub
-		return new ArrayPrimitiveWritable(new int[]{1, 2});
+		return new ArrayPrimitiveWritable(new int[]{});
 	}
 
 }

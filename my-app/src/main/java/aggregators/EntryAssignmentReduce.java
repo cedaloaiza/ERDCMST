@@ -39,15 +39,20 @@ public class EntryAssignmentReduce implements ReduceOperation<EntryWritable, Ent
 
 	@Override
 	public EntryWritable reduce(EntryWritable curValue, EntryWritable valueToReduce) {
-
-		return valueToReduce ;
+		EntryWritable response = valueToReduce;
+		if (valueToReduce.getKey().equals(new IntWritable(-1))) {
+			response = curValue;
+		}
+		return response ;
 	}
 
 	@Override
 	public EntryWritable reduceMerge(EntryWritable curValue, EntryWritable valueToReduce) {
-		
-
-		return valueToReduce;
+		EntryWritable response = valueToReduce;
+		if (valueToReduce.getKey().equals(new IntWritable(-1))) {
+			response = curValue;
+		}
+		return response ;
 	}
 
 

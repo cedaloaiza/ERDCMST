@@ -40,19 +40,33 @@ public class ArrayAssignmentReduce implements ReduceOperation<ArrayPrimitiveWrit
 	@Override
 	public ArrayPrimitiveWritable createInitialValue() {
 		// TODO Auto-generated method stub
-		return new ArrayPrimitiveWritable();
+		return new ArrayPrimitiveWritable(new int[] {});
 	}
 
 	@Override
 	public ArrayPrimitiveWritable reduce(ArrayPrimitiveWritable curValue, ArrayPrimitiveWritable valueToReduce) {
-
-		return  valueToReduce;
+		int [] newValue = (int[]) valueToReduce.get();
+		ArrayPrimitiveWritable response = valueToReduce;
+		if (newValue.length == 0) {
+			response = curValue;
+		}
+		System.out.println("in reduce:");
+		System.out.println("curValue size: " + curValue.toString());
+		System.out.println("curValue size: " + valueToReduce.toString());
+		return response;
 	}
 
 	@Override
 	public ArrayPrimitiveWritable reduceMerge(ArrayPrimitiveWritable curValue, ArrayPrimitiveWritable valueToReduce) {
-		
-		return valueToReduce;
+		int [] newValue = (int[]) valueToReduce.get();
+		ArrayPrimitiveWritable response = valueToReduce;
+		if (newValue.length == 0) {
+			response = curValue;
+		}
+		System.out.println("in reduceMerge:");
+		System.out.println("curValue size: " + curValue.toString());
+		System.out.println("curValue size: " + valueToReduce.toString());
+		return response;
 	}
 
 
