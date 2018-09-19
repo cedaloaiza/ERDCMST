@@ -43,6 +43,8 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 				vertex.getValue().setB(newB.get());
 			}
 		}
+		vertex.getValue().setOldB(vertex.getValue().getB());
+		vertex.getValue().setOldF(vertex.getValue().getF());
 		
 		vertex.getValue().print();
 		
