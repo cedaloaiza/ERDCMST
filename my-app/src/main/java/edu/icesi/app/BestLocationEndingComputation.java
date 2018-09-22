@@ -30,7 +30,7 @@ public class BestLocationEndingComputation extends AbstractComputation
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException { 
 		
-		vertex.getValue().print();
+		
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		
 		if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR &&
@@ -39,6 +39,8 @@ public class BestLocationEndingComputation extends AbstractComputation
 			DoubleWritable newB = (DoubleWritable) newBs.get(vertex.getId());
 			vertex.getValue().setB(newB.get());
 		}
+		
+		vertex.getValue().print();
 		
 		//PARTIAL SOLUTION
 		if (vertex.getId().get() != selectedNode.getId()) {

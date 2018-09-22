@@ -174,11 +174,16 @@ public class EdgeRemovalComputation extends
 			DoubleWritable bestPossibleNewBDirPred = getAggregatedValue("bestPossibleNewBDirPredA");
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;
+			System.out.println("Computing b from unaffected branches...");
 			for (EntryWritable message : messages) {
+				System.out.println("maxPossibbleB: " + maxPossibbleB);
 				Text messageKey = (Text) message.getKey();
 				if (messageKey.toString().equals("PARTIAL_B")) {
-					DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());
-					maxPossibbleB = Math.max(maxPossibbleB,  possibleB.get() );
+					EntryWritable entryPartialB = (EntryWritable) message.get(message.getKey());
+					IntWritable emisorId = (IntWritable) entryPartialB.getKey();
+					DoubleWritable partialPossibleB = (DoubleWritable)entryPartialB.get(entryPartialB.getKey()); 
+					double possibleB = partialPossibleB.get() + vertex.getValue().getDistances()[emisorId.get()];
+					maxPossibbleB = Math.max(maxPossibbleB,  possibleB );
 				} else if (messageKey.toString().equals("ID")) {
 					IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
 					childToSelectedNode = childToSelectedNodeWritable.get();

@@ -128,7 +128,8 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.NONE));
 				System.out.println("From Others Sending message to: " + vertex.getValue().getPredecessorId());
-				sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), new EntryWritable(new Text("PARTIAL_B"), new DoubleWritable(vertex.getValue().getB())));
+				sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), new EntryWritable(new Text("PARTIAL_B"), 
+						new EntryWritable(vertex.getId(), new DoubleWritable(vertex.getValue().getB()))));
 				//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.NONE)});
 				sendMessage(new IntWritable(selectedNode.getId()), outgoingMessage);
 			}
@@ -146,6 +147,11 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		vertex.getValue().setB(vertex.getValue().getOldB());
 		vertex.getValue().setF(vertex.getValue().getOldF());
 		int[] selectedVertexChildren = (int[]) selectedVertexChildrenW.get();
+		for (int child : selectedVertexChildren) {
+			if (child == vertex.getValue().getId()) {
+				vertex.getValue().setPredecessorId(selectedNode.getId());
+			}
+		}
 		if (vertex.getId().get() == selectedNode.getId()) {
 			for (int child : selectedVertexChildren) {
 				double edgeWeight = vertex.getValue().getDistances()[child];

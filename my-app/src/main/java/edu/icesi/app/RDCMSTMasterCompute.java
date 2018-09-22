@@ -39,7 +39,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private boolean abortedMovement = false;
 	
 	//JUST FOR DEBUGGING
-	private int[] selectedNodes = new int[]{2, 1, 3, 2, 3, 2};
+	private int[] selectedNodes = new int[]{2, 3, 1, 4, 1, 3};
 	
 	private RDCMSTValue selectedNode;
 
@@ -77,8 +77,11 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					selectANode();
 					break;
 				case 1:
+					//Completing former movement
 					computeBValues();
 					setAggregatedValue("bestLocation", new Location());
+					abortedMovement = false;
+					
 					selectedNode = getAggregatedValue("selectedNodeA");
 					System.out.println("Selected node's parent at master: " + selectedNode.getPredecessorId());
 					broadcast("selectedNode", selectedNode);
@@ -114,7 +117,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					registerReducer("parentB", new EntryAssignmentReduce());
 					registerReducer("allPredecessorsPossibleNewBs", new MapAssignmentReduce());
 					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
-					DoubleWritable longestBranchLength = new DoubleWritable(getLongestBranchLength());
+					DoubleWritable longestBranchLength = new DoubleWritable(bestPossibleNewBDirPred);
 					broadcast("bestPossibleNewBDirPred", longestBranchLength);
 					registerReducer("selectedVertexChildren", new ArrayAssignmentReduce());
 					/**
@@ -197,9 +200,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	public double getLongestBranchLength() {
 		MapWritable branchLengths = getAggregatedValue("possibleNewBsDirPred");
 		double largestBranchLength = 0;
+		System.out.println("Possible bs from unaffected branch for selected node's parent:");
 		for (Writable branch: branchLengths.keySet()) {
-			
 			DoubleWritable currentLength = (DoubleWritable) branchLengths.get(branch);
+			System.out.println("branch: " + branch.toString() + " b: " +  branchLengths.get(branch).toString());
 			if (currentLength.get() > largestBranchLength) {
 				largestBranchLength = currentLength.get();
 			}
@@ -211,12 +215,14 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	 * Compute B values for all predecessors of the selected node
 	 */
 	private void computeBValues() {
+		System.out.println("Computing new b values...");
 		MapWritable allPredecessorsPossibleNewBs = getReduced("allPredecessorsPossibleNewBs");
 		MapWritable newBs = new MapWritable();
 		EntryWritable parentB = getReduced("parentB");
 		IntWritable parentId = (IntWritable) parentB.getKey();
 		DoubleWritable bValueWritable = (DoubleWritable) parentB.get(parentId);
-		if (bValueWritable != null) {
+		if ((int) getSuperstep() != 1 && !abortedMovement) {
+			System.out.println("parent of selected node: " + parentId.get());
 			double bValue = bValueWritable.get();
 			while (!allPredecessorsPossibleNewBs.isEmpty()) {
 				System.out.println("allPredecessorsPossibleNewBs length: " + allPredecessorsPossibleNewBs.size());

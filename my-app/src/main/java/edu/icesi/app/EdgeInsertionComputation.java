@@ -64,6 +64,7 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     		double movementCost = 0;
 	    	if (vertex.getId().get() == selectedNode.getPredecessorId()) {
 	    		MapWritable possibleNewBsDirPred = new MapWritable();
+	    		MapWritable successorsCost = new MapWritable();
 	    		MapWritable successorsDeleteCosts = getAggregatedValue("sumDeleteCostForSuccessors");
 	    		System.out.println("Length of KeySet to delete insertion: " + successorsDeleteCosts.keySet().size());
 	    		double distanceToSelectedNode = vertex.getValue().getDistances()[selectedNode.getId()]; 
@@ -72,9 +73,10 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 	    			IntWritable branchIdInt = (IntWritable) branchId;
 	    			double distanceToNewChild = vertex.getValue().getDistances()[branchIdInt.get()]; 
 	    			movementCost += distanceToNewChild; 
-	    			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceToNewChild - distanceToSelectedNode));			
+	    			possibleNewBsDirPred.put(branchId, new DoubleWritable(distanceToNewChild));
+	    			successorsCost.put(branchId, new DoubleWritable(distanceToNewChild - distanceToSelectedNode));
 	    		}
-	    		aggregate("sumDeleteCostForSuccessors", possibleNewBsDirPred);
+	    		aggregate("sumDeleteCostForSuccessors", successorsCost);
 	    		aggregate("possibleNewBsDirPred", possibleNewBsDirPred);
 	    		aggregate("parentF", new DoubleWritable(vertex.getValue().getF()));
 	    		aggregate("movementCost", new DoubleWritable(movementCost));
