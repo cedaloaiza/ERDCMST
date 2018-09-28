@@ -69,23 +69,29 @@ public class BestLocationEndingComputation extends AbstractComputation
 		DoubleWritable parentToHere = (DoubleWritable) message.get(new Text("TO_SUCC"));
 		Location partialBestLocation = null;
 		double costBE =  parentToSelectedNode.get() + selectedNode.getDistances()[vertex.getValue().getId()] - parentToHere.get();
+		double costFN = vertex.getValue().getPartialBestLocationCost();
 		//feasible insert
 		boolean feasibleInsert = (vertex.getValue().getF() + costBE + vertex.getValue().getB()) <= 100;
 		System.out.println("Feasible Insert: " + feasibleInsert);
-		if (feasibleInsert) {	
+		if (!feasibleInsert) {
+			costBE = Double.POSITIVE_INFINITY;
+		}
+		//selected vertex is not considered for best location operation
+		if ((feasibleInsert || costFN != Double.POSITIVE_INFINITY) && vertex.getId().get() != selectedNode.getId()) {	
 			//JUST FOR DEBUGGING
 //			int iteration = (int) getSuperstep() / 5;
 //			System.out.println("Iteration on phase 3: " + iteration);
 //			double costFN = Double.POSITIVE_INFINITY;
 //			if (iteration % 2 == 0) 
-			double costFN = vertex.getValue().getPartialBestLocationCost();
+			
 			System.out.println("Local best location decision");
 			System.out.println("FN " + costFN + " VS BE " + costBE );
 			if (costBE < costFN) {
 				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE, vertex.getValue().getPredecessorId());
 			} else {
 				partialBestLocation = new Location(vertex.getId().get(), Way.FROM_NODE, costFN, vertex.getValue().getPredecessorId());
-			}	
+			}
+			vertex.getValue().setPartialBestLocationCost(Double.POSITIVE_INFINITY);
 		}
 		return partialBestLocation;
 		

@@ -2,6 +2,7 @@ package edu.icesi.app;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
@@ -71,12 +72,15 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			//THIS SHOULD BE IMPROVED
 			int[] childrenIds = new int[vertex.getNumEdges()];
 			int i = 0;
+			System.out.println("selected vertex's children: ");
 			for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) { 
-				System.out.println("Removing edge from " + vertex.getId().get() + " to " +  edge.getTargetVertexId());
-    			vertex.removeEdges(edge.getTargetVertexId());
     			childrenIds[i] = edge.getTargetVertexId().get();
+    			System.out.println("child " + i + ": " + childrenIds[i]);
     			i++;
+    			//System.out.println("Removing edge from " + vertex.getId().get() + " to " +  edge.getTargetVertexId());
+    			//vertex.removeEdges(edge.getTargetVertexId());
     		}
+			vertex.setEdges(new ArrayList<Edge<IntWritable,DoubleWritable>>());
 			reduce("selectedVertexChildren", new ArrayPrimitiveWritable(childrenIds));
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
 			System.out.println("It is a selected node's predecessor");
@@ -89,6 +93,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 				if (messageKey.toString().equals("ID")) {
 					IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
 					childToSelectedNode = childToSelectedNodeWritable.get();
+					System.out.println("ID message: " + childToSelectedNode);
 				} else {
 					DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());
 					maxPossibbleB = Math.max(maxPossibbleB,  possibleB.get() );
@@ -151,8 +156,11 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	public void computecCostInsertingFromNode(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode) {
 		//feasible insert
 		boolean feasibleInsert = (vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()] + 0) <= 100;
-		if(feasibleInsert){
+		System.out.println("partial best location?: " + vertex.getValue().getPartialBestLocationCost());
+		//selected vertex is not considered for best location operation
+		if(feasibleInsert && vertex.getId().get() != selectedNode.getId()){
 			double cost =  vertex.getValue().getDistances()[selectedNode.getId()];
+			System.out.println("Cost FROM NODE: " + cost);
 			vertex.getValue().setPartialBestLocationCost(cost);
 		}
 		

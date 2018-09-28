@@ -152,8 +152,10 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				vertex.getValue().setPredecessorId(selectedNode.getId());
 			}
 		}
+		System.out.println("selected vertex's children: ");
 		if (vertex.getId().get() == selectedNode.getId()) {
 			for (int child : selectedVertexChildren) {
+				System.out.println(child);
 				double edgeWeight = vertex.getValue().getDistances()[child];
 				vertex.addEdge(EdgeFactory.create(new IntWritable(child), new DoubleWritable(edgeWeight)));
 			}

@@ -33,14 +33,14 @@ public class EntryAssignmentReduce implements ReduceOperation<EntryWritable, Ent
 	@Override
 	public EntryWritable createInitialValue() {
 		// TODO Auto-generated method stub
-		return new EntryWritable(new IntWritable(-1), new DoubleWritable(0));
+		return new EntryWritable(new IntWritable(-2), new DoubleWritable(0));
 		//return new EntryWritable();
 	}
 
 	@Override
 	public EntryWritable reduce(EntryWritable curValue, EntryWritable valueToReduce) {
 		EntryWritable response = valueToReduce;
-		if (valueToReduce.getKey().equals(new IntWritable(-1))) {
+		if (valueToReduce.getKey().equals(new IntWritable(-2))) {
 			response = curValue;
 		}
 		return response ;
@@ -49,7 +49,7 @@ public class EntryAssignmentReduce implements ReduceOperation<EntryWritable, Ent
 	@Override
 	public EntryWritable reduceMerge(EntryWritable curValue, EntryWritable valueToReduce) {
 		EntryWritable response = valueToReduce;
-		if (valueToReduce.getKey().equals(new IntWritable(-1))) {
+		if (valueToReduce.getKey().equals(new IntWritable(-2))) {
 			response = curValue;
 		}
 		return response ;

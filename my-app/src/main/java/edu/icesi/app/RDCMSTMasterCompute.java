@@ -32,14 +32,19 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private ArrayList<Integer> list;
 	private int SUPER_STEPS_PER_ITERATION = 5;
 	private int iteration = 0;
-	private int MAX_ITERARIONS = 6;
+	//JUST FOR DEBUGGING
+	//private int[] selectedNodes = new int[]{2, 3, 1, 4, 1, 3};
+	private int[] selectedNodes = new int[]{2, 10, 9, 4, 1, 3, 2, 1, 8, 7, 3, 1, 9, 6, 5, 10, 9, 6, 2, 1, 3, 4, 6, 7, 8, 9};
+	//private int MAX_ITERARIONS = 6;
+	private int MAX_ITERARIONS = selectedNodes.length;
 	private int lambda = 100;
 	private int superstepDeviation = 0;
 	private ArrayPrimitiveWritable selectedVertexChildrenWritable;
+	//Aborted movement because cost is not improved
 	private boolean abortedMovement = false;
+	private boolean feasibleDelete = true;
 	
-	//JUST FOR DEBUGGING
-	private int[] selectedNodes = new int[]{2, 3, 1, 4, 1, 3};
+	
 	
 	private RDCMSTValue selectedNode;
 
@@ -111,8 +116,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 						superstepDeviation += 3;
 						selectANode();
 						iteration++;
+						feasibleDelete = false;
 						break;
 					}
+					feasibleDelete = true;
 					broadcast("selectedNode", selectedNode);
 					registerReducer("parentB", new EntryAssignmentReduce());
 					registerReducer("allPredecessorsPossibleNewBs", new MapAssignmentReduce());
@@ -221,7 +228,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		EntryWritable parentB = getReduced("parentB");
 		IntWritable parentId = (IntWritable) parentB.getKey();
 		DoubleWritable bValueWritable = (DoubleWritable) parentB.get(parentId);
-		if ((int) getSuperstep() != 1 && !abortedMovement) {
+		System.out.println("Are different?: " + (int) getSuperstep() + " of " + 1 + ": " + ((int) getSuperstep() != 1));
+		if ((int) getSuperstep() != 1 && !abortedMovement && feasibleDelete) {
 			System.out.println("parent of selected node: " + parentId.get());
 			double bValue = bValueWritable.get();
 			while (!allPredecessorsPossibleNewBs.isEmpty()) {
