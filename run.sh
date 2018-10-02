@@ -8,7 +8,7 @@ rm -r ../exampleOut
 echo "Executing..."
 giraph target/my-app-1.0-SNAPSHOT.jar edu.icesi.app.EdgeRemovalComputation  \
 -vif edu.icesi.app.RDCMSTVertexInputFormat \
--vip input/randomInput.txt \
+-vip input/spain_locsEuclideanInput.txt \
 -eof org.apache.giraph.io.formats.SrcIdDstIdEdgeValueTextOutputFormat \
 -op ../exampleOut \
 -w 1 \

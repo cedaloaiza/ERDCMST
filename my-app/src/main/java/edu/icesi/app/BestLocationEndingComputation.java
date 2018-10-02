@@ -71,7 +71,7 @@ public class BestLocationEndingComputation extends AbstractComputation
 		double costBE =  parentToSelectedNode.get() + selectedNode.getDistances()[vertex.getValue().getId()] - parentToHere.get();
 		double costFN = vertex.getValue().getPartialBestLocationCost();
 		//feasible insert
-		boolean feasibleInsert = (vertex.getValue().getF() + costBE + vertex.getValue().getB()) <= 100;
+		boolean feasibleInsert = (vertex.getValue().getF() + costBE + vertex.getValue().getB()) <= 1000000;
 		System.out.println("Feasible Insert: " + feasibleInsert);
 		if (!feasibleInsert) {
 			costBE = Double.POSITIVE_INFINITY;

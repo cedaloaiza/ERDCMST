@@ -35,14 +35,17 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	//JUST FOR DEBUGGING
 	//private int[] selectedNodes = new int[]{2, 3, 1, 4, 1, 3};
 	private int[] selectedNodes = new int[]{2, 10, 9, 4, 1, 3, 2, 1, 8, 7, 3, 1, 9, 6, 5, 10, 9, 6, 2, 1, 3, 4, 6, 7, 8, 9};
-	//private int MAX_ITERARIONS = 6;
-	private int MAX_ITERARIONS = selectedNodes.length;
-	private int lambda = 100;
+	private int MAX_ITERARIONS = 20;
+	//private int MAX_ITERARIONS = selectedNodes.length;
+	private int lambda = 1000000;
 	private int superstepDeviation = 0;
 	private ArrayPrimitiveWritable selectedVertexChildrenWritable;
 	//Aborted movement because cost is not improved
 	private boolean abortedMovement = false;
 	private boolean feasibleDelete = true;
+	private Random rand;
+	private ArrayList<Integer> pendingVertices;
+	private ArrayList<Integer> selectedVertices;
 	
 	
 	
@@ -149,6 +152,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 						abortedMovement = true;
 					} else {
 						abortedMovement = false;
+						if (pendingVertices != null) {
+							pendingVertices.addAll(selectedVertices);
+						}
 					}
 					broadcast("selectedNode", selectedNode);
 					setComputation(insertOperationAndBFsUpdate.class);
@@ -192,7 +198,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		registerAggregator("bestPossibleNewBDirPredA", DoubleSumAggregator.class);
 		
 		
+		rand = new Random();
+		rand.setSeed(34);
 		
+		selectedVertices = new ArrayList<Integer>();
 		//We are doing the positions' update of selected node just with messages
 //		registerPersistentAggregator("bestLocationPositions", ArrayPrimitiveOverwriteAggregator.class);
 	}
@@ -257,11 +266,30 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private void selectANode() {
 		//Node selection
 		setComputation(EdgeRemovalComputation.class);
-		Random rand = new Random();
 		System.out.println(this.getClass().getName() + " - Total number of vertices: " + (int) getTotalNumVertices());
-//		int  selectedNodeId = rand.nextInt(3) + 1;	
+		int  selectedNodeId;
+		if (getSuperstep() == 0) {
+			selectedNodeId = 1;
+		} else {
+			if (pendingVertices == null) {
+				pendingVertices = new ArrayList<Integer>();
+				System.out.println("Initializing pending vertices...");
+				for (int i = 2; i < (int) getTotalNumVertices(); i++) {
+					pendingVertices.add(i);
+				}
+			}
+			int selectedNodeIndex = rand.nextInt(pendingVertices.size());
+			//selectedNodeId = rand.nextInt((int) getTotalNumVertices() - 1) + 1;
+			if (pendingVertices.isEmpty()) {
+				System.out.println("Local minimum found!");
+				System.out.println("!!!!Hecatombe!!!!!");
+				haltComputation();
+			}
+			selectedNodeId = pendingVertices.remove(selectedNodeIndex);
+			selectedVertices.add(selectedNodeId);
+		}
 		//JUST FOE DEBUGGING
-		int  selectedNodeId = selectedNodes[iteration];
+//		int  selectedNodeId = selectedNodes[iteration];
 		//System.out.println("Aggregator:: " + getAggregatedValue("selectedNode") );
 		System.out.println("Broadcasting:: " + selectedNodeId);
 		broadcast("selectedNodeId", new IntWritable(selectedNodeId));
@@ -270,6 +298,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		registerReducer("addDeleteCostForSuccessors", new MapAssignmentReduce());
 		registerReducer("parentB", new EntryAssignmentReduce(), new EntryWritable());
 		registerReducer("allPredecessorsPossibleNewBs", new MapAssignmentReduce());
+		
 	}
 	
 	private void resetPersistentAggregators() {

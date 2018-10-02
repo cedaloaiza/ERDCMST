@@ -8,7 +8,7 @@ hadoop dfs -rm -r exampleOut
 echo "Executing..."
 hadoop jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar org.apache.giraph.GiraphRunner edu.icesi.app.EdgeRemovalComputation \
 -vif edu.icesi.app.RDCMSTVertexInputFormat \
--vip /user/$USER/exampleRDCMST.txt \
+-vip /user/$USER/spain_locsEuclideanInput.txt \
 -eof org.apache.giraph.io.formats.SrcIdDstIdEdgeValueTextOutputFormat \
 -op /user/$USER/exampleOut \
 -w 2 \

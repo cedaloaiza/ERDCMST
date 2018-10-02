@@ -155,7 +155,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	 */
 	public void computecCostInsertingFromNode(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode) {
 		//feasible insert
-		boolean feasibleInsert = (vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()] + 0) <= 100;
+		boolean feasibleInsert = (vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()] + 0) <= 1000000;
 		System.out.println("partial best location?: " + vertex.getValue().getPartialBestLocationCost());
 		//selected vertex is not considered for best location operation
 		if(feasibleInsert && vertex.getId().get() != selectedNode.getId()){
