@@ -22,7 +22,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<IntWritable> messages) throws IOException { 
 		
-		vertex.getValue().print();
+		//vertex.getValue().print();
 		
 		
 		Location bestLocation = getAggregatedValue("bestLocation");

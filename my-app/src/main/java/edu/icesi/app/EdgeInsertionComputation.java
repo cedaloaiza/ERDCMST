@@ -46,7 +46,7 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 		vertex.getValue().setOldB(vertex.getValue().getB());
 		vertex.getValue().setOldF(vertex.getValue().getF());
 		
-		vertex.getValue().print();
+		//vertex.getValue().print();
 		
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		System.out.println("selectedNode broadcasted:: " + getBroadcast("selectedNodeId"));
