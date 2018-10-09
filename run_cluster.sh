@@ -8,15 +8,19 @@ hadoop dfs -rm -r exampleOut
 echo "Executing..."
 hadoop jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar org.apache.giraph.GiraphRunner edu.icesi.app.EdgeRemovalComputation \
 -vif edu.icesi.app.RDCMSTVertexInputFormat \
--vip /user/$USER/spain_giraph.txt \
+-vip /user/$USER/random_10.txt \
 -eof org.apache.giraph.io.formats.SrcIdDstIdEdgeValueTextOutputFormat \
 -op /user/$USER/exampleOut \
--w 15 \
+-w 18 \
 -mc edu.icesi.app.RDCMSTMasterCompute \
 -ca giraph.SplitMasterWorker=true \
 -ca giraph.logLevel=DEBUG \
--ca giraph.useSuperstepCounters=false \
--ca mapreduce.jobtracker.address=yarn
+-ca mapreduce.jobtracker.address=yarn 
+#-ca giraph.useSuperstepCounters=false 
+
+#-vip /user/$USER/spain_euc_complete_.txt \
+#-vip /user/$USER/spain_euc_333.txt \
+#-vip /user/$USER/random_10.txt
 
 
 
