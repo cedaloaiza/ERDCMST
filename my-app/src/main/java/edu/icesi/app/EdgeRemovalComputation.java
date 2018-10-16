@@ -47,7 +47,7 @@ public class EdgeRemovalComputation extends
 		}
 		
 		
-		vertex.getValue().print();
+		//vertex.getValue().print();
 		System.out.print("Children: ");
 		for (Edge<IntWritable, DoubleWritable> e : vertex.getEdges()) {
 			System.out.print(e.getTargetVertexId() + " ");

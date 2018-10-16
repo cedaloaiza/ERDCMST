@@ -31,7 +31,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
-		vertex.getValue().print();
+		//vertex.getValue().print();
 		
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		System.out.println("Selected node at superstep 2: " + selectedNode.getId());
