@@ -43,11 +43,13 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>${org.apache.hadoop.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>${org.apache.hadoop.version}</version>
+            <scope>provided</scope>
         </dependency>
        <!-- <dependency>
             <groupId>org.apache.giraph</groupId>
@@ -64,7 +66,7 @@
             <artifactId>guava</artifactId>
             <version>19.0</version>
    	</dependency>
-	<dependency>
+	<!--<dependency>
 	    <groupId>org.json</groupId>
 	    <artifactId>json</artifactId>
 	    <version>20180130</version>
@@ -73,7 +75,7 @@
 	    <groupId>com.fasterxml.jackson.core</groupId>
 	    <artifactId>jackson-annotations</artifactId>
 	    <version>2.9.1</version>
-	</dependency>
+	</dependency>-->
 
 
   </dependencies>

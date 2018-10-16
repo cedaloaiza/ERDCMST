@@ -147,13 +147,15 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					DoubleWritable movementCostW = getAggregatedValue("movementCost");
 					double movementCost = movementCostW.get() + bl.getCost();
 					System.out.println("Movement Cost: " +  movementCost);
-					if (movementCost > 0) {
+					if (movementCost >= 0) {
 						broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
 						abortedMovement = true;
 					} else {
 						abortedMovement = false;
 						if (pendingVertices != null) {
+							System.out.println("An non-aborted movement!!!");
 							pendingVertices.addAll(selectedVertices);
+							selectedVertices = new ArrayList<Integer>();
 						}
 					}
 					broadcast("selectedNode", selectedNode);
@@ -274,17 +276,20 @@ public class RDCMSTMasterCompute extends MasterCompute {
 			if (pendingVertices == null) {
 				pendingVertices = new ArrayList<Integer>();
 				System.out.println("Initializing pending vertices...");
-				for (int i = 2; i < (int) getTotalNumVertices(); i++) {
+				for (int i = 1; i < (int) getTotalNumVertices(); i++) {
 					pendingVertices.add(i);
 				}
 			}
-			int selectedNodeIndex = rand.nextInt(pendingVertices.size());
-			//selectedNodeId = rand.nextInt((int) getTotalNumVertices() - 1) + 1;
+			System.out.println("Pending vertices size: " + pendingVertices.size());	
 			if (pendingVertices.isEmpty()) {
 				System.out.println("Local minimum found!");
 				System.out.println("!!!!Hecatombe!!!!!");
 				haltComputation();
-			}
+				return;
+			} 
+			int selectedNodeIndex = rand.nextInt(pendingVertices.size());
+			//selectedNodeId = rand.nextInt((int) getTotalNumVertices() - 1) + 1;
+			System.out.println("Index selected vertex: " + selectedNodeIndex);
 			selectedNodeId = pendingVertices.remove(selectedNodeIndex);
 			selectedVertices.add(selectedNodeId);
 		}

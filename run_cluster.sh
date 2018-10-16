@@ -16,6 +16,9 @@ hadoop jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar org.apache.girap
 -ca giraph.SplitMasterWorker=true \
 -ca giraph.logLevel=DEBUG \
 -ca mapreduce.jobtracker.address=yarn
+#-vip /user/$USER/spain_locsEuclideanInput.txt \
+#-vip /user/$USER/exampleRDCMST.txt \
+
 
 
 
