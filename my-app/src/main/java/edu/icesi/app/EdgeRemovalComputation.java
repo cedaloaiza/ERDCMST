@@ -19,6 +19,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.join.TupleWritable;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,6 +33,9 @@ import java.util.ArrayList;
 public class EdgeRemovalComputation extends
         AbstractComputation<IntWritable, RDCMSTValue,
         DoubleWritable, EntryWritable, DoubleWritable> {
+	
+	private static final Logger LOG =
+		      Logger.getLogger(EdgeRemovalComputation.class);
    
 	public void compute(Vertex<IntWritable, RDCMSTValue,
 			DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
@@ -41,18 +45,22 @@ public class EdgeRemovalComputation extends
 		BooleanWritable startingNormalMovement = getBroadcast("startingNormalMovement");
 		if (startingNormalMovement != null && (int) getSuperstep() != 0) {
 			RDCMSTValue selectedNode = getBroadcast("selectedNode");
-			System.out.println("Old selected vertex: " + selectedNode.getId());
+			if (LOG.isDebugEnabled()) {
+  	          LOG.debug("Old selected vertex: " + selectedNode.getId());
+			}
 			Location bestLocation = getAggregatedValue("bestLocation");
 			completePreviousMovement(vertex, messages, selectedNode, bestLocation);
 		}
 		
 		
 		//vertex.getValue().print();
+		/*
 		System.out.print("Children: ");
 		for (Edge<IntWritable, DoubleWritable> e : vertex.getEdges()) {
 			System.out.print(e.getTargetVertexId() + " ");
 		}
-		System.out.println("");
+		*/
+		//System.out.println("");
 		//Completing the previous movement
 		
 		
@@ -79,22 +87,29 @@ public class EdgeRemovalComputation extends
 //    		System.out.println("Length Distances:: " + vertex.getValue().getDistances().length);
 //    		System.out.println("PredID:: " + vertex.getValue().getPredecessorId());
 //    		System.out.println(":: Computing node " + vertex.getId() );
-    		System.out.println("Selected node's parent before aggregate: " + vertex.getValue().getPredecessorId());
+    		if (LOG.isDebugEnabled()) {
+    	          LOG.debug("Selected node's parent before aggregate: " + vertex.getValue().getPredecessorId());
+    		}
     		aggregate("selectedNodeA", vertex.getValue());
    
     		MapWritable vertexSuccessors = new MapWritable();
     		
     		double movementCost = 0;
     		
-    		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  		
-    			System.out.println("Key: " + edge.getTargetVertexId() + " - Delete Costs:: " + -vertex.getValue().getDistances()[edge.getTargetVertexId().get()]);
+    		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {
+    			if (LOG.isDebugEnabled()) {
+      	          LOG.debug("Key: " + edge.getTargetVertexId() + " - Delete Costs:: " + -vertex.getValue().getDistances()[edge.getTargetVertexId().get()]);
+    			}
     			vertexSuccessors.put(new IntWritable(edge.getTargetVertexId().get()), new DoubleWritable(-vertex.getValue().getDistances()[edge.getTargetVertexId().get()]));
     			movementCost -= vertex.getValue().getDistances()[edge.getTargetVertexId().get()];
     		}
-    		System.out.println("Size of reduced object: " + vertexSuccessors.size());
-    		for (Writable dw: vertexSuccessors.keySet()) {
-    			System.out.println("Key: " + dw + " - Delete Costs:: " + vertexSuccessors.get(dw));
-    		}
+    		if (LOG.isDebugEnabled()) {
+    	          LOG.debug("Size of reduced object: " + vertexSuccessors.size());
+    	          for (Writable dw: vertexSuccessors.keySet()) {
+    	        	  LOG.debug("Key: " + dw + " - Delete Costs:: " + vertexSuccessors.get(dw));
+		    		}
+  			}
+    		
     		reduce("addDeleteCostForSuccessors", vertexSuccessors);
     		aggregate("movementCost", new DoubleWritable(movementCost));
     		//ArrayWritable<Writable> messageSuccesorsId = new ArrayWritable<Writable>();
@@ -103,7 +118,9 @@ public class EdgeRemovalComputation extends
     	} else if (vertex.getValue().getPositions()[selectedNodeId.get()].equals(Position.PREDECESSOR)) {
     		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  		
     			double distanceToChild = vertex.getValue().getDistances()[edge.getTargetVertexId().get()];
-    			System.out.println("Distance to child: " + distanceToChild);
+    			if (LOG.isDebugEnabled()) {
+      	          LOG.debug("Distance to child: " + distanceToChild);
+    			}
     			sendMessage(edge.getTargetVertexId(), new DoubleWritable(distanceToChild));
     		}
     		/*
@@ -138,8 +155,11 @@ public class EdgeRemovalComputation extends
 	
 	public void completePreviousMovement (Vertex<IntWritable, RDCMSTValue,
 			DoubleWritable> vertex, Iterable<EntryWritable> messages, RDCMSTValue selectedNode, Location bestLocation) {
-		System.out.println("Positions length: " + vertex.getValue().getPositions().length);
-		System.out.println("Is selected node´s predecessor? " + (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR));
+		
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("Positions length: " + vertex.getValue().getPositions().length);
+          LOG.debug("Is selected node´s predecessor? " + (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR));
+		}
 		if (selectedNode.getId() == vertex.getId().get()) {
 			double selectedNodeNewF = 0;
 			double bestLocationB = 0;
@@ -154,13 +174,15 @@ public class EdgeRemovalComputation extends
 						bestLocationB = bestLocationBW.get();
 					}
 				} else {
-					System.out.println("Updating positions of selected node");
 					IntWritable key = (IntWritable) entry.getKey();
-					System.out.println("Key: " + key);
 					PositionWritable positionW = (PositionWritable) entry.get(key);
-					System.out.println("Position: " + positionW.getPosition());
-					System.out.println("Updating positions of selected node");
 					vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
+					if (LOG.isDebugEnabled()) {
+	      	          LOG.debug("Updating positions of selected node");
+	      	          LOG.debug("Key: " + key);
+	      	          LOG.debug("Position: " + positionW.getPosition());
+	      	          LOG.debug("Updating positions of selected node");
+	    			}
 				}
 			}
 			vertex.getValue().setF(selectedNodeNewF);
@@ -174,9 +196,13 @@ public class EdgeRemovalComputation extends
 			DoubleWritable bestPossibleNewBDirPred = getAggregatedValue("bestPossibleNewBDirPredA");
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;
-			System.out.println("Computing b from unaffected branches...");
+			if (LOG.isDebugEnabled()) {
+	          LOG.debug("Computing b from unaffected branches...");
+  			}
 			for (EntryWritable message : messages) {
-				System.out.println("maxPossibbleB: " + maxPossibbleB);
+				if (LOG.isDebugEnabled()) {
+      	          LOG.debug("maxPossibbleB: " + maxPossibbleB );
+    			}
 				Text messageKey = (Text) message.getKey();
 				if (messageKey.toString().equals("PARTIAL_B")) {
 					EntryWritable entryPartialB = (EntryWritable) message.get(message.getKey());
@@ -200,7 +226,9 @@ public class EdgeRemovalComputation extends
 						vertex.getValue().setB(bestPossibleNewBDirPred.get());
 					}
 				}
-				System.out.println("b value of parent vertex " + vertex.getId() + ": " + vertex.getValue().getB());
+				if (LOG.isDebugEnabled()) {
+      	          LOG.debug("b value of parent vertex " + vertex.getId() + ": " + vertex.getValue().getB());
+    			}
 				reduce("parentB", new EntryWritable(new IntWritable(vertex.getValue().getPredecessorId()), new DoubleWritable(vertex.getValue().getB())));
 			} else {
 				ElementsToComputeB elementsToComputeB = new ElementsToComputeB(vertex.getValue().getPredecessorId(), maxPossibbleB, 

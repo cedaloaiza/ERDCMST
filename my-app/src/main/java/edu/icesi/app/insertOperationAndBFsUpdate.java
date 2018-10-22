@@ -14,10 +14,14 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.join.TupleWritable;
+import org.apache.log4j.Logger;
 
 public class insertOperationAndBFsUpdate extends AbstractComputation
 		<IntWritable, RDCMSTValue,
 		DoubleWritable, IntWritable, EntryWritable> {
+	
+	private static final Logger LOG =
+		      Logger.getLogger(insertOperationAndBFsUpdate.class);
 	
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<IntWritable> messages) throws IOException { 
@@ -26,10 +30,12 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		
 		
 		Location bestLocation = getAggregatedValue("bestLocation");
-		System.out.println("Best Location:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
-		System.out.println("Real vertex ID: " + vertex.getId().get());
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("Best Location:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
+          LOG.debug("Real vertex ID: " + vertex.getId().get());
+          LOG.debug("Positions length: " + vertex.getValue().getPositions().length);
+		}
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
-		System.out.println("Positions length: " + vertex.getValue().getPositions().length);
 		ArrayPrimitiveWritable selectedVertexChildrenW = getBroadcast("selectedVertexChildren");
 		if (selectedVertexChildrenW != null) {
 			abortMovement(vertex, selectedNode, selectedVertexChildrenW);
@@ -39,9 +45,11 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				if (bestLocation.getWay() == Way.FROM_NODE) {
 					vertex.getValue().setPredecessorId(bestLocation.getNodeId());
 				} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
-					System.out.println("Connecting selected node " + selectedNode.getId() + " with best location node by breaking edge way ");
-					System.out.println("Inserting edge from " + vertex.getId() + " to " + bestLocation.getNodeId());
-					System.out.println("Updating parent after insert...");
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("Connecting selected node " + selectedNode.getId() + " with best location node by breaking edge way ");
+			          LOG.debug("Inserting edge from " + vertex.getId() + " to " + bestLocation.getNodeId());
+			          LOG.debug("Updating parent after insert...");
+					}
 					vertex.getValue().setPredecessorId(bestLocation.getPredecessorId());
 					double edgeWeight = vertex.getValue().getDistances()[bestLocation.getNodeId()];
 					vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(edgeWeight)));
@@ -56,15 +64,21 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				sendMessage(new IntWritable(selectedNode.getId()), updatePositionMessage);
 				if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
 					EntryWritable childToInsertionMessage = new EntryWritable(new Text("ID"), vertex.getId());
-					System.out.println("From best location predecessor Sending message to: " + vertex.getValue().getPredecessorId());
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("From best location predecessor Sending message to: " + vertex.getValue().getPredecessorId());
+					}
 					sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), childToInsertionMessage);
 				} 
-				if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE){
-					System.out.println("Inserting the selected node " + selectedNode.getId() + " from best location predecessor ");
-					System.out.println("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
+				if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE) {
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("Inserting the selected node " + selectedNode.getId() + " from best location predecessor ");
+			          LOG.debug("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
+					}
 					double edgeWeight = vertex.getValue().getDistances()[selectedNode.getId()];
 					vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(edgeWeight)));
-					System.out.println("Removing edge from " + vertex.getId() + " to " +  bestLocation.getNodeId());
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("Removing edge from " + vertex.getId() + " to " +  bestLocation.getNodeId());
+					}
 					vertex.removeEdges(new IntWritable(bestLocation.getNodeId()));
 					aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getDistances()[selectedNode.getId()]));
 					double selectedNodeF = vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()];
@@ -92,8 +106,10 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 						vertex.getValue().setB(bestLocation.getCost());
 					}
 					//aggregate("bestLocationPositions", new ArrayPrimitiveWritable(vertex.getValue().getPositions()));
-					System.out.println("Connecting best location node with selected node " + selectedNode.getId() );
-					System.out.println("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("Connecting best location node with selected node " + selectedNode.getId());
+			          LOG.debug("Inserting edge from " + vertex.getId() + " to " + selectedNode.getId());
+					}
 					double edgeWeight = vertex.getValue().getDistances()[selectedNode.getId()];
 					vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(edgeWeight)));
 					vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
@@ -106,13 +122,17 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					sendMessage(new IntWritable(selectedNode.getId()), new EntryWritable(new Text("F"), new DoubleWritable(selectedNodeF)));
 					if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
 						EntryWritable childToInsertionMessage = new EntryWritable(new Text("ID"), vertex.getId());
-						System.out.println("From best location Sending message to: " + vertex.getValue().getPredecessorId());
+						if (LOG.isDebugEnabled()) {
+				          LOG.debug("From best location Sending message to: " + vertex.getValue().getPredecessorId());
+						}
 						sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), childToInsertionMessage);
 					}
 				} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
 					vertex.getValue().setF(vertex.getValue().getF() + bestLocation.getCost());
 					vertex.getValue().getPositions()[selectedNode.getId()] = Position.SUCCESSOR;
-					System.out.println("Updating parent after insert...");
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("Updating parent after insert...");
+					}
 					vertex.getValue().setPredecessorId(selectedNode.getId());
 					aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getB()));
 					sendMessage(new IntWritable(selectedNode.getId()), new EntryWritable(new Text("BEST_LOCATION_B"), new DoubleWritable(vertex.getValue().getB())));
@@ -127,7 +147,9 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 			} else {
 				vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
 				EntryWritable outgoingMessage = new EntryWritable(vertex.getId(), new PositionWritable(Position.NONE));
-				System.out.println("From Others Sending message to: " + vertex.getValue().getPredecessorId());
+				if (LOG.isDebugEnabled()) {
+		          LOG.debug("From Others Sending message to: " + vertex.getValue().getPredecessorId());
+				}
 				sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), new EntryWritable(new Text("PARTIAL_B"), 
 						new EntryWritable(vertex.getId(), new DoubleWritable(vertex.getValue().getB()))));
 				//TupleWritable outgoingMessage = new TupleWritable(new Writable[] {vertex.getId(), new PositionWritable(Position.NONE)});
@@ -143,7 +165,9 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 
 	private void abortMovement(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode,
 			ArrayPrimitiveWritable selectedVertexChildrenW) {
-		System.out.println("Aborting movement at the insert operation");
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("Aborting movement at the insert operation");
+		}
 		vertex.getValue().setB(vertex.getValue().getOldB());
 		vertex.getValue().setF(vertex.getValue().getOldF());
 		int[] selectedVertexChildren = (int[]) selectedVertexChildrenW.get();
@@ -152,10 +176,14 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				vertex.getValue().setPredecessorId(selectedNode.getId());
 			}
 		}
-		System.out.println("selected vertex's children: ");
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("selected vertex's children: ");
+		}
 		if (vertex.getId().get() == selectedNode.getId()) {
 			for (int child : selectedVertexChildren) {
-				System.out.println(child);
+				if (LOG.isDebugEnabled()) {
+		          LOG.debug(child);
+				}
 				double edgeWeight = vertex.getValue().getDistances()[child];
 				vertex.addEdge(EdgeFactory.create(new IntWritable(child), new DoubleWritable(edgeWeight)));
 			}

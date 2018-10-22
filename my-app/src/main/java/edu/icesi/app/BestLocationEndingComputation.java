@@ -9,6 +9,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.log4j.Logger;
 
 /**
  * Compute the cost of inserting breaking the edge.
@@ -26,6 +27,9 @@ import org.apache.hadoop.io.Text;
  */
 public class BestLocationEndingComputation extends AbstractComputation
 		<IntWritable, RDCMSTValue, DoubleWritable, MapWritable, IntWritable> { 
+	
+	private static final Logger LOG =
+		      Logger.getLogger(BestLocationEndingComputation.class);
     
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException { 
@@ -72,7 +76,10 @@ public class BestLocationEndingComputation extends AbstractComputation
 		double costFN = vertex.getValue().getPartialBestLocationCost();
 		//feasible insert
 		boolean feasibleInsert = (vertex.getValue().getF() + costBE + vertex.getValue().getB()) <= 1000000;
-		System.out.println("Feasible Insert: " + feasibleInsert);
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("Feasible Insert: " + feasibleInsert);
+		}
+
 		if (!feasibleInsert) {
 			costBE = Double.POSITIVE_INFINITY;
 		}
@@ -84,8 +91,10 @@ public class BestLocationEndingComputation extends AbstractComputation
 //			double costFN = Double.POSITIVE_INFINITY;
 //			if (iteration % 2 == 0) 
 			
-			System.out.println("Local best location decision");
-			System.out.println("FN " + costFN + " VS BE " + costBE );
+			if (LOG.isDebugEnabled()) {
+	          LOG.debug("Local best location decision");
+	          LOG.debug("FN " + costFN + " VS BE " + costBE);
+			}
 			if (costBE < costFN) {
 				partialBestLocation = new Location(vertex.getId().get(), Way.BREAKING_EDGE, costBE, vertex.getValue().getPredecessorId());
 			} else {

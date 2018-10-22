@@ -16,6 +16,7 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.join.TupleWritable;
+import org.apache.log4j.Logger;
 
 /**
  * Update b and f after the delete.
@@ -27,16 +28,21 @@ import org.apache.hadoop.mapred.join.TupleWritable;
  */
 public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComputation
 		<IntWritable, RDCMSTValue, DoubleWritable, EntryWritable, MapWritable> {
-
+	
+	private static final Logger LOG =
+		      Logger.getLogger(BFsUpdateAndBestLocationBeginningComputation.class);
+	
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
 		//vertex.getValue().print();
 		
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
-		System.out.println("Selected node at superstep 2: " + selectedNode.getId());
-		System.out.println("Selected node parent: " + selectedNode.getPredecessorId());
 		
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("Selected node at superstep 2: " + selectedNode.getId());
+          LOG.debug("Selected node parent: " + selectedNode.getPredecessorId());
+		}
 		
 		updateBnFs(vertex, selectedNode, messages);
 		computecCostInsertingFromNode(vertex, selectedNode);
@@ -72,10 +78,15 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			//THIS SHOULD BE IMPROVED
 			int[] childrenIds = new int[vertex.getNumEdges()];
 			int i = 0;
-			System.out.println("selected vertex's children: ");
+			if (LOG.isDebugEnabled()) {
+	          LOG.debug("selected vertex's children: ");
+			}
+
 			for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) { 
     			childrenIds[i] = edge.getTargetVertexId().get();
-    			System.out.println("child " + i + ": " + childrenIds[i]);
+    			if (LOG.isDebugEnabled()) {
+		          LOG.debug("child " + i + ": " + childrenIds[i]);
+				}
     			i++;
     			//System.out.println("Removing edge from " + vertex.getId().get() + " to " +  edge.getTargetVertexId());
     			//vertex.removeEdges(edge.getTargetVertexId());
@@ -83,29 +94,39 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			vertex.setEdges(new ArrayList<Edge<IntWritable,DoubleWritable>>());
 			reduce("selectedVertexChildren", new ArrayPrimitiveWritable(childrenIds));
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
-			System.out.println("It is a selected node's predecessor");
+			if (LOG.isDebugEnabled()) {
+	          LOG.debug("It is a selected node's predecessor");
+			}
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;
 			for (EntryWritable message : messages) {
 				
 				Text messageKey = (Text) message.getKey();
-				System.out.println("Incoming messages. Key: " + messageKey + " Value: " + message.get(messageKey));
+				if (LOG.isDebugEnabled()) {
+		          LOG.debug("Incoming messages. Key: " + messageKey + " Value: " + message.get(messageKey));
+				}
 				if (messageKey.toString().equals("ID")) {
 					IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
 					childToSelectedNode = childToSelectedNodeWritable.get();
-					System.out.println("ID message: " + childToSelectedNode);
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("ID message: " + childToSelectedNode);
+					}
 				} else {
 					DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());
 					maxPossibbleB = Math.max(maxPossibbleB,  possibleB.get() );
 				}
 			}
 			if (vertex.getId().get() == selectedNode.getPredecessorId()) {
-				System.out.println("Removing edge from " + vertex.getValue() + " to " +  selectedNode.getId());
+				if (LOG.isDebugEnabled()) {
+		          LOG.debug("Removing edge from " + vertex.getValue() + " to " +  selectedNode.getId());
+				}
 	    		vertex.removeEdges(new IntWritable(selectedNode.getId()));
 	    		MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
 				for (Writable branchId : deleteCostForSuccessors.keySet()) {
-					System.out.println("id in deleteCostForSuccessors: " + branchId);
-	    			System.out.println("Inserting edge from " + vertex.getId().get() + " to " + branchId );
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("id in deleteCostForSuccessors: " + branchId);
+			          LOG.debug("Inserting edge from " + vertex.getId().get() + " to " + branchId );
+					}
 	    			IntWritable IntBranchId = (IntWritable) branchId;
 	    			double edgeWeight = vertex.getValue().getDistances()[IntBranchId.get()];
 					vertex.addEdge(EdgeFactory.create((IntWritable) branchId, new DoubleWritable(edgeWeight)));
@@ -115,12 +136,16 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 				} else {
 					vertex.getValue().setB(bestPossibleNewBDirPred.get());
 				}
-				System.out.println("best posible b coming from unaffected branch: " + maxPossibbleB);
-				System.out.println("best posible b coming from affected branch: " + bestPossibleNewBDirPred);
-				System.out.println("b value of parent vertex " + vertex.getId() + ": " + vertex.getValue().getB());
+				if (LOG.isDebugEnabled()) {
+		          LOG.debug("best posible b coming from unaffected branch: " + maxPossibbleB);
+		          LOG.debug("best posible b coming from affected branch: " + bestPossibleNewBDirPred);
+		          LOG.debug("b value of parent vertex " + vertex.getId() + ": " + vertex.getValue().getB());
+				}
 				reduce("parentB", new EntryWritable(new IntWritable(vertex.getValue().getPredecessorId()), new DoubleWritable(vertex.getValue().getB())));
 			} else {
-				System.out.println("storing in allPredecessorsPossibleNewBs");
+				if (LOG.isDebugEnabled()) {
+		          LOG.debug("storing in allPredecessorsPossibleNewBs");
+				}
 				ElementsToComputeB elementsToComputeB = new ElementsToComputeB(vertex.getValue().getPredecessorId(), maxPossibbleB, 
 						vertex.getValue().getDistances()[childToSelectedNode]);			
 				MapWritable elementsToComputeBMap = new MapWritable();
@@ -129,18 +154,26 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			}
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR) {
 			MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
-			System.out.println("deleteCostForSuccessors:");
+			if (LOG.isDebugEnabled()) {
+	          LOG.debug("deleteCostForSuccessors:");
+			}
 			for (Writable branchId : deleteCostForSuccessors.keySet()) {
 				IntWritable branchIdInt = (IntWritable) branchId;
-				System.out.println("Key: " + branchIdInt + " Value: " + deleteCostForSuccessors.get(branchId));
+				if (LOG.isDebugEnabled()) {
+		          LOG.debug("Key: " + branchIdInt + " Value: " + deleteCostForSuccessors.get(branchId));
+				}	
 				//This vertex is in branchId
 				if (vertex.getValue().getPositions()[branchIdInt.get()] == Position.SUCCESSOR || vertex.getId().get() == branchIdInt.get()) {
 					DoubleWritable branchCost = (DoubleWritable) deleteCostForSuccessors.get(branchId);
 					double newF = vertex.getValue().getF() + branchCost.get();
-					System.out.println("newF: " + newF);
+					if (LOG.isDebugEnabled()) {
+			          LOG.debug("newF: " + newF);
+					}
 					vertex.getValue().setF(newF);
 					if (vertex.getId().get() == branchIdInt.get()) {
-						System.out.println("Updating parent after delete...");
+						if (LOG.isDebugEnabled()) {
+				          LOG.debug("Updating parent after delete...");
+						}
 						vertex.getValue().setPredecessorId(selectedNode.getPredecessorId());
 					}
 				}
@@ -156,11 +189,15 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	public void computecCostInsertingFromNode(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode) {
 		//feasible insert
 		boolean feasibleInsert = (vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()] + 0) <= 1000000;
-		System.out.println("partial best location?: " + vertex.getValue().getPartialBestLocationCost());
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("partial best location?: " + vertex.getValue().getPartialBestLocationCost());
+		}	
 		//selected vertex is not considered for best location operation
 		if(feasibleInsert && vertex.getId().get() != selectedNode.getId()){
 			double cost =  vertex.getValue().getDistances()[selectedNode.getId()];
-			System.out.println("Cost FROM NODE: " + cost);
+			if (LOG.isDebugEnabled()) {
+	          LOG.debug("Cost FROM NODE: " + cost);
+			}
 			vertex.getValue().setPartialBestLocationCost(cost);
 		}
 		
