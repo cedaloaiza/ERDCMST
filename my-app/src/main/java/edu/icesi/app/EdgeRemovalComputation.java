@@ -185,6 +185,8 @@ public class EdgeRemovalComputation extends
 	    			}
 				}
 			}
+			vertex.getValue().setPositions(positions);
+			
 			vertex.getValue().setF(selectedNodeNewF);
 			if (bestLocation.getWay() == Way.FROM_NODE) {
 				vertex.getValue().setB(0);

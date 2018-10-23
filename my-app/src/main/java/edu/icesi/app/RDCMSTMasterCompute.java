@@ -80,6 +80,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				//**DELETE OPERATION
 				case 0:	
 					if (!abortedMovement) {
+						MapWritable selectedVertexPositions = getReduced("selectedVertexPositions");
+						if (selectedVertexPositions != null) {
+							broadcast("selectedVertexPositionsB", selectedVertexPositions);
+						}
 						broadcast("startingNormalMovement", new BooleanWritable(true));
 					}
 					selectANode();
@@ -161,6 +165,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					broadcast("selectedNode", selectedNode);
 					setComputation(insertOperationAndBFsUpdate.class);
 					setAggregatedValue("movementCost", new DoubleWritable(0));
+					registerReducer("selectedVertexPositions", new MapAssignmentReduce());
 					iteration++;
 					break;
 				default:
