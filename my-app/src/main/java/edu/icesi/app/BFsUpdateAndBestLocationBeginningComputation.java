@@ -93,7 +93,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
     		}
 			vertex.setEdges(new ArrayList<Edge<IntWritable,DoubleWritable>>());
 			reduce("selectedVertexChildren", new ArrayPrimitiveWritable(childrenIds));
-		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+		} else if (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())) == new PositionWritable(Position.PREDECESSOR)) {
 			if (LOG.isDebugEnabled()) {
 	          LOG.debug("It is a selected node's predecessor");
 			}
@@ -152,7 +152,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 				elementsToComputeBMap.put(vertex.getId(), elementsToComputeB);
 				reduce("allPredecessorsPossibleNewBs", elementsToComputeBMap);
 			}
-		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.SUCCESSOR) {
+		} else if (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())) == new PositionWritable(Position.SUCCESSOR)) {
 			MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
 			if (LOG.isDebugEnabled()) {
 	          LOG.debug("deleteCostForSuccessors:");
@@ -163,7 +163,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 		          LOG.debug("Key: " + branchIdInt + " Value: " + deleteCostForSuccessors.get(branchId));
 				}	
 				//This vertex is in branchId
-				if (vertex.getValue().getPositions()[branchIdInt.get()] == Position.SUCCESSOR || vertex.getId().get() == branchIdInt.get()) {
+				if (vertex.getValue().getPositions().get(branchIdInt) == new PositionWritable(Position.SUCCESSOR) || vertex.getId().get() == branchIdInt.get()) {
 					DoubleWritable branchCost = (DoubleWritable) deleteCostForSuccessors.get(branchId);
 					double newF = vertex.getValue().getF() + branchCost.get();
 					if (LOG.isDebugEnabled()) {

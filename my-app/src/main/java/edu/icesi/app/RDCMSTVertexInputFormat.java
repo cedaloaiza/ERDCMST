@@ -8,6 +8,7 @@ import org.apache.giraph.io.formats.TextVertexInputFormat;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -74,13 +75,13 @@ public class RDCMSTVertexInputFormat extends
       double b = 0;
       JSONArray jsonDistances = jsonVertex.getJSONArray(1);
       double[] distances = new double[jsonDistances.length()];
-      Position[] positions = new Position[jsonDistances.length()];
+      MapWritable positions = new MapWritable();
       if (isTheRoot) {
     	  pos = Position.PREDECESSOR;
-    	  positions[0] = Position.NONE;
+    	  positions.put(new IntWritable(0), new PositionWritable(Position.NONE));
     	  parent = RDCMSTValue.NONE_PARENT;
       } else {
-    	  positions[0] = Position.SUCCESSOR;
+    	  positions.put(new IntWritable(0), new PositionWritable(Position.SUCCESSOR));
       }
       distances[0] = jsonDistances.getDouble(0);
       if (LOG.isDebugEnabled()) {
@@ -90,7 +91,7 @@ public class RDCMSTVertexInputFormat extends
       
       for(int i = 1; i < jsonDistances.length(); i++){
     	  distances[i] = jsonDistances.getDouble(i);
-    	  positions[i] = pos;
+    	  positions.put(new IntWritable(i), new PositionWritable(pos));;
       }
       b = jsonVertex.getDouble(3);
       f = jsonVertex.getDouble(4);

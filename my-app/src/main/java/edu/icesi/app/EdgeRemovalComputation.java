@@ -132,8 +132,8 @@ public class EdgeRemovalComputation extends
         //sendMessageToAllEdges(vertex, new Text());
         
     }
-	
-	public void updatePositionsFormerSelectedNode(Vertex<IntWritable, RDCMSTValue,
+	/*
+	public void updatePositionsFormerSelectedNode (Vertex<IntWritable, RDCMSTValue,
 			DoubleWritable> vertex, Iterable<IntWritable> messages) {
 		Location bestLocation = getAggregatedValue("bestLocation");
 		RDCMSTValue selectedNode = getAggregatedValue("selectedNode");
@@ -152,12 +152,13 @@ public class EdgeRemovalComputation extends
 		}
 		
 	}
+	*/
 	
 	public void completePreviousMovement (Vertex<IntWritable, RDCMSTValue,
 			DoubleWritable> vertex, Iterable<EntryWritable> messages, RDCMSTValue selectedNode, Location bestLocation) {
 		
 		if (LOG.isDebugEnabled()) {
-          LOG.debug("Positions length: " + vertex.getValue().getPositions().length);
+          LOG.debug("Positions length: " + vertex.getValue().getPositions().size());
           LOG.debug("Is selected node´s predecessor? " +
         		  (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())).equals(new PositionWritable(Position.PREDECESSOR))));
 		}
@@ -185,6 +186,7 @@ public class EdgeRemovalComputation extends
 	      	          LOG.debug("Updating positions of selected node");
 	    			}
 				}
+				vertex.getValue().setPositions(getBroadcast("selectedVertexPositionsB"));
 			}
 			vertex.getValue().setF(selectedNodeNewF);
 			if (bestLocation.getWay() == Way.FROM_NODE) {

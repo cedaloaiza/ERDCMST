@@ -37,7 +37,7 @@ public class BestLocationEndingComputation extends AbstractComputation
 		
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		
-		if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR &&
+		if (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())) == new PositionWritable(Position.PREDECESSOR) &&
 				vertex.getId().get() != selectedNode.getPredecessorId()) {
 			MapWritable newBs = getBroadcast("newBs");
 			DoubleWritable newB = (DoubleWritable) newBs.get(vertex.getId());

@@ -33,7 +33,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		if (LOG.isDebugEnabled()) {
           LOG.debug("Best Location:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
           LOG.debug("Real vertex ID: " + vertex.getId().get());
-          LOG.debug("Positions length: " + vertex.getValue().getPositions().length);
+          LOG.debug("Positions length: " + vertex.getValue().getPositions().size());
 		}
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		ArrayPrimitiveWritable selectedVertexChildrenW = getBroadcast("selectedVertexChildren");
@@ -55,8 +55,8 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(edgeWeight)));
 					aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getDistances()[bestLocation.getNodeId()]));
 				}
-			} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.PREDECESSOR) {
-				vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
+			} else if (vertex.getValue().getPositions().get(new IntWritable(bestLocation.getNodeId())) == new PositionWritable(Position.PREDECESSOR)) {
+				vertex.getValue().getPositions().put(new IntWritable(selectedNode.getId()), new PositionWritable(Position.PREDECESSOR));
 				
 				MapWritable updatePositionMessage = new MapWritable();
 				updatePositionMessage.put(vertex.getId(), new PositionWritable(Position.SUCCESSOR));
@@ -86,9 +86,9 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					double selectedNodeF = vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()];
 					sendMessage(new IntWritable(selectedNode.getId()), new EntryWritable(new Text("F"), new DoubleWritable(selectedNodeF)));
 				}
-			} else if (vertex.getValue().getPositions()[bestLocation.getNodeId()] == Position.SUCCESSOR) {
+			} else if (vertex.getValue().getPositions().get(new IntWritable(bestLocation.getNodeId())) == new PositionWritable(Position.SUCCESSOR)) {
 				if (bestLocation.getWay() == Way.FROM_NODE) {
-					vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
+					vertex.getValue().getPositions().put(new IntWritable(selectedNode.getId()), new PositionWritable(Position.NONE));
 					MapWritable updatePositionMessage = new MapWritable();
 					updatePositionMessage.put(vertex.getId(), new PositionWritable(Position.NONE));
 					reduce("selectedVertexPositions", updatePositionMessage);
@@ -98,7 +98,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
 					double newF = vertex.getValue().getF() + bestLocation.getCost();
 					vertex.getValue().setF(newF);
-					vertex.getValue().getPositions()[selectedNode.getId()] = Position.SUCCESSOR;
+					vertex.getValue().getPositions().put(new IntWritable(selectedNode.getId()), new PositionWritable(Position.SUCCESSOR));
 					MapWritable updatePositionMessage = new MapWritable();
 					updatePositionMessage.put(vertex.getId(), new PositionWritable(Position.PREDECESSOR));
 					reduce("selectedVertexPositions", updatePositionMessage);
@@ -116,7 +116,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					}
 					double edgeWeight = vertex.getValue().getDistances()[selectedNode.getId()];
 					vertex.addEdge(EdgeFactory.create(new IntWritable(selectedNode.getId()), new DoubleWritable(edgeWeight)));
-					vertex.getValue().getPositions()[selectedNode.getId()] = Position.PREDECESSOR;
+					vertex.getValue().getPositions().put(new IntWritable(selectedNode.getId()), new PositionWritable(Position.PREDECESSOR));
 					MapWritable updatePositionMessage = new MapWritable();
 					updatePositionMessage.put(vertex.getId(), new PositionWritable(Position.SUCCESSOR));
 					reduce("selectedVertexPositions", updatePositionMessage);
@@ -134,7 +134,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					}
 				} else if (bestLocation.getWay() == Way.BREAKING_EDGE) {
 					vertex.getValue().setF(vertex.getValue().getF() + bestLocation.getCost());
-					vertex.getValue().getPositions()[selectedNode.getId()] = Position.SUCCESSOR;
+					vertex.getValue().getPositions().put(new IntWritable(selectedNode.getId()), new PositionWritable(Position.SUCCESSOR));
 					if (LOG.isDebugEnabled()) {
 			          LOG.debug("Updating parent after insert...");
 					}
@@ -151,7 +151,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 				 */	
 				
 			} else {
-				vertex.getValue().getPositions()[selectedNode.getId()] = Position.NONE;
+				vertex.getValue().getPositions().put(new IntWritable(selectedNode.getId()), new PositionWritable(Position.NONE));
 				MapWritable updatePositionMessage = new MapWritable();
 				updatePositionMessage.put(vertex.getId(), new PositionWritable(Position.NONE));
 				reduce("selectedVertexPositions", updatePositionMessage);
