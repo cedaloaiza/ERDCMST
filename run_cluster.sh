@@ -16,9 +16,9 @@ hadoop jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar org.apache.girap
 -ca giraph.SplitMasterWorker=true \
 -ca giraph.logLevel=ERROR \
 -ca mapreduce.jobtracker.address=yarn \
--ca giraph.numComputeThreads=4 \
--ca giraph.numInputThreads=4 \
--ca giraph.numOutputThreads=4 \
+-ca giraph.numComputeThreads=2 \
+-ca giraph.numInputThreads=2 \
+-ca giraph.numOutputThreads=2 \
 -ca mapreduce.job.counters.max=1000 \
 -ca giraph.useSuperstepCounters=false 
 

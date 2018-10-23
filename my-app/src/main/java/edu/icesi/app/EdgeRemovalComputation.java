@@ -115,7 +115,7 @@ public class EdgeRemovalComputation extends
     		//ArrayWritable<Writable> messageSuccesorsId = new ArrayWritable<Writable>();
     		//messageSuccesorsId.set((Writable[]) vertexSuccessors.keySet().toArray());
     		//sendMessage(new IntWritable(vertex.getValue().getPredecessorId()), messageSuccesorsId);
-    	} else if (vertex.getValue().getPositions()[selectedNodeId.get()].equals(Position.PREDECESSOR)) {
+    	} else if (vertex.getValue().getPositions().get(selectedNodeId).equals(new PositionWritable(Position.PREDECESSOR))) {
     		for (Edge<IntWritable, DoubleWritable> edge : vertex.getEdges()) {  		
     			double distanceToChild = vertex.getValue().getDistances()[edge.getTargetVertexId().get()];
     			if (LOG.isDebugEnabled()) {
@@ -158,7 +158,8 @@ public class EdgeRemovalComputation extends
 		
 		if (LOG.isDebugEnabled()) {
           LOG.debug("Positions length: " + vertex.getValue().getPositions().length);
-          LOG.debug("Is selected node´s predecessor? " + (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR));
+          LOG.debug("Is selected node´s predecessor? " +
+        		  (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())).equals(new PositionWritable(Position.PREDECESSOR))));
 		}
 		if (selectedNode.getId() == vertex.getId().get()) {
 			double selectedNodeNewF = 0;
@@ -176,7 +177,7 @@ public class EdgeRemovalComputation extends
 				} else {
 					IntWritable key = (IntWritable) entry.getKey();
 					PositionWritable positionW = (PositionWritable) entry.get(key);
-					vertex.getValue().getPositions()[key.get()] = positionW.getPosition();
+					vertex.getValue().getPositions().put(key, positionW);
 					if (LOG.isDebugEnabled()) {
 	      	          LOG.debug("Updating positions of selected node");
 	      	          LOG.debug("Key: " + key);
@@ -194,7 +195,7 @@ public class EdgeRemovalComputation extends
 				double newB = bestLocationB + vertex.getValue().getDistances()[bestLocation.getNodeId()]; 
 				vertex.getValue().setB(newB);
 			}
-		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+		} else if (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())) == new PositionWritable(Position.PREDECESSOR)) {
 			DoubleWritable bestPossibleNewBDirPred = getAggregatedValue("bestPossibleNewBDirPredA");
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;

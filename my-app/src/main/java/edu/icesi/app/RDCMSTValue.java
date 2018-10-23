@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
+import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
@@ -28,7 +29,7 @@ public class RDCMSTValue implements Writable{
 	// Direct distance from this node to any other node in the graph .
 	private ArrayPrimitiveWritable distances;
 	// This node is; a predecessor, a successor, or none; of any node in the graph.
-	private Position[] positions;
+	private MapWritable positions;
 	// The Id of the unique predecessor of this node
 	private int predecessorId;
 
@@ -41,7 +42,7 @@ public class RDCMSTValue implements Writable{
 
 
 
-	public RDCMSTValue(double f, double b, double[] distances, Position[] positions,
+	public RDCMSTValue(double f, double b, double[] distances, MapWritable positions,
 			int predecessorId, boolean inList, int id) {
 		this.f = f;
 		this.b = b;
@@ -67,7 +68,7 @@ public class RDCMSTValue implements Writable{
 		this.f = 0;
 		this.b = 0;
 		this.distances = new ArrayPrimitiveWritable(new double[0]);;
-		this.positions = new Position[0];
+		this.positions = new MapWritable();
 		this.predecessorId = 0;
 		this.inList = false;
 		this.id = 0;
@@ -87,7 +88,7 @@ public class RDCMSTValue implements Writable{
 		return predecessorId;
 	}
 	
-	public Position[] getPositions() {
+	public MapWritable getPositions() {
 		return positions;
 	}
 	
@@ -127,7 +128,7 @@ public class RDCMSTValue implements Writable{
 		this.partialBestLocationCost = partialBestLocationCost;
 	}
 	
-	public void setPositions(Position[] positions) {
+	public void setPositions(MapWritable positions) {
 		this.positions = positions;
 	}
 	
@@ -148,8 +149,8 @@ public class RDCMSTValue implements Writable{
 		System.out.println("f: " + this.f);
 		System.out.println("b: " + this.b);
 		System.out.println("positions: " );	
-		for(Position pos: positions) {
-			System.out.println("\t" + pos);
+		for(Writable pos: positions.keySet()) {
+			System.out.println("\t" + positions.get(pos));
 		}
 		System.out.println("Parent: " + this.predecessorId);
 			
@@ -162,10 +163,7 @@ public class RDCMSTValue implements Writable{
 		out.writeDouble(oldF);
 		out.writeDouble(oldB);
 		distances.write(out);
-		out.writeInt(positions.length);
-		for(Position p : positions) {
-			WritableUtils.writeEnum(out, p);
-		}
+		positions.write(out);
 		out.writeInt(id);
 		out.writeInt(predecessorId);
 	}
@@ -177,11 +175,7 @@ public class RDCMSTValue implements Writable{
 		oldF = in.readDouble();
 		oldB = in.readDouble();
 		distances.readFields(in);
-		int positionsLength = in.readInt();
-		positions = new Position[positionsLength];
-		for(int i = 0; i < positionsLength; i++) {
-			positions[i] = WritableUtils.readEnum(in, Position.class);
-		}
+		positions.readFields(in);
 		id = in.readInt();
 		predecessorId = in.readInt();
 		

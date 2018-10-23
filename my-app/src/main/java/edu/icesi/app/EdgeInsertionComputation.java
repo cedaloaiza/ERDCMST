@@ -74,7 +74,7 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 	    		//System.out.println("Length of KeySet to delete insertion: " + successorsDeleteCosts.keySet().size());
 	    		double distanceToSelectedNode = vertex.getValue().getDistances()[selectedNode.getId()]; 
 	    		movementCost -= distanceToSelectedNode;
-	    		for(Writable branchId: successorsDeleteCosts.keySet()) {
+	    		for (Writable branchId: successorsDeleteCosts.keySet()) {
 	    			IntWritable branchIdInt = (IntWritable) branchId;
 	    			double distanceToNewChild = vertex.getValue().getDistances()[branchIdInt.get()]; 
 	    			movementCost += distanceToNewChild; 
