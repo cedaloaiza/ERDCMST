@@ -11,6 +11,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -27,6 +28,9 @@ import java.util.List;
   */
 public class RDCMSTVertexInputFormat extends
   TextVertexInputFormat<IntWritable, RDCMSTValue, DoubleWritable> {
+	
+  private static final Logger LOG =
+		   Logger.getLogger(RDCMSTVertexInputFormat.class);
 
   @Override
   public TextVertexReader createVertexReader(InputSplit split,
@@ -79,8 +83,11 @@ public class RDCMSTVertexInputFormat extends
     	  positions[0] = Position.SUCCESSOR;
       }
       distances[0] = jsonDistances.getDouble(0);
-      System.out.println("Reading node:: " + jsonVertex.getInt(0));
-      System.out.println("distances array:: " + jsonDistances.length());
+      if (LOG.isDebugEnabled()) {
+    	  System.out.println("Reading node:: " + jsonVertex.getInt(0));
+          System.out.println("distances array:: " + jsonDistances.length());
+      }
+      
       for(int i = 1; i < jsonDistances.length(); i++){
     	  distances[i] = jsonDistances.getDouble(i);
     	  positions[i] = pos;

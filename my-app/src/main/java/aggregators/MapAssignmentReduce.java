@@ -10,6 +10,7 @@ import org.apache.giraph.reducers.ReduceOperation;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.log4j.Logger;
 
 import edu.icesi.app.RDCMSTValue;
 
@@ -23,6 +24,9 @@ import edu.icesi.app.RDCMSTValue;
  *
  */
 public class MapAssignmentReduce implements ReduceOperation<MapWritable, MapWritable> {
+	
+	private static final Logger LOG =
+		      Logger.getLogger(MapAssignmentReduce.class);
 	
 	public MapAssignmentReduce(){
 		
@@ -49,10 +53,12 @@ public class MapAssignmentReduce implements ReduceOperation<MapWritable, MapWrit
 	@Override
 	public MapWritable reduce(MapWritable curValue, MapWritable valueToReduce) {
 		if (valueToReduce.size() != 0) {
-			System.out.println("*reduce*");
-			System.out.println("reducing map of size " + valueToReduce.size() + " into a map of size " + curValue.size());
-			for (Writable dw: valueToReduce.keySet()) {
-				System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
+			if (LOG.isDebugEnabled()) {
+				System.out.println("*reduce*");
+				System.out.println("reducing map of size " + valueToReduce.size() + " into a map of size " + curValue.size());
+				for (Writable dw: valueToReduce.keySet()) {
+					System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
+				}
 			}
 			curValue.putAll(valueToReduce);
 		}
@@ -62,10 +68,12 @@ public class MapAssignmentReduce implements ReduceOperation<MapWritable, MapWrit
 	@Override
 	public MapWritable reduceMerge(MapWritable curValue, MapWritable valueToReduce) {
 		if (valueToReduce.size() != 0) {
-			System.out.println("*reduceMerge*");
-			System.out.println("reducing map of size " + valueToReduce.size() + " into a map of size " + curValue.size());
-			for (Writable dw: valueToReduce.keySet()) {
-				System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
+			if (LOG.isDebugEnabled()) {
+				System.out.println("*reduceMerge*");
+				System.out.println("reducing map of size " + valueToReduce.size() + " into a map of size " + curValue.size());
+				for (Writable dw: valueToReduce.keySet()) {
+					System.out.println("Key: " + dw + " - Delete Costs:: " + valueToReduce.get(dw));
+				}
 			}
 			curValue.putAll(valueToReduce);
 		}

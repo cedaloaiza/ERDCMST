@@ -215,7 +215,9 @@ public class EdgeRemovalComputation extends
 					childToSelectedNode = childToSelectedNodeWritable.get();
 				}
 			}
-			bestLocation.print();
+			if (LOG.isDebugEnabled()) {
+				bestLocation.print();
+			}
 			//if vertex is parent of selected node
 			if (vertex.getId().get() == bestLocation.getPredecessorId() && bestLocation.getWay() == Way.BREAKING_EDGE || 
 					vertex.getId().get() == bestLocation.getNodeId() && bestLocation.getWay() == Way.FROM_NODE) {

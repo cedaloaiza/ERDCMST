@@ -11,7 +11,9 @@ import org.apache.hadoop.io.ArrayPrimitiveWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.log4j.Logger;
 
+import edu.icesi.app.EdgeInsertionComputation;
 import edu.icesi.app.RDCMSTValue;
 
 /**
@@ -20,6 +22,9 @@ import edu.icesi.app.RDCMSTValue;
  *
  */
 public class ArrayAssignmentReduce implements ReduceOperation<ArrayPrimitiveWritable, ArrayPrimitiveWritable> {
+	
+	private static final Logger LOG =
+		      Logger.getLogger(ArrayAssignmentReduce.class);
 	
 	public ArrayAssignmentReduce(){
 		
@@ -50,9 +55,11 @@ public class ArrayAssignmentReduce implements ReduceOperation<ArrayPrimitiveWrit
 		if (newValue.length == 0) {
 			response = curValue;
 		}
-		System.out.println("in reduce:");
-		System.out.println("curValue size: " + curValue.toString());
-		System.out.println("curValue size: " + valueToReduce.toString());
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("in reduce:");
+          LOG.debug("curValue size: " + curValue.toString());
+          LOG.debug("curValue size: " + valueToReduce.toString());
+		}
 		return response;
 	}
 
@@ -63,9 +70,11 @@ public class ArrayAssignmentReduce implements ReduceOperation<ArrayPrimitiveWrit
 		if (newValue.length == 0) {
 			response = curValue;
 		}
-		System.out.println("in reduceMerge:");
-		System.out.println("curValue size: " + curValue.toString());
-		System.out.println("curValue size: " + valueToReduce.toString());
+		if (LOG.isDebugEnabled()) {
+          LOG.debug("in reduceMerge:");
+          LOG.debug("curValue size: " + curValue.toString());
+          LOG.debug("curValue size: " + valueToReduce.toString());
+		}
 		return response;
 	}
 
