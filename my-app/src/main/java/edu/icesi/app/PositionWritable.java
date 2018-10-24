@@ -32,4 +32,10 @@ public class PositionWritable implements Writable {
 		 pos = WritableUtils.readEnum(in, Position.class);
 		
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		PositionWritable pw = (PositionWritable) o;
+		return this.pos == pw.getPosition();
+	}
 }

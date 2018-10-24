@@ -42,7 +42,6 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		if (selectedVertexChildrenW != null) {
 			abortMovement(vertex, selectedNode, selectedVertexChildrenW);
 		} else {
-		
 			if (vertex.getId().get() == selectedNode.getId()) {
 				if (bestLocation.getWay() == Way.FROM_NODE) {
 					vertex.getValue().setPredecessorId(bestLocation.getNodeId());
@@ -57,7 +56,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					vertex.addEdge(EdgeFactory.create(new IntWritable(bestLocation.getNodeId()), new DoubleWritable(edgeWeight)));
 					aggregate("bestPossibleNewBDirPredA", new DoubleWritable(vertex.getValue().getDistances()[bestLocation.getNodeId()]));
 				}
-			} else if (vertex.getValue().getPositions().get(new IntWritable(bestLocation.getNodeId())) == new PositionWritable(Position.PREDECESSOR)) {
+			} else if (vertex.getValue().getPositions().get(new IntWritable(bestLocation.getNodeId())).equals(new PositionWritable(Position.PREDECESSOR))) {
 				/***
 				 * 
 				 * 
@@ -99,7 +98,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 					double selectedNodeF = vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()];
 					sendMessage(new IntWritable(selectedNode.getId()), new EntryWritable(new Text("F"), new DoubleWritable(selectedNodeF)));
 				}
-			} else if (vertex.getValue().getPositions().get(new IntWritable(bestLocation.getNodeId())) == new PositionWritable(Position.SUCCESSOR)) {
+			} else if (vertex.getValue().getPositions().get(new IntWritable(bestLocation.getNodeId())).equals(new PositionWritable(Position.SUCCESSOR))) {
 				if (bestLocation.getWay() == Way.FROM_NODE) {
 					vertex.getValue().getPositions().put(new IntWritable(selectedNode.getId()), new PositionWritable(Position.NONE));
 					MapWritable updatePositionMessage = new MapWritable();

@@ -188,7 +188,7 @@ public class EdgeRemovalComputation extends
 	      	          LOG.debug("Updating positions of selected node");
 	    			}
 				}
-				vertex.getValue().setPositions(getBroadcast("selectedVertexPositionsB"));
+				vertex.getValue().setPositions((MapWritable) getBroadcast("selectedVertexPositionsB"));
 			}
 			vertex.getValue().setF(selectedNodeNewF);
 			if (bestLocation.getWay() == Way.FROM_NODE) {
@@ -197,7 +197,7 @@ public class EdgeRemovalComputation extends
 				double newB = bestLocationB + vertex.getValue().getDistances()[bestLocation.getNodeId()]; 
 				vertex.getValue().setB(newB);
 			}
-		} else if (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())) == new PositionWritable(Position.PREDECESSOR)) {
+		} else if (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())).equals(new PositionWritable(Position.PREDECESSOR))) {
 			DoubleWritable bestPossibleNewBDirPred = getAggregatedValue("bestPossibleNewBDirPredA");
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;
