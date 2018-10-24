@@ -35,8 +35,10 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
-		//vertex.getValue().print();
-		
+		if (LOG.isDebugEnabled()) {
+			vertex.getValue().print();
+		}
+			
 		RDCMSTValue selectedNode = getBroadcast("selectedNode");
 		
 		if (LOG.isDebugEnabled()) {
@@ -124,8 +126,8 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	    		MapWritable deleteCostForSuccessors = getAggregatedValue("sumDeleteCostForSuccessors");
 				for (Writable branchId : deleteCostForSuccessors.keySet()) {
 					if (LOG.isDebugEnabled()) {
-			          LOG.debug("id in deleteCostForSuccessors: " + branchId);
-			          LOG.debug("Inserting edge from " + vertex.getId().get() + " to " + branchId );
+			          System.out.println("id in deleteCostForSuccessors: " + branchId);
+			          System.out.println("Inserting edge from " + vertex.getId().get() + " to " + branchId );
 					}
 	    			IntWritable IntBranchId = (IntWritable) branchId;
 	    			double edgeWeight = vertex.getValue().getDistances()[IntBranchId.get()];

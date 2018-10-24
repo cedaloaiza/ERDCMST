@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
@@ -150,7 +151,9 @@ public class RDCMSTValue implements Writable{
 		System.out.println("b: " + this.b);
 		System.out.println("positions: " );	
 		for(Writable pos: positions.keySet()) {
-			System.out.println("\t" + positions.get(pos));
+			PositionWritable posi = (PositionWritable) positions.get(pos);
+			IntWritable v = (IntWritable) pos;
+			System.out.println("\t" + v.get() + ":" + posi.getPosition());
 		}
 		System.out.println("Parent: " + this.predecessorId);
 			

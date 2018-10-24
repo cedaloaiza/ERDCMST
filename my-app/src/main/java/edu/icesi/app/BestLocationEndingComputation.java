@@ -44,7 +44,9 @@ public class BestLocationEndingComputation extends AbstractComputation
 			vertex.getValue().setB(newB.get());
 		}
 		
-		//vertex.getValue().print();
+		if (LOG.isDebugEnabled()) {
+			vertex.getValue().print();
+		}
 		
 		//PARTIAL SOLUTION
 		if (vertex.getId().get() != selectedNode.getId()) {
