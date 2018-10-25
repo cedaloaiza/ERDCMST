@@ -131,6 +131,7 @@ public class RDCMSTValue implements Writable{
 	
 	public void setPositions(MapWritable positions) {
 		this.positions = positions;
+		this.positions.put(new IntWritable(id), new PositionWritable(Position.NONE));
 	}
 	
 	public void setPredecessorId(int predecessorId) {

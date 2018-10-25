@@ -97,21 +97,20 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			reduce("selectedVertexChildren", new ArrayPrimitiveWritable(childrenIds));
 		} else if (vertex.getValue().getPositions().get(new IntWritable(selectedNode.getId())).equals(new PositionWritable(Position.PREDECESSOR))) {
 			if (LOG.isDebugEnabled()) {
-	          LOG.debug("It is a selected node's predecessor");
+	          System.out.println("It is a selected node's predecessor");
 			}
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;
 			for (EntryWritable message : messages) {
-				
 				Text messageKey = (Text) message.getKey();
 				if (LOG.isDebugEnabled()) {
-		          LOG.debug("Incoming messages. Key: " + messageKey + " Value: " + message.get(messageKey));
+					System.out.println("Incoming messages. Key: " + messageKey + " Value: " + message.get(messageKey));
 				}
 				if (messageKey.toString().equals("ID")) {
 					IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
 					childToSelectedNode = childToSelectedNodeWritable.get();
 					if (LOG.isDebugEnabled()) {
-			          LOG.debug("ID message: " + childToSelectedNode);
+			          System.out.println("ID message: " + childToSelectedNode);
 					}
 				} else {
 					DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());

@@ -62,7 +62,7 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     	IntWritable selectedNodeId = new IntWritable(selectedNode.getId());
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");
 		
-    	if (vertex.getValue().getPositions().get(selectedNodeId) == new PositionWritable(Position.PREDECESSOR)) { 
+    	if (vertex.getValue().getPositions().get(selectedNodeId).equals(new PositionWritable(Position.PREDECESSOR))) { 
     		if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
     			//System.out.println("Sending ID message to its parent");
     			EntryWritable message = new EntryWritable(new Text("ID"), vertex.getId());
