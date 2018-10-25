@@ -35,7 +35,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	//JUST FOR DEBUGGING
 	//private int[] selectedNodes = new int[]{2, 3, 1, 4, 1, 3};
 	private int[] selectedNodes = new int[]{2, 10, 9, 4, 1, 3, 2, 1, 8, 7, 3, 1, 9, 6, 5, 10, 9, 6, 2, 1, 3, 4, 6, 7, 8, 9};
-	private int MAX_ITERARIONS = 18819;
+	private int MAX_ITERARIONS = 18;//18819;
 	//private int MAX_ITERARIONS = selectedNodes.length;
 	private int lambda = 1000000;
 	private int superstepDeviation = 0;
