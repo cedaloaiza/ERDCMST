@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.giraph.aggregators.DoubleSumAggregator;
+import org.apache.giraph.combiner.MaxMessageCombiner;
+import org.apache.giraph.graph.DefaultVertexValueCombiner;
 import org.apache.giraph.master.MasterCompute;
 import org.apache.giraph.utils.WritableUtils;
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
@@ -21,6 +23,7 @@ import org.apache.hadoop.io.Writable;
 
 import aggregators.MapAssignmentReduce;
 import aggregators.BestLocationAggregator;
+import aggregators.BsCombiner;
 import aggregators.EntryAssignmentReduce;
 import aggregators.ArrayAssignmentReduce;
 import aggregators.ArrayPrimitiveOverwriteAggregator;
@@ -106,6 +109,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 						possibleNewBsDirPred.put(dw, new IntWritable(0));
 					}
 					setAggregatedValue("sumDeleteCostForSuccessors", deleteCosts);
+					setMessageCombiner(BsCombiner.class);
 					break;
 				//**BEST LOCATION OPERATION
 			    //For each node there are two possible ways of inserting a node:
@@ -116,7 +120,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 //					Location bestLocation = getAggregatedValue("bestLocation");
 //					System.out.println("Selected node at master Compute 2: " + selectedNode.getId());
 //					System.out.println("Best Location at master Compute 2: " + bestLocation.getNodeId());
-					
+					setMessageCombiner(null);
 					double bestPossibleNewBDirPred = getLongestBranchLength();
 					DoubleWritable parentF = (DoubleWritable) getAggregatedValue("parentF");
 					if (parentF.get() + bestPossibleNewBDirPred > lambda) {

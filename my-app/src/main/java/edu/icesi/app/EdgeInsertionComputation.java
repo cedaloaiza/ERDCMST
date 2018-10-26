@@ -29,13 +29,13 @@ import org.apache.log4j.Logger;
  *
  */
 public class EdgeInsertionComputation extends AbstractComputation<IntWritable, RDCMSTValue,
-		DoubleWritable, DoubleWritable, EntryWritable>
+		DoubleWritable, EntryWritable, DoubleWritable>
 		 {
 	private static final Logger LOG =
 		      Logger.getLogger(EdgeInsertionComputation.class);
 	
 	@Override
-	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<DoubleWritable> messages) throws IOException {
+	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
 		
 		//Completing previous phase
@@ -61,13 +61,23 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 		}
     	IntWritable selectedNodeId = new IntWritable(selectedNode.getId());
 		//IntWritable selectedNodeId = getBroadcast("selectedNodeId");
+    	DoubleWritable distanceFromPred = null;
+    	
+    	for (EntryWritable message : messages) {
+			Text messageKey = (Text) message.getKey();
+			if (LOG.isDebugEnabled()) {
+				System.out.println("Incoming messages. Key: " + messageKey + " Value: " + message.get(messageKey));
+			}
+			if (messageKey.toString().equals("ID")) {
+				IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
+				vertex.getValue().setIdNodeToSelectedVertex(childToSelectedNodeWritable.get());
+			} else if (messageKey.toString().equals("DIST")) {
+				distanceFromPred = (DoubleWritable) message.get(messageKey);
+				
+			}
+    	}
 		
     	if (vertex.getValue().getPositions().get(selectedNodeId).equals(new PositionWritable(Position.PREDECESSOR))) { 
-    		if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
-    			//System.out.println("Sending ID message to its parent");
-    			EntryWritable message = new EntryWritable(new Text("ID"), vertex.getId());
-    			sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  message);
-    		}
     		double movementCost = 0;
 	    	if (vertex.getId().get() == selectedNode.getPredecessorId()) {
 	    		MapWritable possibleNewBsDirPred = new MapWritable();
@@ -103,16 +113,14 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
     		//DoubleArrayWritable writableVertexBValue = new DoubleArrayWritable();
 //    		MapWritable writableVertexBValue = new MapWritable();
 //    		writableVertexBValue.put(vertex.getId(), new DoubleWritable(vertex.getValue().getB()));
-    		DoubleWritable distanceFromPred = (DoubleWritable) messages.iterator().next();
     		//System.out.println("The distance: " + vertex.getId() + ": " + distanceFromPred);
     		DoubleWritable newPossibleB = new DoubleWritable(vertex.getValue().getB() + distanceFromPred.get());
     		//writableVertexBValue.set(vertexBValue);
     		if (LOG.isDebugEnabled()) {
   	          LOG.debug("New possible b of " + vertex.getId() + ": " + newPossibleB);
     		}
-    		EntryWritable message = new EntryWritable(new Text("POSSB"), newPossibleB);
     		//TupleWritable message = new TupleWritable(new Writable[] {vertex.getId(), newPossibleB});
-    		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  message);
+    		sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  newPossibleB);
     	}
     	
     	

@@ -27,13 +27,13 @@ import org.apache.log4j.Logger;
  *
  */
 public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComputation
-		<IntWritable, RDCMSTValue, DoubleWritable, EntryWritable, MapWritable> {
+		<IntWritable, RDCMSTValue, DoubleWritable, DoubleWritable, MapWritable> {
 	
 	private static final Logger LOG =
 		      Logger.getLogger(BFsUpdateAndBestLocationBeginningComputation.class);
 	
 	@Override
-	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
+	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<DoubleWritable> messages) throws IOException {
 		
 		if (LOG.isDebugEnabled()) {
 			vertex.getValue().print();
@@ -65,7 +65,7 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	 * @param message
 	 */
 	public void updateBnFs(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode,
-			Iterable<EntryWritable> messages){
+			Iterable<DoubleWritable> messages){
 		
 		
 	
@@ -99,23 +99,13 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 			if (LOG.isDebugEnabled()) {
 	          System.out.println("It is a selected node's predecessor");
 			}
-			int childToSelectedNode = -1;
+			int childToSelectedNode = vertex.getValue().getIdNodeToSelectedVertex();
 			double maxPossibbleB = 0;
-			for (EntryWritable message : messages) {
-				Text messageKey = (Text) message.getKey();
+			for (DoubleWritable message : messages) {
 				if (LOG.isDebugEnabled()) {
-					System.out.println("Incoming messages. Key: " + messageKey + " Value: " + message.get(messageKey));
+					System.out.println("Incoming messages. Value: " + message.get());
 				}
-				if (messageKey.toString().equals("ID")) {
-					IntWritable childToSelectedNodeWritable = (IntWritable) message.get(messageKey);
-					childToSelectedNode = childToSelectedNodeWritable.get();
-					if (LOG.isDebugEnabled()) {
-			          System.out.println("ID message: " + childToSelectedNode);
-					}
-				} else {
-					DoubleWritable possibleB = (DoubleWritable) message.get(message.getKey());
-					maxPossibbleB = Math.max(maxPossibbleB,  possibleB.get() );
-				}
+				maxPossibbleB = Math.max(maxPossibbleB,  message.get() );
 			}
 			if (vertex.getId().get() == selectedNode.getPredecessorId()) {
 				if (LOG.isDebugEnabled()) {
