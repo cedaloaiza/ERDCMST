@@ -2,6 +2,7 @@ package edu.icesi.app;
 
 import java.io.IOException;
 
+import org.apache.giraph.conf.FloatConfOption;
 import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
@@ -30,6 +31,9 @@ public class BestLocationEndingComputation extends AbstractComputation
 	
 	private static final Logger LOG =
 		      Logger.getLogger(BestLocationEndingComputation.class);
+	
+	public static final FloatConfOption LAMBDA = new FloatConfOption("RDCMST.distanceConstraint", 10000,
+			"Distance constraint");
     
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<MapWritable> messages) throws IOException { 
@@ -75,7 +79,8 @@ public class BestLocationEndingComputation extends AbstractComputation
 		double costBE =  parentToSelectedNode.get() + selectedNode.getDistances()[vertex.getValue().getId()] - parentToHere.get();
 		double costFN = vertex.getValue().getPartialBestLocationCost();
 		//feasible insert
-		boolean feasibleInsert = (vertex.getValue().getF() + costBE + vertex.getValue().getB()) <= 1000000;
+		float lambd = LAMBDA.get(getConf());
+		boolean feasibleInsert = (vertex.getValue().getF() + costBE + vertex.getValue().getB()) <= lambd;
 		if (LOG.isDebugEnabled()) {
           LOG.debug("Feasible Insert: " + feasibleInsert);
 		}
