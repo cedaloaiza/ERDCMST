@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.giraph.conf.FloatConfOption;
+import org.apache.giraph.conf.IntConfOption;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.AbstractComputation;
@@ -31,6 +33,9 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	
 	private static final Logger LOG =
 		      Logger.getLogger(BFsUpdateAndBestLocationBeginningComputation.class);
+	
+	public static final FloatConfOption LAMBDA = new FloatConfOption("RDCMST.distanceConstraint", 10000,
+			"Distance constraint");
 	
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
@@ -188,7 +193,8 @@ public class BFsUpdateAndBestLocationBeginningComputation extends AbstractComput
 	 */
 	public void computecCostInsertingFromNode(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, RDCMSTValue selectedNode) {
 		//feasible insert
-		boolean feasibleInsert = (vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()] + 0) <= 1000000;
+		float lambd = LAMBDA.get(getConf());
+		boolean feasibleInsert = (vertex.getValue().getF() + vertex.getValue().getDistances()[selectedNode.getId()] + 0) <= lambd;
 		if (LOG.isDebugEnabled()) {
           LOG.debug("partial best location?: " + vertex.getValue().getPartialBestLocationCost());
 		}	

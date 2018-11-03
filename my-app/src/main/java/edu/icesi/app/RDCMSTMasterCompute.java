@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.giraph.aggregators.DoubleSumAggregator;
+import org.apache.giraph.conf.FloatConfOption;
+import org.apache.giraph.conf.IntConfOption;
 import org.apache.giraph.master.MasterCompute;
 import org.apache.giraph.utils.WritableUtils;
 import org.apache.hadoop.io.ArrayPrimitiveWritable;
@@ -35,7 +37,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	//JUST FOR DEBUGGING
 	//private int[] selectedNodes = new int[]{2, 3, 1, 4, 1, 3};
 	private int[] selectedNodes = new int[]{2, 10, 9, 4, 1, 3, 2, 1, 8, 7, 3, 1, 9, 6, 5, 10, 9, 6, 2, 1, 3, 4, 6, 7, 8, 9};
-	private int MAX_ITERARIONS = 18819;
+	private int MAX_ITERARIONS = 18;//18819;
 	//private int MAX_ITERARIONS = selectedNodes.length;
 	private int lambda = 1000000;
 	private int superstepDeviation = 0;
@@ -46,8 +48,13 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private Random rand;
 	private ArrayList<Integer> pendingVertices;
 	private ArrayList<Integer> selectedVertices;
+	private double cost;
 	
+	public static final IntConfOption ITERATIONS = new IntConfOption("RDCMST.maxIterations", 18,
+			"Maximum number of iterations for RDCMST");
 	
+	public static final FloatConfOption INITIAL_COST = new FloatConfOption("RDCMST.initialCost", 0,
+			"The cost of the initial solution");
 	
 	private RDCMSTValue selectedNode;
 
@@ -146,12 +153,16 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					bl.print();
 					DoubleWritable movementCostW = getAggregatedValue("movementCost");
 					double movementCost = movementCostW.get() + bl.getCost();
+					//System.out.println("Delete Cost: " +  movementCostW.get());
+					//System.out.println("Insert Cost: " +  bl.getCost());
 					System.out.println("Movement Cost: " +  movementCost);
+					cost += movementCost;
 					if (movementCost >= 0) {
 						broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
 						abortedMovement = true;
 					} else {
 						abortedMovement = false;
+						System.out.println("General Cost: " +  cost);
 						if (pendingVertices != null) {
 							System.out.println("An non-aborted movement!!!");
 							pendingVertices.addAll(selectedVertices);
@@ -177,6 +188,9 @@ public class RDCMSTMasterCompute extends MasterCompute {
 
 	@Override
 	public void initialize() throws InstantiationException, IllegalAccessException {
+		
+		MAX_ITERARIONS = ITERATIONS.get(getConf());
+		System.out.println("Max Iterations: " + MAX_ITERARIONS );
 
 		System.out.println("Master compute's initialize()");
 		
@@ -204,6 +218,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		rand.setSeed(34);
 		
 		selectedVertices = new ArrayList<Integer>();
+		cost = INITIAL_COST.get(getConf());
 		//We are doing the positions' update of selected node just with messages
 //		registerPersistentAggregator("bestLocationPositions", ArrayPrimitiveOverwriteAggregator.class);
 	}
