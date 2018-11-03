@@ -1,18 +1,18 @@
 import json
 import networkx as nx
 
-edge_list_file = "simpleEdgeList.txt"
+#edge_list_file = "simpleEdgeList.txt"
 #edge_list_file = "bkrus_initial_solution"
 
-G=nx.read_weighted_edgelist(edge_list_file)
+#G=nx.read_weighted_edgelist(edge_list_file)
 
 #print G.get_edge_data('0','12544')['weight'] 
 #for i in range(0,1200):
 
-print len(G.edges())
+#print len(G.edges())
 #print nx.shortest_path_length(G, '0', '61')
 
-def create_graph_from_paths(paths):
+def create_graph_from_paths(paths, G):
 	di_tree = nx.DiGraph()
 	for path in paths:
 		i = 0
@@ -26,19 +26,29 @@ def create_graph_from_paths(paths):
 	return di_tree
 
 
-paths_from_source = nx.single_source_dijkstra_path(G, '0')
-di_tree = create_graph_from_paths(paths_from_source.values())
-es = di_tree.edges()
-print len(es)
-print nx.shortest_path_length(di_tree, '0', '1')
-
-print sum(nx.get_edge_attributes(di_tree, 'weight').values())
 
 
+#es = di_tree.edges()
+#print len(es)
+#print nx.shortest_path_length(di_tree, '0', '1')
+
+#print sum(nx.get_edge_attributes(di_tree, 'weight').values())
+
+def edgelist_to_digraph(path_file, type_solution='bkrus'):
+	di_tree = None
+	if type_solution == 'bkrus':
+		G=nx.read_weighted_edgelist(path_file)
+		paths_from_source = nx.single_source_dijkstra_path(G, '0')
+		di_tree = create_graph_from_paths(paths_from_source.values(), G)
+	elif type_solution == 'repaired':
+		di_tree=nx.read_weighted_edgelist(path_file, create_using=nx.DiGraph())
+	print "Tree cost: " + str(sum(nx.get_edge_attributes(di_tree, 'weight').values()))
+	return di_tree
 
 
 
-def initial_solution_giraph(giraph_file):
+
+def initial_solution_giraph(giraph_file, di_tree):
 	giraph_input = open(giraph_file, "r")
 	giraph_out = open('giraph_input_bkrus.txt', 'w')
 	for line in giraph_input:
@@ -52,10 +62,13 @@ def initial_solution_giraph(giraph_file):
 		json_line[4] = float(f)
 		out_line = str(json_line)
 		giraph_out.write(out_line + '\n')
+	giraph_out.close()
+	giraph_input.close()
 
 
 
-initial_solution_giraph("exampleRDCMST.txt")
+di_tree = edgelist_to_digraph('simpleEdgeList.txt', type_solution='repaired')
+initial_solution_giraph("exampleRDCMST.txt", di_tree)
 #initial_solution_giraph("/home/cesardlq/spain_euc_complete_new.txt")
 
 '''
