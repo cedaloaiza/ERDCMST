@@ -34,6 +34,19 @@ def create_graph_from_paths(paths, G):
 
 #print sum(nx.get_edge_attributes(di_tree, 'weight').values())
 
+def reduce_vertex_ids(path_file, quantity=1):
+	edge_lists = open(path_file, 'r')
+	edge_out = open("edgelist_fixed", 'w')
+	for line in edge_lists:
+		edge = line.split(' ')
+		src = int(edge[0]) - 1
+		trgt = int(edge[1]) - 1
+		weight = edge[2]
+		out_line = str(src) + " " + str(trgt) + " " + weight
+		edge_out.write(out_line + "\n")
+	edge_lists.close()
+	edge_out.close()
+
 def edgelist_to_digraph(path_file, type_solution='bkrus'):
 	di_tree = None
 	if type_solution == 'bkrus':
@@ -67,8 +80,12 @@ def initial_solution_giraph(giraph_file, di_tree):
 
 
 
-di_tree = edgelist_to_digraph('simpleEdgeList.txt', type_solution='repaired')
-initial_solution_giraph("exampleRDCMST.txt", di_tree)
+
+giraph_input ='/grid/bigInput/spain_euc_complete_new.txt'
+edge_lists_file ='/home/client/edgelists_reapired_mst_spain_complete'
+reduce_vertex_ids(edge_lists_file)
+#di_tree = edgelist_to_digraph(edge_lists_file, type_solution='repaired')
+#initial_solution_giraph(giraph_input, di_tree)
 #initial_solution_giraph("/home/cesardlq/spain_euc_complete_new.txt")
 
 '''
