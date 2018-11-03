@@ -1,0 +1,21 @@
+Hola Todos,
+
+Le comentaba a Cesar (mientras cambias de celular Gabriel) que podemos utilizar el siguiente algoritmo voraz para calcular una solución inicial para grafos grandes. Aquí estoy utilizando BKRUS pero igual este se podría reemplazar en un momento dado por el algoritmo secuencial para RDCMST.
+
+
+def function (G, source,lambda):
+        T= empty graph
+        while G is not empty:
+                N = pick  k nodes from G (different from source)
+                G’ = projection of G on N \cup {source}
+                T'= BKRUS(G’, source, lambda)
+                T= T \cup T’
+                remove N from G (and its corresponding edges)
+
+
+La idea es escoger un k que BKRUS pueda resolver (e.g 500), un grafo de 5 millones de nodos se podria resolver con 10.000 iteraciones. Es importante notar que esta iteraciones son independiente pues uno puede crear la partición a priori y resolver cada llamado BKRUS en paralelo. Creo que este approach nos daría un base line mas decente que conectar cada nodo directamente a la fuente.
+
+Otra alternativa el llamar a MST, ignorando lambda, remover los nodos que violan lambda en el output e iterar de nuevo  tantas veces hasta  cuando la salida de MST contenga solo nodos que se conecten directamente a la raiz sin embargo esta ultima opción no se puede paralelizar tan facil como la anterior.
+
+Saludos,
+LO
