@@ -45,6 +45,27 @@ def edgelist_to_digraph(path_file):
 	return di_tree
 
 
+def get_all_successors(di_tree, v):
+	successors = []
+	for child in di_tree.successors(v):
+		successors.append(child)
+		successors = successors + get_all_successors(di_tree, child)
+	return successors
+
+def get_positions(di_tree, v):
+	positions = ['n']*di_tree.number_of_nodes()
+	predecessors = nx.shortest_path(di_tree, '0', v)
+	del predecessors[-1]
+	for p in predecessors:
+		positions[int(p)] = 's'
+	successors = get_all_successors(di_tree, v)
+	for s in successors:
+		positions[int(s)] = 'p'
+	#print 'Positions:'
+	#print positions
+	return positions
+
+
 
 
 def initial_solution_giraph(giraph_file, di_tree):
@@ -64,7 +85,10 @@ def initial_solution_giraph(giraph_file, di_tree):
 			json_line.append(-1)
 		else:
 			json_line.append(int(di_tree.predecessors(vertex)[0]))
-		print di_tree.predecessors(vertex)
+		json_line.append(get_positions(di_tree, vertex))
+		#print di_tree.predecessors(vertex)
+		#print get_all_successors(di_tree, vertex)
+		#print get_positions(di_tree, vertex)
 		#json_line[5] = float(f)
 		out_line = str(json_line)
 		giraph_out.write(out_line + '\n')
