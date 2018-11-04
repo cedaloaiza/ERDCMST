@@ -43,7 +43,7 @@ def reduce_vertex_ids(path_file, quantity=1):
 		trgt = int(edge[1]) - 1
 		weight = edge[2]
 		out_line = str(src) + " " + str(trgt) + " " + weight
-		edge_out.write(out_line + "\n")
+		edge_out.write(out_line)
 	edge_lists.close()
 	edge_out.close()
 
@@ -54,7 +54,8 @@ def edgelist_to_digraph(path_file, type_solution='bkrus'):
 		paths_from_source = nx.single_source_dijkstra_path(G, '0')
 		di_tree = create_graph_from_paths(paths_from_source.values(), G)
 	elif type_solution == 'repaired':
-		di_tree=nx.read_weighted_edgelist(path_file, create_using=nx.DiGraph())
+		reduce_vertex_ids(path_file)
+		di_tree=nx.read_weighted_edgelist("edgelist_fixed", create_using=nx.DiGraph())
 	print "Tree cost: " + str(sum(nx.get_edge_attributes(di_tree, 'weight').values()))
 	return di_tree
 
@@ -81,11 +82,16 @@ def initial_solution_giraph(giraph_file, di_tree):
 
 
 
-giraph_input ='/grid/bigInput/spain_euc_complete_new.txt'
-edge_lists_file ='/home/client/edgelists_reapired_mst_spain_complete'
-reduce_vertex_ids(edge_lists_file)
-#di_tree = edgelist_to_digraph(edge_lists_file, type_solution='repaired')
-#initial_solution_giraph(giraph_input, di_tree)
+#giraph_input ='/grid/bigInput/spain_euc_complete_new.txt'
+giraph_input ='/home/cesardlq/spain_euc_complete_new.txt'
+#giraph_input ='exampleRDCMST.txt'
+#edge_lists_file ='/home/client/edgelists_reapired_mst_spain_complete'
+edge_lists_file ='edgelists_reapired_mst_spain_complete'
+#edge_lists_file ='simpleEdgeList2.txt'
+
+#reduce_vertex_ids(edge_lists_file)
+di_tree = edgelist_to_digraph(edge_lists_file, type_solution='repaired')
+initial_solution_giraph(giraph_input, di_tree)
 #initial_solution_giraph("/home/cesardlq/spain_euc_complete_new.txt")
 
 '''
