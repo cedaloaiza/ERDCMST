@@ -60,6 +60,12 @@ def initial_solution_giraph(giraph_file, di_tree):
 		json_line[2] = [int(x) for x in sons]
 		json_line[3] = float(b)
 		json_line[4] = float(f)
+		if vertex == '0':
+			json_line.append(-1)
+		else:
+			json_line.append(int(di_tree.predecessors(vertex)[0]))
+		print di_tree.predecessors(vertex)
+		#json_line[5] = float(f)
 		out_line = str(json_line)
 		giraph_out.write(out_line + '\n')
 	giraph_out.close()
