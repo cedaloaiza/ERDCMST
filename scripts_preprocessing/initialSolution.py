@@ -24,7 +24,7 @@ def write_edges(edges, file_name):
 from sklearn.metrics.pairwise import euclidean_distances
 X = [[0, 1], [1, 1], [0, 8]]
 dists = euclidean_distances(X, X)
-coord_vectors = loadCoordVectors("../files/spain_locs.csv")
+coord_vectors = loadCoordVectors("files/spain_locs.csv")
 
 num_partitions = 40
 
@@ -66,7 +66,9 @@ for i in range(num_partitions + 1):
 		coords.append(coord_vectors[0])
 		source = size_of_partition
 		sinks = range(size_of_partition)
-	D =  euclidean_distances(coords, coords)
+	ED =  euclidean_distances(coords, coords)
+	D = [[round(y, 5) for y in x] for x in ED]
+	#print "distance from 0 to 100: " + str(D[0][100])
 	#print(D)
 	bkrus_solution = bkrus(source, sinks, D, ub)
 	partial_tree = bkrus_solution['E']
