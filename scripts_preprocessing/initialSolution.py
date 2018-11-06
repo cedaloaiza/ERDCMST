@@ -24,9 +24,12 @@ def write_edges(edges, file_name):
 from sklearn.metrics.pairwise import euclidean_distances
 X = [[0, 1], [1, 1], [0, 8]]
 dists = euclidean_distances(X, X)
-coord_vectors = loadCoordVectors("files/spain_locs.csv")
+#coord_vectors = loadCoordVectors("files/spain_locs.csv")
+#coord_vectors = loadCoordVectors("files/spain_locs_half.csv")
+coord_vectors = loadCoordVectors("files/spainOneAndAHalfNormIds.txt")
 
-num_partitions = 40
+#num_partitions = 40
+num_partitions = 60
 
 partition_size = len(coord_vectors) / num_partitions
 partitions = []
@@ -50,7 +53,9 @@ print(partitions[40])
 dists = euclidean_distances(partitions[0], partitions[0])
 print(len(dists))
 
-ub = 15.84738
+#ub = 15.84738
+#ub = 16.158955
+ub = 33.79946
 D = []
 
 final_tree = []

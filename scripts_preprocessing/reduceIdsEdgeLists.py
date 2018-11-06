@@ -11,5 +11,7 @@ def reduce_vertex_ids(path_file, quantity=1):
 	edge_lists.close()
 	edge_out.close()
 
-edge_lists_file ='files/edgelists_reapired_mst_spain_complete'
+#edge_lists_file ='files/edgelists_reapired_mst_spain_complete'
+#edge_lists_file ='files/edgelists_reapired_mst_spain_half'
+edge_lists_file ='files/edgelists_reapired_mst_spain_oneAndAHalf'
 reduce_vertex_ids(edge_lists_file)
