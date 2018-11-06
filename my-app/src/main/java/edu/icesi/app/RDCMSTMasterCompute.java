@@ -156,11 +156,12 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					//System.out.println("Delete Cost: " +  movementCostW.get());
 					//System.out.println("Insert Cost: " +  bl.getCost());
 					System.out.println("Movement Cost: " +  movementCost);
-					cost += movementCost;
+					
 					if (movementCost >= 0) {
 						broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
 						abortedMovement = true;
 					} else {
+						cost += movementCost;
 						abortedMovement = false;
 						System.out.println("General Cost: " +  cost);
 						if (pendingVertices != null) {

@@ -1,7 +1,7 @@
 #!/bin/bash
 FILE_INPUT=$1
 if [ "$1" = "" ]; then
-  FILE_INPUT="spain_euc_oneAndAHalf.txt"
+  FILE_INPUT="IS_exampleRDCMST.txt "
 fi
 ITERATIONS=$2
 if [ "$2" = "" ]; then
@@ -9,18 +9,22 @@ if [ "$2" = "" ]; then
 fi
 LAMBDA=$3
 if [ "$3" = "" ]; then
-  LAMBDA=27.398475
+  LAMBDA=15
 fi
 INITIAL_COST=$4
 if [ "$4" = "" ]; then
-  INITIAL_COST=202952
+  INITIAL_COST=24
 fi
 EXEC_NUM=$5
 if [ "$5" = "" ]; then
   EXEC_NUM=""
 fi
-THREADS=$6
+INPUT_FORMAT=$6
 if [ "$6" = "" ]; then
+  INPUT_FORMAT="edu.icesi.app.RDCMSTVertexInputFormat"
+fi
+THREADS=$7
+if [ "$7" = "" ]; then
   THREADS=4
 fi
 
@@ -33,7 +37,7 @@ echo "Removing output directory..."
 hadoop dfs -rm -r exampleOut
 echo "Executing..."
 hadoop jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar org.apache.giraph.GiraphRunner edu.icesi.app.EdgeRemovalComputation \
--vif edu.icesi.app.RDCMSTVertexInputFormat \
+-vif $INPUT_FORMAT \
 -vip /user/$USER/$FILE_INPUT \
 -eof org.apache.giraph.io.formats.SrcIdDstIdEdgeValueTextOutputFormat \
 -op /user/$USER/exampleOut$EXEC_NUM \
@@ -58,6 +62,12 @@ hadoop jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar org.apache.girap
 #-vip /user/$USER/spain_euc_x2.txt
 #-vip /user/$USER/exampleRDCMST.txt
 #-vip /user/$USER/spain_euc_oneAndAHalf
+#-vip /user/$USER/IS_exampleRDCMST.txt 
+
+#-vif edu.icesi.app.RDCMSTVertexInputFormat \
+#-vif edu.icesi.app.ISRDCMSTVertexInputFormat \
+
+
 
 
 

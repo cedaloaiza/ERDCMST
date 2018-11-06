@@ -32,6 +32,8 @@ gc()
 
 
 mstR <- mst(g)
+gc()
+
 write_graph(mstR, "mst_small", format = "pajek")
 
 sum(E(mstR)$weight)
@@ -40,7 +42,7 @@ sum(E(mstR)$weight)
 dists <- distances(mstR, v=1)
 max(dists)
 removing <- c()
-lambda <- 0.8
+lambda <- 33.79946
 for (i in 1:length(dists)) {
   if(dists[i] > lambda) {
     removing <- c(removing, i)
