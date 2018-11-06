@@ -32,7 +32,7 @@ import java.util.ArrayList;
  */
 public class EdgeRemovalComputation extends
         AbstractComputation<IntWritable, RDCMSTValue,
-        DoubleWritable, EntryWritable, DoubleWritable> {
+        DoubleWritable, EntryWritable, EntryWritable> {
 	
 	private static final Logger LOG =
 		      Logger.getLogger(EdgeRemovalComputation.class);
@@ -121,7 +121,8 @@ public class EdgeRemovalComputation extends
     			if (LOG.isDebugEnabled()) {
       	          LOG.debug("Distance to child: " + distanceToChild);
     			}
-    			sendMessage(edge.getTargetVertexId(), new DoubleWritable(distanceToChild));
+    			EntryWritable msg = new EntryWritable(new Text("DIST"), new DoubleWritable(distanceToChild));
+    			sendMessage(edge.getTargetVertexId(), msg);
     		}
     		/*
     		 * TODO
@@ -193,6 +194,11 @@ public class EdgeRemovalComputation extends
 				vertex.getValue().setB(newB);
 			}
 		} else if (vertex.getValue().getPositions()[selectedNode.getId()] == Position.PREDECESSOR) {
+			if (vertex.getValue().getPredecessorId() != RDCMSTValue.NONE_PARENT ) {
+    			//System.out.println("Sending ID message to its parent");
+    			EntryWritable message = new EntryWritable(new Text("ID"), vertex.getId());
+    			sendMessage(new IntWritable(vertex.getValue().getPredecessorId()),  message);
+    		}
 			DoubleWritable bestPossibleNewBDirPred = getAggregatedValue("bestPossibleNewBDirPredA");
 			int childToSelectedNode = -1;
 			double maxPossibbleB = 0;

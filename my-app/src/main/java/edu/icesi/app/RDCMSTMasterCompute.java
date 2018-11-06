@@ -28,6 +28,7 @@ import aggregators.ArrayAssignmentReduce;
 import aggregators.ArrayPrimitiveOverwriteAggregator;
 import aggregators.SelectedNodeAggregator;
 import aggregators.SumSuccessorDeleteCostsAggregator;
+import aggregators.BsCombiner;
 
 public class RDCMSTMasterCompute extends MasterCompute {
 	
@@ -109,6 +110,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 						possibleNewBsDirPred.put(dw, new IntWritable(0));
 					}
 					setAggregatedValue("sumDeleteCostForSuccessors", deleteCosts);
+					setMessageCombiner(BsCombiner.class);
 					break;
 				//**BEST LOCATION OPERATION
 			    //For each node there are two possible ways of inserting a node:
@@ -119,7 +121,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 //					Location bestLocation = getAggregatedValue("bestLocation");
 //					System.out.println("Selected node at master Compute 2: " + selectedNode.getId());
 //					System.out.println("Best Location at master Compute 2: " + bestLocation.getNodeId());
-					
+					setMessageCombiner(null);
 					double bestPossibleNewBDirPred = getLongestBranchLength();
 					DoubleWritable parentF = (DoubleWritable) getAggregatedValue("parentF");
 					if (parentF.get() + bestPossibleNewBDirPred > lambda) {
