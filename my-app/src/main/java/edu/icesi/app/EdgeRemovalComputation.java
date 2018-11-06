@@ -52,8 +52,11 @@ public class EdgeRemovalComputation extends
 			completePreviousMovement(vertex, messages, selectedNode, bestLocation);
 		}
 		
-		
-		//vertex.getValue().print();
+		/*
+		if (LOG.isDebugEnabled()) {
+			vertex.getValue().print();
+		}
+		*/
 		/*
 		System.out.print("Children: ");
 		for (Edge<IntWritable, DoubleWritable> e : vertex.getEdges()) {
