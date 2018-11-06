@@ -1,5 +1,7 @@
 import json
 import networkx as nx
+import sys
+sys.setrecursionlimit(1500)
 
 #edge_list_file = "simpleEdgeList.txt"
 #edge_list_file = "bkrus_initial_solution"
@@ -98,13 +100,19 @@ def initial_solution_giraph(giraph_file, di_tree):
 
 
 
-#giraph_input ='/grid/bigInput/spain_euc_complete_new.txt'
+
 #giraph_input ='/home/cesardlq/spain_euc_complete_new.txt'
-giraph_input ='files/exampleRDCMST.txt'
-#edge_lists_file ='/home/client/edgelists_reapired_mst_spain_complete'
+
+#giraph_input ='/home/cesardlq/spain_euc_half.txt'
+giraph_input ='/home/cesardlq/spain_euc_oneAndAHalf.txt'
+#giraph_input ='files/exampleRDCMST.txt'
 #edge_lists_file ='files/edgelists_reapired_mst_spain_complete'
-#edge_lists_file ='files/edgelist_fixed'
-edge_lists_file ='files/simpleEdgeList.txt'
+#edge_lists_file ='files/edgelist_fixed_complete'
+#edge_lists_file ='files/edgelist_fixed_half'
+edge_lists_file ='files/edgelist_fixed_oneAndAHalf'
+#edge_lists_file ='files/simpleEdgeList.txt'
+#edge_lists_file = 'bkrus_initial_solution_complete'
+#edge_lists_file = 'bkrus_initial_solution_half'
 #reduce_vertex_ids(edge_lists_file)
 di_tree = edgelist_to_digraph(edge_lists_file)
 #f = nx.shortest_path_length(di_tree, '0', '1', 'weight')
