@@ -29,7 +29,7 @@ public class insertOperationAndBFsUpdate extends AbstractComputation
 		//vertex.getValue().print();
 		
 		
-		Location bestLocation = getAggregatedValue("bestLocation");
+		Location bestLocation = getBroadcast("bestLocationAggregated");
 		if (LOG.isDebugEnabled()) {
           LOG.debug("Best Location:: Node:" + bestLocation.getNodeId() + " Way:" + bestLocation.getWay());
           LOG.debug("Real vertex ID: " + vertex.getId().get());

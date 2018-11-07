@@ -48,7 +48,8 @@ public class EdgeRemovalComputation extends
 			if (LOG.isDebugEnabled()) {
   	          LOG.debug("Old selected vertex: " + selectedNode.getId());
 			}
-			Location bestLocation = getAggregatedValue("bestLocation");
+			//Location bestLocation = getAggregatedValue("bestLocation");
+			Location bestLocation = getBroadcast("bestLocationAggregated");
 			completePreviousMovement(vertex, messages, selectedNode, bestLocation);
 		}
 		

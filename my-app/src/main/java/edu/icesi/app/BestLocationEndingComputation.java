@@ -56,7 +56,7 @@ public class BestLocationEndingComputation extends AbstractComputation
 				MapWritable receivedMessage = messages.iterator().next();
 				Location partialBestLocation = computeCostInsertingBreakingEdge(vertex, selectedNode, receivedMessage);
 				if(partialBestLocation != null){
-					aggregate("bestLocation", partialBestLocation);
+					reduce("bestLocation", partialBestLocation);
 				}
 			}
 		}

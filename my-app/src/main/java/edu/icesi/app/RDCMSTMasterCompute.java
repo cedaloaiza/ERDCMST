@@ -22,7 +22,9 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
 
 import aggregators.MapAssignmentReduce;
+import aggregators.RandomLocationReduce;
 import aggregators.BestLocationAggregator;
+import aggregators.BestLocationReduce;
 import aggregators.EntryAssignmentReduce;
 import aggregators.ArrayAssignmentReduce;
 import aggregators.ArrayPrimitiveOverwriteAggregator;
@@ -49,6 +51,10 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private ArrayList<Integer> pendingVertices;
 	private ArrayList<Integer> selectedVertices;
 	private double cost;
+	private Location bestLocation;
+	private boolean isPerturbationOn = false;
+	private int perturbationMovement = 0;
+	private int maxPerturbationMovements = 5;
 	
 	public static final IntConfOption ITERATIONS = new IntConfOption("RDCMST.maxIterations", 18,
 			"Maximum number of iterations for RDCMST");
@@ -86,7 +92,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 			switch (superStepPhase) {
 				//**DELETE OPERATION
 				case 0:	
-					if (!abortedMovement) {
+					if (!abortedMovement && getSuperstep() != 0) {
+						broadcast("bestLocationAggregated", bestLocation);
 						broadcast("startingNormalMovement", new BooleanWritable(true));
 					}
 					selectANode();
@@ -94,7 +101,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				case 1:
 					//Completing former movement
 					computeBValues();
-					setAggregatedValue("bestLocation", new Location());
+					bestLocation = new Location();
+					//setAggregatedValue("bestLocation", new Location());
 					abortedMovement = false;
 					
 					selectedNode = getAggregatedValue("selectedNodeA");
@@ -145,19 +153,26 @@ public class RDCMSTMasterCompute extends MasterCompute {
 					selectedVertexChildrenWritable = getReduced("selectedVertexChildren");
 					broadcast("selectedNode", selectedNode);
 					computeBValues();
+					if (isPerturbationOn) {
+						registerReducer("bestLocation", new RandomLocationReduce());
+					} else {
+						registerReducer("bestLocation", new BestLocationReduce());
+					}
 					setComputation(BestLocationEndingComputation.class);
 					break;
 				case 4:
-					Location bl = getAggregatedValue("bestLocation");
+					//Location bl = getAggregatedValue("bestLocation");
+					bestLocation = getReduced("bestLocation");
+					broadcast("bestLocationAggregated", bestLocation);
 					System.out.println("Best Location: ");
-					bl.print();
+					bestLocation.print();
 					DoubleWritable movementCostW = getAggregatedValue("movementCost");
-					double movementCost = movementCostW.get() + bl.getCost();
+					double movementCost = movementCostW.get() + bestLocation.getCost();
 					//System.out.println("Delete Cost: " +  movementCostW.get());
 					//System.out.println("Insert Cost: " +  bl.getCost());
 					System.out.println("Movement Cost: " +  movementCost);
 					
-					if (movementCost >= 0) {
+					if (movementCost >= 0 && !isPerturbationOn) {
 						broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
 						abortedMovement = true;
 					} else {
@@ -206,7 +221,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		//drive now to the farthest leaf.
 		registerAggregator("possibleNewBsDirPred", SumSuccessorDeleteCostsAggregator.class);
 		
-		registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
+		//registerPersistentAggregator("bestLocation", BestLocationAggregator.class);
 		
 		registerPersistentAggregator("movementCost", DoubleSumAggregator.class);
 		
@@ -300,9 +315,18 @@ public class RDCMSTMasterCompute extends MasterCompute {
 			if (pendingVertices.isEmpty()) {
 				System.out.println("Local minimum found!");
 				System.out.println("!!!!Hecatombe!!!!!");
-				haltComputation();
-				return;
+				isPerturbationOn = true;
+				perturbationMovement = 0;
+				pendingVertices.addAll(selectedVertices);
+				//haltComputation();
+				//return;
 			} 
+			if (isPerturbationOn) {
+				perturbationMovement++;
+			}
+			if (perturbationMovement == maxPerturbationMovements) {
+				isPerturbationOn = false;
+			}
 			int selectedNodeIndex = rand.nextInt(pendingVertices.size());
 			//selectedNodeId = rand.nextInt((int) getTotalNumVertices() - 1) + 1;
 			System.out.println("Index selected vertex: " + selectedNodeIndex);
