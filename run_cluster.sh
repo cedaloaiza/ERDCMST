@@ -1,19 +1,19 @@
 #!/bin/bash
 FILE_INPUT=$1
 if [ "$1" = "" ]; then
-  FILE_INPUT="IS_exampleRDCMST.txt "
+  FILE_INPUT="random_asymetric_1000.txt "
 fi
 ITERATIONS=$2
 if [ "$2" = "" ]; then
-  ITERATIONS=28228
+  ITERATIONS=20000
 fi
 LAMBDA=$3
 if [ "$3" = "" ]; then
-  LAMBDA=15
+  LAMBDA=1.13912
 fi
 INITIAL_COST=$4
 if [ "$4" = "" ]; then
-  INITIAL_COST=24
+  INITIAL_COST=500.18758
 fi
 EXEC_NUM=$5
 if [ "$5" = "" ]; then
@@ -41,7 +41,7 @@ hadoop jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar org.apache.girap
 -vip /user/$USER/$FILE_INPUT \
 -eof org.apache.giraph.io.formats.SrcIdDstIdEdgeValueTextOutputFormat \
 -op /user/$USER/exampleOut$EXEC_NUM \
--w 14 \
+-w 2 \
 -mc edu.icesi.app.RDCMSTMasterCompute \
 -ca giraph.SplitMasterWorker=true \
 -ca giraph.logLevel=ERROR \
@@ -66,6 +66,8 @@ hadoop jar target/my-app-1.0-SNAPSHOT-jar-with-dependencies.jar org.apache.girap
 
 #-vif edu.icesi.app.RDCMSTVertexInputFormat \
 #-vif edu.icesi.app.ISRDCMSTVertexInputFormat \
+
+#random_asymetric_1000.txt
 
 
 
