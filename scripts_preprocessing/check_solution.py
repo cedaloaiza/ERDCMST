@@ -21,7 +21,10 @@ def check_RDCMST(di_tree):
 #graph_file = 'files/out_oneAndAHalf_left.txt'
 #graph_file = 'files/out_oneAndAHalf_right'
 #graph_file = 'files/edgelist_fixed_oneAndAHalf'
-graph_file = 'files/out_oneAndAHalf_is_repaired'
+#graph_file = 'files/out_oneAndAHalf_is_repaired'
+#graph_file = 'bkrus_initial_solution_oneAndAHalf'
+graph_file = 'files/out_oneAndAHalf_is_bkrus'
+
 
 di_tree = nx.read_weighted_edgelist(graph_file, create_using=nx.DiGraph())
 check_RDCMST(di_tree)
