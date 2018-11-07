@@ -46,7 +46,10 @@ def create_giraph_input (matrix, name, source ):
 
 
 def generate_random_giraph_input(size, name):
+	np.random.seed(1)
 	random_matrix = np.random.rand(size, size)
+	for i in range(len(random_matrix)):
+		random_matrix[i][i] = 0
 	create_giraph_input(random_matrix, name, 0)
 
-generate_random_giraph_input(10, "10")
+generate_random_giraph_input(1000, "1000")
