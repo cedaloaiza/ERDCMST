@@ -25,7 +25,7 @@ if [ "$6" = "" ]; then
 fi
 THREADS=$7
 if [ "$7" = "" ]; then
-  THREADS=4
+  THREADS=12
 fi
 
 
