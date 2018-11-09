@@ -21,6 +21,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.join.TupleWritable;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -41,6 +43,15 @@ public class EdgeRemovalComputation extends
 			DoubleWritable> vertex, Iterable<EntryWritable> messages) throws IOException {
 		
 		
+		IntWritable localMinimumCounter = getBroadcast("localMinimum");
+		if (localMinimumCounter != null) {
+			String fileName = "/home/cdloaiza/giraphOutputs/output" + localMinimumCounter.get();
+		    BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+		    for (Edge<IntWritable, DoubleWritable> e : vertex.getEdges()) {
+		    	writer.write(vertex.getId().get() + " " + e.getTargetVertexId().get() + " " + e.getValue() + "\n");
+		    }
+		    writer.close();
+		}
 		
 		BooleanWritable startingNormalMovement = getBroadcast("startingNormalMovement");
 		if (startingNormalMovement != null && (int) getSuperstep() != 0) {

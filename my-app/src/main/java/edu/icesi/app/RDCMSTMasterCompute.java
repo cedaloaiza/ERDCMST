@@ -20,6 +20,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
+import org.python.antlr.PythonParser.return_stmt_return;
 
 import aggregators.MapAssignmentReduce;
 import aggregators.RandomLocationReduce;
@@ -55,6 +56,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	private boolean isPerturbationOn = false;
 	private int perturbationMovement = 0;
 	private int maxPerturbationMovements = 5;
+	private long initialExecutionTime;
+	private int numberLocalMinimums = 0;
 	
 	public static final IntConfOption ITERATIONS = new IntConfOption("RDCMST.maxIterations", 18,
 			"Maximum number of iterations for RDCMST");
@@ -79,131 +82,135 @@ public class RDCMSTMasterCompute extends MasterCompute {
 	@Override
 	public void compute() {
 		
-		
+		long executionTime = System.currentTimeMillis() - initialExecutionTime; 
 		
 		//DANGEROUS CAST!
 		int superStepPhase =  ((int) getSuperstep() + superstepDeviation) % SUPER_STEPS_PER_ITERATION;
 		System.out.println("\n\n" + iteration);
+		System.out.println("Execution time: " + executionTime*1000);
 		System.out.println("Iteration/Movement: " + iteration);
 		System.out.println("***** Computation " +  superStepPhase + " *****");
 		System.out.println("Number of vertices: " + getTotalNumVertices());
 		System.out.println("***MASTER ***");
-		if (iteration < MAX_ITERARIONS) {		
-			switch (superStepPhase) {
-				//**DELETE OPERATION
-				case 0:	
-					if (!abortedMovement && getSuperstep() != 0) {
-						broadcast("bestLocationAggregated", bestLocation);
-						broadcast("startingNormalMovement", new BooleanWritable(true));
-					}
-					selectANode();
-					break;
-				case 1:
-					//Completing former movement
-					computeBValues();
-					bestLocation = new Location();
-					//setAggregatedValue("bestLocation", new Location());
-					abortedMovement = false;
-					
-					selectedNode = getAggregatedValue("selectedNodeA");
-					System.out.println("Selected node's parent at master: " + selectedNode.getPredecessorId());
-					broadcast("selectedNode", selectedNode);
-					setComputation(EdgeInsertionComputation.class);
-					MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
-					System.out.println("Length of KeySet of reduce operation: " + deleteCosts.keySet().size());
-					MapWritable possibleNewBsDirPred = new MapWritable();
-					for (Writable dw: deleteCosts.keySet()) {
-						System.out.println("Key: " + dw + " - Delete Costs:: " + deleteCosts.get(dw));
-						possibleNewBsDirPred.put(dw, new IntWritable(0));
-					}
-					setAggregatedValue("sumDeleteCostForSuccessors", deleteCosts);
-					break;
-				//**BEST LOCATION OPERATION
-			    //For each node there are two possible ways of inserting a node:
-				//1) directly as a leaf successor of the node, we called this FROM NODE WAY; and 
-				//2) as a predecessor of the node, breaking the existing edge between the old predecessor and it, we called this BREAKING EDGE WAY.
-				case 2:
+		if (iteration >= MAX_ITERARIONS || executionTime >= 60*1000) {
+			System.out.println("Halting:: ");
+			haltComputation();
+			return;
+		}
+		switch (superStepPhase) {
+			//**DELETE OPERATION
+			case 0:	
+				if (!abortedMovement && getSuperstep() != 0) {
+					broadcast("bestLocationAggregated", bestLocation);
+					broadcast("startingNormalMovement", new BooleanWritable(true));
+				}
+				selectANode();
+				break;
+			case 1:
+				//Completing former movement
+				computeBValues();
+				bestLocation = new Location();
+				//setAggregatedValue("bestLocation", new Location());
+				abortedMovement = false;
+				
+				selectedNode = getAggregatedValue("selectedNodeA");
+				System.out.println("Selected node's parent at master: " + selectedNode.getPredecessorId());
+				broadcast("selectedNode", selectedNode);
+				setComputation(EdgeInsertionComputation.class);
+				MapWritable deleteCosts = getReduced("addDeleteCostForSuccessors");
+				System.out.println("Length of KeySet of reduce operation: " + deleteCosts.keySet().size());
+				MapWritable possibleNewBsDirPred = new MapWritable();
+				for (Writable dw: deleteCosts.keySet()) {
+					System.out.println("Key: " + dw + " - Delete Costs:: " + deleteCosts.get(dw));
+					possibleNewBsDirPred.put(dw, new IntWritable(0));
+				}
+				setAggregatedValue("sumDeleteCostForSuccessors", deleteCosts);
+				break;
+			//**BEST LOCATION OPERATION
+		    //For each node there are two possible ways of inserting a node:
+			//1) directly as a leaf successor of the node, we called this FROM NODE WAY; and 
+			//2) as a predecessor of the node, breaking the existing edge between the old predecessor and it, we called this BREAKING EDGE WAY.
+			case 2:
 //					selectedNode = getAggregatedValue("selectedNode");
 //					Location bestLocation = getAggregatedValue("bestLocation");
 //					System.out.println("Selected node at master Compute 2: " + selectedNode.getId());
 //					System.out.println("Best Location at master Compute 2: " + bestLocation.getNodeId());
-					
-					double bestPossibleNewBDirPred = getLongestBranchLength();
-					DoubleWritable parentF = (DoubleWritable) getAggregatedValue("parentF");
-					if (parentF.get() + bestPossibleNewBDirPred > lambda) {
-						superstepDeviation += 3;
-						selectANode();
-						iteration++;
-						feasibleDelete = false;
-						break;
-					}
-					feasibleDelete = true;
-					broadcast("selectedNode", selectedNode);
-					registerReducer("parentB", new EntryAssignmentReduce());
-					registerReducer("allPredecessorsPossibleNewBs", new MapAssignmentReduce());
-					setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
-					DoubleWritable longestBranchLength = new DoubleWritable(bestPossibleNewBDirPred);
-					broadcast("bestPossibleNewBDirPred", longestBranchLength);
-					registerReducer("selectedVertexChildren", new ArrayAssignmentReduce());
-					/**
-					 * TODO
-					 */
-					break;
-				case 3:
-					selectedVertexChildrenWritable = getReduced("selectedVertexChildren");
-					broadcast("selectedNode", selectedNode);
-					computeBValues();
-					if (isPerturbationOn) {
-						registerReducer("bestLocation", new RandomLocationReduce());
-					} else {
-						registerReducer("bestLocation", new BestLocationReduce());
-					}
-					setComputation(BestLocationEndingComputation.class);
-					break;
-				case 4:
-					//Location bl = getAggregatedValue("bestLocation");
-					bestLocation = getReduced("bestLocation");
-					broadcast("bestLocationAggregated", bestLocation);
-					System.out.println("Best Location: ");
-					bestLocation.print();
-					DoubleWritable movementCostW = getAggregatedValue("movementCost");
-					double movementCost = movementCostW.get() + bestLocation.getCost();
-					//System.out.println("Delete Cost: " +  movementCostW.get());
-					//System.out.println("Insert Cost: " +  bl.getCost());
-					System.out.println("Movement Cost: " +  movementCost);
-					
-					if (movementCost >= 0 && !isPerturbationOn) {
-						broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
-						abortedMovement = true;
-					} else {
-						cost += movementCost;
-						abortedMovement = false;
-						System.out.println("General Cost: " +  cost);
-						if (pendingVertices != null) {
-							System.out.println("An non-aborted movement!!!");
-							pendingVertices.addAll(selectedVertices);
-							selectedVertices = new ArrayList<Integer>();
-						}
-					}
-					broadcast("selectedNode", selectedNode);
-					setComputation(insertOperationAndBFsUpdate.class);
-					setAggregatedValue("movementCost", new DoubleWritable(0));
+				
+				double bestPossibleNewBDirPred = getLongestBranchLength();
+				DoubleWritable parentF = (DoubleWritable) getAggregatedValue("parentF");
+				if (parentF.get() + bestPossibleNewBDirPred > lambda) {
+					superstepDeviation += 3;
+					selectANode();
 					iteration++;
+					feasibleDelete = false;
 					break;
-				default:
-					
-					
-			}
-		} else {
-			System.out.println("Halting:: ");
-			haltComputation();
+				}
+				feasibleDelete = true;
+				broadcast("selectedNode", selectedNode);
+				registerReducer("parentB", new EntryAssignmentReduce());
+				registerReducer("allPredecessorsPossibleNewBs", new MapAssignmentReduce());
+				setComputation(BFsUpdateAndBestLocationBeginningComputation.class);
+				DoubleWritable longestBranchLength = new DoubleWritable(bestPossibleNewBDirPred);
+				broadcast("bestPossibleNewBDirPred", longestBranchLength);
+				registerReducer("selectedVertexChildren", new ArrayAssignmentReduce());
+				/**
+				 * TODO
+				 */
+				break;
+			case 3:
+				selectedVertexChildrenWritable = getReduced("selectedVertexChildren");
+				broadcast("selectedNode", selectedNode);
+				computeBValues();
+				if (isPerturbationOn) {
+					registerReducer("bestLocation", new RandomLocationReduce());
+				} else {
+					registerReducer("bestLocation", new BestLocationReduce());
+				}
+				setComputation(BestLocationEndingComputation.class);
+				break;
+			case 4:
+				//Location bl = getAggregatedValue("bestLocation");
+				bestLocation = getReduced("bestLocation");
+				broadcast("bestLocationAggregated", bestLocation);
+				System.out.println("Best Location: ");
+				bestLocation.print();
+				DoubleWritable movementCostW = getAggregatedValue("movementCost");
+				double movementCost = movementCostW.get() + bestLocation.getCost();
+				//System.out.println("Delete Cost: " +  movementCostW.get());
+				//System.out.println("Insert Cost: " +  bl.getCost());
+				System.out.println("Movement Cost: " +  movementCost);
+				
+				if (movementCost >= -0.000001 && !isPerturbationOn) {
+					broadcast("selectedVertexChildren", selectedVertexChildrenWritable);
+					abortedMovement = true;
+				} else {
+					cost += movementCost;
+					abortedMovement = false;
+					System.out.println("General Cost: " +  cost);
+					if (pendingVertices != null) {
+						System.out.println("An non-aborted movement!!!");
+						pendingVertices.addAll(selectedVertices);
+						selectedVertices = new ArrayList<Integer>();
+					}
+				}
+				broadcast("selectedNode", selectedNode);
+				setComputation(insertOperationAndBFsUpdate.class);
+				setAggregatedValue("movementCost", new DoubleWritable(0));
+				iteration++;
+				break;
+			default:
+				
+				
 		}
+
 		
 	}
 
 
 	@Override
 	public void initialize() throws InstantiationException, IllegalAccessException {
+		
+		initialExecutionTime = System.currentTimeMillis();
 		
 		MAX_ITERARIONS = ITERATIONS.get(getConf());
 		System.out.println("Max Iterations: " + MAX_ITERARIONS );
@@ -318,6 +325,8 @@ public class RDCMSTMasterCompute extends MasterCompute {
 				isPerturbationOn = true;
 				perturbationMovement = 0;
 				pendingVertices.addAll(selectedVertices);
+				broadcast("localMinimum", new IntWritable(numberLocalMinimums));
+				numberLocalMinimums++;
 				//haltComputation();
 				//return;
 			} 

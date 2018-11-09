@@ -1,5 +1,7 @@
 package edu.icesi.app;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.giraph.edge.Edge;
@@ -8,6 +10,7 @@ import org.apache.giraph.graph.AbstractComputation;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -36,7 +39,6 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
 	
 	@Override
 	public void compute(Vertex<IntWritable, RDCMSTValue, DoubleWritable> vertex, Iterable<DoubleWritable> messages) throws IOException {
-		
 		
 		//Completing previous phase
 		MapWritable newBs = getBroadcast("newBs");
