@@ -104,7 +104,7 @@ public class EdgeInsertionComputation extends AbstractComputation<IntWritable, R
   	          LOG.debug("Aggregating possibleNewBsDirPred. key:" + vertex.getId() + " value: " + vertex.getValue().getB());
     		}
     		aggregate("possibleNewBsDirPred", bVal);
-    	} else if (vertex.getId().get() != selectedNode.getId() && messages.iterator().hasNext()) {
+    	} else if (vertex.getId().get() != selectedNode.getId() && distanceFromPred != null) {
     		if (LOG.isDebugEnabled()) {
 	          LOG.debug("b Value:: " + vertex.getValue().getB());
       		}
