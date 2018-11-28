@@ -45,12 +45,9 @@ public class EdgeRemovalComputation extends
 		
 		IntWritable localMinimumCounter = getBroadcast("localMinimum");
 		if (localMinimumCounter != null) {
-			String fileName = "/home/cdloaiza/giraphOutputs/output" + localMinimumCounter.get();
-		    BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
 		    for (Edge<IntWritable, DoubleWritable> e : vertex.getEdges()) {
-		    	writer.write(vertex.getId().get() + " " + e.getTargetVertexId().get() + " " + e.getValue() + "\n");
+		    	System.out.println(vertex.getId().get() + " " + e.getTargetVertexId().get() + " " + e.getValue());
 		    }
-		    writer.close();
 		}
 		
 		BooleanWritable startingNormalMovement = getBroadcast("startingNormalMovement");
