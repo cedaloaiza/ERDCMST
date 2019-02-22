@@ -31,6 +31,9 @@ public class RDCMSTValue implements Writable{
 	private Position[] positions;
 	// The Id of the unique predecessor of this node
 	private int predecessorId;
+	
+	private int idNodeToSelectedVertex;
+
 
 	//A flag that indicates if this node can be placed in a better location in the future.
 	private boolean inList;
@@ -141,6 +144,13 @@ public class RDCMSTValue implements Writable{
 
 	public void setOldB(double oldB) {
 		this.oldB = oldB;
+	}
+	
+	public int getIdNodeToSelectedVertex() {
+		return idNodeToSelectedVertex;
+	}
+	public void setIdNodeToSelectedVertex(int idNodeToSelectedVertex) {
+		this.idNodeToSelectedVertex = idNodeToSelectedVertex;
 	}
 
 	public void print() {
