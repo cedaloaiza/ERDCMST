@@ -92,7 +92,7 @@ public class RDCMSTMasterCompute extends MasterCompute {
 		System.out.println("***** Computation " +  superStepPhase + " *****");
 		System.out.println("Number of vertices: " + getTotalNumVertices());
 		System.out.println("***MASTER ***");
-		if (iteration >= MAX_ITERARIONS || executionTime >= 60*1000) {
+		if (iteration >= MAX_ITERARIONS || executionTime >= 30*60*1000) {
 			System.out.println("Halting:: ");
 			haltComputation();
 			return;
